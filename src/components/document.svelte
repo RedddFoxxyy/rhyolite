@@ -66,9 +66,9 @@
 
 <!-- TODO: Decide whether not open tabs should be hidden or removed from DOM -->
 <div class={`${open ? "" : "hidden"} flex flex-col w-full max-w-screen-xl`}>
-  <div class="flex h-[80px] mb-6 mx-auto justify-center w-[50%] min-w-[300px]">
+  <div class="flex mb-6 mx-auto justify-center w-[50%] min-w-[300px]">
     <textarea
-      class="w-full h-full resize-none border-none bg-base rounded-lg py-7 text-text text-[2rem] focus:outline-none focus:ring-0 shadow-lg"
+      class="w-full h-full leading-normal flex content-center resize-none border-none bg-base rounded-lg text-text text-[2rem] focus:outline-none focus:ring-0 shadow-lg"
       placeholder="Enter title here..."
       value={documentTitle}
       oninput={handleTitleChange}

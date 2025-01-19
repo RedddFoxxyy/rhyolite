@@ -73,15 +73,17 @@
   >
     {#each tabs as tab}
       <button
-        class={`flex justify-left items-center px-4 text-nowrap h-[30px] min-w-[120px] rounded-[18px] flex-shrink text-text hover:bg-surface1 ${currentTab?.id === tab.id ? "bg-surface0" : ""}`}
+        class="flex justify-left items-center px-4 h-[30px] w-48 rounded-[18px] flex-shrink text-text hover:bg-surface1"
+        class:bg-surface0={currentTab?.id === tab.id}
         class:active={currentTab?.id === tab.id}
         role="tab"
         aria-controls="editor"
         onclick={() => onOpenTab(tab)}
       >
-        {tab.title.length > 20
-          ? tab.title.slice(0, 20) + "..."
-          : tab.title || "Untitled"}
+        <!-- truncate needs to be in a separate span to work properly somehow -->
+        <span class="truncate text-clip">
+          { tab.title || "Untitled" }
+        </span>
       </button>
     {/each}
 

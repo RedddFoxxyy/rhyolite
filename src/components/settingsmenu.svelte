@@ -6,6 +6,7 @@
     Keyboard,
     Info,
     X,
+    Settings as SettingsIcon
   } from "lucide-svelte";
   import { onDestroy, type Component } from "svelte";
   import settingsMenuState from "../stores/settings-menu.store";
@@ -13,8 +14,15 @@
   import type { Theme } from "../types/theme";
   import settingsMenuStore from "../stores/settings-menu.store";
 
+  let props = $props();
+
+  let menuElement: HTMLElement | null = $state(null);
+  let buttonElement: HTMLElement | null = $state(null);
+
   let settingsVisible = $state(false);
-  let buttonPosition = { top: 150, left: 44, bottom: 15 };
+
+  type ButtonPosition = {top: number, left: number} | null;
+  let buttonPosition: ButtonPosition  = $state(null);
   let boxDimensions = { width: 200, height: 200 };
   let themes: Theme[] = $state([]);
   let currentTheme: Theme | undefined = undefined;
@@ -55,10 +63,8 @@
     settingsVisible = false;
   };
 
-  let self: HTMLElement | null = $state(null);
-
   function closeSettingsOnClickOutside(e: MouseEvent) {
-    if (!self?.contains(e.target as Node)) {
+    if (!menuElement?.contains(e.target as Node)) {
       e.stopPropagation();
       settingsMenuStore.toggleSettingsMenu();
       document.removeEventListener("click", closeSettingsOnClickOutside);
@@ -72,23 +78,47 @@
     }
   }
 
+  function computeMenuPosition(): ButtonPosition {
+    let menuOffsets = menuElement?.getBoundingClientRect();
+    let buttonOffsets = buttonElement?.getBoundingClientRect();
+
+    if (!menuOffsets) return null;
+    if (!buttonOffsets) return null;
+    return { top: buttonOffsets.bottom - menuOffsets.height  , left: buttonOffsets.left + buttonOffsets.width };
+  }
+
   $effect(() => {
-    if (self) {
-      document.addEventListener("click", closeSettingsOnClickOutside);
+    if (menuElement) {
+      document.addEventListener("click", closeSettingsOnClickOutside); 
       document.addEventListener("keydown", closeSettingsOnEscape);
+      buttonPosition = computeMenuPosition();
+
+      window.addEventListener("resize", function repositionMenu() {
+        buttonPosition = computeMenuPosition();
+        document.removeEventListener("resize", repositionMenu);
+      });
     }
   });
 </script>
 
+<button
+  bind:this={buttonElement}
+  class="flex text-surface1 justify-center rounded-lg items-center h-5 px-0.5 py-4 w-full cursor-pointer hover:bg-text/10 transition-all duration-200 focus:outline-none focus:ring-0"
+  id="Settings_button"
+  aria-label="Open Settings Menu"
+  title="Open Settings Menu"
+  {...props}
+>
+  <SettingsIcon />
+</button>
+
 {#if settingsVisible}
   <div
-    bind:this={self}
-    class="absolute rounded-lg p-1 pt-[6px] z-50 transition-all duration-300 transform bg-base shadow-xl"
-    class:translate-y-0={settingsVisible}
+    bind:this={menuElement}
+    class="absolute rounded-lg p-2 z-50 transition-all duration-300 transform bg-base shadow-xl"
     class:opacity-100={settingsVisible}
-    class:translate-y-5={!settingsVisible}
     class:opacity-0={!settingsVisible}
-    style="bottom: {buttonPosition.bottom}px; left: {buttonPosition.left}px; width: {boxDimensions.width}px;"
+    style="top: {buttonPosition?.top}px; left: {buttonPosition?.left}px; width: {boxDimensions.width}px;"
   >
     {#each menuButtons as { label, onClick }}
       <button
