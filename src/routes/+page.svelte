@@ -6,7 +6,7 @@
   import RecentFiles from "../components/recentfilesmenu.svelte";
   import Workspace from "../components/workspace.svelte";
   import TitleBar from "../components/titlebar.svelte";
-  import HomeHotkeys from "../components/home-hotkeys.svelte";
+  import "$lib/home-hotkeys.svelte";
   import DocumentService from "../services/document.service";
   import Sidebar from "../components/sidebar.svelte";
 
@@ -22,7 +22,6 @@
     <Sidebar />
     <Workspace />
   </div>
-  <HomeHotkeys />
   <CommandPalette />
   <RecentFiles />
 </main>

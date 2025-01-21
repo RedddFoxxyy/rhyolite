@@ -1,9 +1,8 @@
 <script lang="ts">
-  import CommandPaletteStore from "../stores/command-palette.store";
+  import {commandPaletteStore} from "../stores/command-palette.svelte";
   import DocumentService from "../services/document.service";
   import TabService from "../services/tab.service";
-  import { onDestroy } from "svelte";
-  import ContentEditorStore from "../stores/content-editor.store";
+  import {contentEditorStore} from "../stores/content-editor.svelte";
 
   let selectedIndex: number = $state(-1);
   let searchText: string = $state("");
@@ -20,7 +19,7 @@
        shortcut: "Ctrl + D",
        action: () => {
          DocumentService.deleteDocumentTab();
-         CommandPaletteStore.toggleVisibility();
+         commandPaletteStore.toggleVisibility();
        },
     },
     {
@@ -28,7 +27,7 @@
       shortcut: "Ctrl + C",
       action: () => {
         TabService.closeTab();
-        CommandPaletteStore.toggleVisibility();
+        commandPaletteStore.toggleVisibility();
       },
     },
     {
@@ -36,7 +35,7 @@
       shortcut: "Ctrl + N",
       action: () => {
         DocumentService.addNewDocumentTab();
-        CommandPaletteStore.toggleVisibility();
+        commandPaletteStore.toggleVisibility();
       },
     },
     {
@@ -44,7 +43,7 @@
       shortcut: "Ctrl + Tab or Ctrl + pgDown",
       action: () => {
         TabService.cycleTabs();
-        CommandPaletteStore.toggleVisibility();
+        commandPaletteStore.toggleVisibility();
       },
     },
     {
@@ -52,7 +51,7 @@
       shortcut: "Ctrl + 1",
       action: () => {
         TabService.gotoTab1();
-        CommandPaletteStore.toggleVisibility();
+        commandPaletteStore.toggleVisibility();
       },
     },
     {
@@ -60,15 +59,15 @@
       shortcut: "Ctrl + 9",
       action: () => {
         TabService.gotoLastTab();
-        CommandPaletteStore.toggleVisibility();
+        commandPaletteStore.toggleVisibility();
       },
     },
     {
       name: "Toggle ToolBar",
       shortcut: "Ctrl + T",
       action: () => {
-        ContentEditorStore.toggleToolbarVisibility();
-        CommandPaletteStore.toggleVisibility();
+        contentEditorStore.toggleToolbarVisibility();
+        commandPaletteStore.toggleVisibility();
       },
     },
     // ...Array(5)
@@ -81,7 +80,7 @@
   ];
 
   function handleKeydown(event: KeyboardEvent) {
-    if (!CommandPaletteStore.isVisible()) return;
+    if (!commandPaletteStore.isVisible()) return;
     console.log(event.key, event.shiftKey, event);
     if (
       event.key === "ArrowDown" ||
@@ -110,7 +109,7 @@
     }
     if (event.key === "Escape") {
       event.preventDefault();
-      CommandPaletteStore.toggleVisibility();
+      commandPaletteStore.toggleVisibility();
     }
   }
   $effect(() => {
@@ -123,7 +122,7 @@
   });
 
   function handleWheel(event: WheelEvent) {
-    if (!CommandPaletteStore.isVisible()) return;
+    if (!commandPaletteStore.isVisible()) return;
 
     event.preventDefault();
     if (event.deltaY > 0) {
@@ -137,29 +136,24 @@
 
   // Reset selected index when command palette is closed
   $effect(() => {
-    if (!CommandPaletteStore.isVisible()) {
+    if (!commandPaletteStore.isVisible()) {
       selectedIndex = -1;
       searchText = "";
     }
   });
 
-  let flagVisibility = $state(false);
   $effect(() => {
-    if (flagVisibility) {
+    if (commandPaletteStore.isVisible()) {
       (
         document.querySelector("#commandPaletteTextarea") as HTMLTextAreaElement
       ).focus();
     }
   });
-  const unsubscribeStates = CommandPaletteStore.states.subscribe((value) => {
-    flagVisibility = value.flagCommandPaletteVisibility;
-  });
-  onDestroy(unsubscribeStates); // Clean up
 </script>
 
 <!-- <svelte:window on:keydown={handleKeydown} /> -->
 
-{#if flagVisibility}
+{#if commandPaletteStore.isVisible()}
   <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <div
@@ -168,7 +162,7 @@
     aria-modal="true"
     role="dialog"
     onclick={(e) => {
-      if (e.target === e.currentTarget) CommandPaletteStore.toggleVisibility();
+      if (e.target === e.currentTarget) commandPaletteStore.toggleVisibility();
     }}
   >
     <div
@@ -184,7 +178,7 @@
         ></textarea>
         <button
           class="absolute right-2 top-1/2 -translate-y-1/2 bg-transparent text-text opacity-70 hover:opacity-100 transition-opacity duration-200"
-          onclick={() => CommandPaletteStore.toggleVisibility()}>✕</button
+          onclick={() => commandPaletteStore.toggleVisibility()}>✕</button
         >
       </div>
       <div

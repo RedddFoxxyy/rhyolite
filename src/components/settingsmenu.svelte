@@ -6,12 +6,10 @@
     Keyboard,
     Info,
   } from "lucide-svelte";
-  import { onDestroy } from "svelte";
-  import settingsMenuStore from "../stores/settings-menu.store";
+  import {settingsMenuStore} from "../stores/settings-menu.svelte";
   import ThemeStore from "../stores/theme.store";
   import type { Theme } from "../types/theme";
 
-  let settingsVisible = $state(false);
   let showThemeOptions = $state(false);
   let self: HTMLElement | null = $state(null);
   let themes: Theme[] = $state([]);
@@ -52,7 +50,7 @@
       (e instanceof KeyboardEvent && e.key === "Escape")
     ) {
       e.stopPropagation();
-      settingsMenuStore.toggleSettingsMenu();
+      settingsMenuStore.toggleVisibility();
     }
   };
 
@@ -79,37 +77,39 @@
     ThemeStore.states.subscribe((v) => {
       themes = v.themes;
     }),
-    settingsMenuStore.subscribe((state) => {
-      settingsVisible = state.settingsMenuVisible;
-      if (state.settingsMenuVisible) {
-        document.addEventListener("click", handleCloseEvent);
-        document.addEventListener("keydown", handleCloseEvent);
-        storeOriginalTheme(); // Store original theme when opening menu
-      } else {
-        document.removeEventListener("click", handleCloseEvent);
-        document.removeEventListener("keydown", handleCloseEvent);
-        showThemeOptions = false;
-        resetTheme(); // Reset to original theme when closing without selecting
-      }
-    }),
   ];
+
+
+  $effect(() => {
+    if (settingsMenuStore.isVisible()) {
+      document.addEventListener("click", handleCloseEvent);
+      document.addEventListener("keydown", handleCloseEvent);
+      storeOriginalTheme(); // Store original theme when opening menu
+    } else {
+      document.removeEventListener("click", handleCloseEvent);
+      document.removeEventListener("keydown", handleCloseEvent);
+      showThemeOptions = false;
+      resetTheme(); // Reset to original theme when closing without selecting
+    }
+
+    return () => {
+      unsubscribe.forEach((unsub) => unsub());
+      document.removeEventListener("click", handleCloseEvent);
+      document.removeEventListener("keydown", handleCloseEvent);
+      resetTheme(); // Ensure theme is reset if component is destroyed while previewing
+    }
+  })
 
   // Apply theme and close menu
   const changeTheme = (theme: Theme) => {
     ThemeStore.updateCurrentThemeState(theme);
     originalTheme = theme; // Update original theme to the new selection
-    settingsMenuStore.toggleSettingsMenu();
+    settingsMenuStore.toggleVisibility();
   };
-
-  onDestroy(() => {
-    unsubscribe.forEach((unsub) => unsub());
-    document.removeEventListener("click", handleCloseEvent);
-    document.removeEventListener("keydown", handleCloseEvent);
-    resetTheme(); // Ensure theme is reset if component is destroyed while previewing
-  });
 </script>
 
-{#if settingsVisible}
+{#if settingsMenuStore.isVisible()}
+  {@const settingsVisible = settingsMenuStore.isVisible()}
   <div
     bind:this={self}
     class="absolute rounded-lg p-1 pt-[6px] z-50 transition-all duration-300 transform bg-base shadow-xl"

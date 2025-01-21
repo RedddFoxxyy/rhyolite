@@ -27,7 +27,7 @@
   import Paragraph from "@tiptap/extension-paragraph";
   import { ChevronDownOutline, ChevronUpOutline } from "flowbite-svelte-icons";
   import { all, createLowlight } from "lowlight";
-  import ContentEditorStore from "../../stores/content-editor.store";
+  import {contentEditorStore} from "../../stores/content-editor.svelte";
   // import ToolbarButton from "./components/toolbar-button.svelte";
   import {
     CustomHeader,
@@ -259,12 +259,6 @@
     $editor.chain().focus().setParagraph().run();
     typographyDropdownOpen = false;
   };
-
-  let flagToolbarVisibility = $state(false);
-  const unsubscribeStates = ContentEditorStore.states.subscribe((value) => {
-    flagToolbarVisibility = value.flagToolbarVisibility;
-  });
-  onDestroy(unsubscribeStates); // Clean up
 </script>
 
 <div class={`flex flex-col h-full w-full text-text ${classProp}`}>

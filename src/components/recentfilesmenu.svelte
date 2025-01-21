@@ -1,11 +1,8 @@
 <script lang="ts">
-  import RecentFilesMenuStore from "../stores/recent-files.store";
+  import {recentFilesStore} from "../stores/recent-files.svelte";
   import DocumentService from "../services/document.service";
-  import { onMount, getContext } from "svelte";
-  // import Close from "$lib/static/close.svg";
-  import { onDestroy } from "svelte";
   import { ApiProvider } from "../services/api.service";
-  import type { Document, RecentFileInfo } from "../types/document";
+  import type { RecentFileInfo } from "../types/document";
 
   let files: RecentFileInfo[] = $state([]);
   let selectedIndex: number = $state(-1);
@@ -41,12 +38,12 @@
   }
 
   function toggleFilesMenu() {
-    RecentFilesMenuStore.toggleVisibility();
+    recentFilesStore.toggleVisibility();
     // loadFiles();
   }
 
   function handleKeydown(event: KeyboardEvent) {
-    if (!RecentFilesMenuStore.isVisible()) return;
+    if (!recentFilesStore.isVisible()) return;
 
     switch (event.key) {
       case "ArrowDown":
@@ -74,27 +71,18 @@
   }
 
   $effect(() => {
-    if (!RecentFilesMenuStore.isVisible()) {
-      selectedIndex = -1;
-      searchText = "";
-    }
-  });
-
-  let flagVisibility = $state(false);
-  $effect(() => {
-    if (flagVisibility) {
+    if (recentFilesStore.isVisible()) {
       (
         document.querySelector("#commandPaletteTextarea") as HTMLTextAreaElement
       ).focus();
+    } else {
+      selectedIndex = -1;
+      searchText = "";     
     }
   });
-  const unsubscribeStates = RecentFilesMenuStore.states.subscribe((value) => {
-    flagVisibility = value.flagFilesMenuVisibility;
-  });
-  onDestroy(unsubscribeStates); // Clean up
 </script>
 
-{#if flagVisibility}
+{#if recentFilesStore.isVisible()}
   {loadFiles()}
   <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
   <!-- svelte-ignore a11y_click_events_have_key_events -->

@@ -6,9 +6,9 @@ class TabsStore {
     #currentTab: Tab | null = $state(null);
 
     constructor() {
-        DocumentService.getAllDocumentTabs().then((tabs) => {
-            this.#tabs = tabs;
-        }).catch((reason) => console.error(reason));
+        (async() => {
+            this.#tabs = await DocumentService.getAllDocumentTabs();
+        })();
 
         this.#currentTab = this.#tabs.length > 0 ? this.#tabs[0] : null;
     }
@@ -25,6 +25,10 @@ class TabsStore {
 
     updateCurrentTab(currentTab: Tab | null): Tab | null {
         this.#currentTab = currentTab;
+
+        for (let tab of this.#tabs) {
+           if (tab.id === currentTab?.id) tab = currentTab;
+        }
         return this.#currentTab;
     }
 

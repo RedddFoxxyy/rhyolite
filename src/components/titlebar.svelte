@@ -3,40 +3,28 @@
   import Restore from "$lib/static/restore.svg.svelte";
   import Maximise from "$lib/static/maximise.svg.svelte";
   import Minimise from "$lib/static/minimise.svg.svelte";
-  import { getCurrentWindow, Window } from "@tauri-apps/api/window";
-  import { onDestroy } from "svelte";
-  import TabsStore from "../stores/tabs.store";
+  import { getCurrentWindow } from "@tauri-apps/api/window";
+  import {tabsStore} from "../stores/tabs.svelte";
   import { type Tab } from "../types/tab";
   import { addNewDocumentTab } from "../services/document.service";
   import tabService from "../services/tab.service";
 
-  let tabs: Tab[] = $state([]);
-  let currentTab: Tab | null = $state(null);
-
   let isMaximized: boolean = $state(false);
-
   const appWindow = getCurrentWindow();
-
   let hoverTabId: string | null = $state(null);
 
   const onTabClose = async(tabId: string) => {
     await tabService.closeTab(tabId);
   };
 
-
   appWindow.listen("tauri://resize", async () => {
     isMaximized = await appWindow.isMaximized();
   });
 
-  const unsubscribeTabsState = TabsStore.states.subscribe((value) => {
-    tabs = value.tabs;
-    currentTab = value.currentTab;
-  });
-
-  onDestroy(() => {
-    unsubscribeTabsState();
-  }); // Clean up
   $effect(() => {
+    const currentTab = tabsStore.getCurrentTab();
+    const tabs = tabsStore.getTabs();
+
     if (currentTab) {
       document
         .querySelector(
@@ -53,7 +41,7 @@
   });
 
   const onOpenTab = (tab: Tab) => {
-    TabsStore.updateCurrentTabState(tab);
+    tabsStore.updateCurrentTab(tab);
   };
 </script>
 
@@ -67,7 +55,8 @@
     id="tablist"
     aria-label="Document tabs"
   >
-  {#each tabs as tab}
+  {#each tabsStore.getTabs() as tab}
+  {@const currentTab = tabsStore.getCurrentTab()}
   <div class="relative group flex items-center justify-between"> 
     <button
       class={`flex justify-left items-center pl-4 pr-2 text-nowrap h-[30px] w-fit rounded-[18px] flex-shrink text-text transition-colors duration-100 hover:bg-surface1 ${currentTab?.id === tab.id ? "bg-surface0" : ""}`}

@@ -19,6 +19,7 @@
   let wordCount: number = $state(0);
   let charCount: number = $state(0);
   let initialized: boolean = $state(false);
+
   onMount(async () => {
     documentTitle = tab.title;
     // content = tab.content;
