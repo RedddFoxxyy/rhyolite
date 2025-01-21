@@ -1,4 +1,4 @@
-class SettingsMenuStore {
+class RecentFilesStore {
   #isVisible = $state(false);
 
   isVisible(): boolean {
@@ -10,4 +10,4 @@ class SettingsMenuStore {
   }
 }
 
-export const settingsMenuStore = new SettingsMenuStore();
+export const recentFilesStore = new RecentFilesStore();
