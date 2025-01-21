@@ -74,7 +74,7 @@
     if (recentFilesStore.isVisible()) {
       (
         document.querySelector("#commandPaletteTextarea") as HTMLTextAreaElement
-      ).focus();
+      )?.focus();
     } else {
       selectedIndex = -1;
       searchText = "";     

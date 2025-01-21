@@ -36,7 +36,6 @@
     const target = event.target as HTMLTextAreaElement;
     documentTitle = target.value;
     TabService.updateTabTitleById(tab.id, target.value);
-
     saveDocument();
   };
 

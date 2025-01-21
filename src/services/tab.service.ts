@@ -68,9 +68,8 @@ const cycleTabs = async () => {
 }
 
 const updateTabTitleById = async (tabId: string, newTitle: string) => {
-    const tabs = tabsStore.getTabs();
-    tabs.map(tab =>tab.id === tabId ? { ...tab, title: newTitle } : tab);
-    tabsStore.updateTabs(tabs);
+    let tab = tabsStore.getTabById(tabId);
+    if (tab) tab.title = newTitle;
 }
 
 export default {

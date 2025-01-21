@@ -20,15 +20,17 @@ class TabsStore {
 
     updateTabs(tabs: Tab[]): Tab[] {
         this.#tabs = tabs;
+
+        for (const currTab of tabs) {
+           if (currTab.id === this.#currentTab?.id) {
+               this.#currentTab = currTab;
+           } 
+        }
         return this.#tabs;
     }
 
     updateCurrentTab(currentTab: Tab | null): Tab | null {
         this.#currentTab = currentTab;
-
-        for (let tab of this.#tabs) {
-           if (tab.id === currentTab?.id) tab = currentTab;
-        }
         return this.#currentTab;
     }
 
