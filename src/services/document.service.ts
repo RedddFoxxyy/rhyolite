@@ -1,10 +1,9 @@
 import type { Tab } from "../types/tab";
 import {tabsStore} from "../stores/tabs.svelte";
-import { ApiProvider } from "./api.service";
+import { apiProvider } from "./api.service";
 import TabService from "./tab.service";
 import type { Document } from "../types/document";
 
-const apiProvider = new ApiProvider();
 
 const getAllDocumentTabs = async (): Promise<Tab[]> => {
   const tabs: Tab[] = await apiProvider.getAllDocumentTabs();

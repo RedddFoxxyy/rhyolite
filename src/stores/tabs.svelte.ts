@@ -1,5 +1,6 @@
-import DocumentService from "../services/document.service";
+import { apiProvider } from '../services/api.service'; 
 import type { Tab } from '../types/tab';
+
 
 class TabsStore {
     #tabs: Tab[] = $state([]);
@@ -7,7 +8,7 @@ class TabsStore {
 
     constructor() {
         (async() => {
-            this.#tabs = await DocumentService.getAllDocumentTabs();
+            this.#tabs = await apiProvider.getAllDocumentTabs();
         })();
 
         this.#currentTab = this.#tabs.length > 0 ? this.#tabs[0] : null;

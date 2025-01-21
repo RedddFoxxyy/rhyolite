@@ -1,9 +1,7 @@
 import type { Tab } from "../types/tab";
 import {tabsStore} from "../stores/tabs.svelte";
-import { ApiProvider } from "./api.service";
+import { apiProvider } from "./api.service";
 import docservice from "./document.service";
-
-const apiProvider = new ApiProvider();
 
 const switchTab = async (tabId: string): Promise<Tab | undefined> => {
     const tab: Tab | undefined = tabsStore.getTabById(tabId);

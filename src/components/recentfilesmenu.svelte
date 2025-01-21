@@ -1,14 +1,12 @@
 <script lang="ts">
   import {recentFilesStore} from "../stores/recent-files.svelte";
   import DocumentService from "../services/document.service";
-  import { ApiProvider } from "../services/api.service";
+  import { apiProvider } from "../services/api.service";
   import type { RecentFileInfo } from "../types/document";
 
   let files: RecentFileInfo[] = $state([]);
   let selectedIndex: number = $state(-1);
   let searchText: string = $state("");
-
-  const apiProvider = new ApiProvider();
 
   async function loadFiles() {
     try {
