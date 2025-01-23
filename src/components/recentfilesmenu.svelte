@@ -70,8 +70,9 @@
 
   $effect(() => {
     if (recentFilesStore.isVisible()) {
+      loadFiles();
       (
-        document.querySelector("#commandPaletteTextarea") as HTMLTextAreaElement
+        document.querySelector("#recentFilesTextarea") as HTMLTextAreaElement
       )?.focus();
     } else {
       selectedIndex = -1;
@@ -81,7 +82,6 @@
 </script>
 
 {#if recentFilesStore.isVisible()}
-  {loadFiles()}
   <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <div

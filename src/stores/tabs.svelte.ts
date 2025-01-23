@@ -21,12 +21,6 @@ class TabsStore {
 
     updateTabs(tabs: Tab[]): Tab[] {
         this.#tabs = tabs;
-
-        for (const currTab of tabs) {
-           if (currTab.id === this.#currentTab?.id) {
-               this.#currentTab = currTab;
-           } 
-        }
         return this.#tabs;
     }
 
