@@ -37,6 +37,14 @@ class TabsStore {
         return this.#currentTab;
     }
 
+    _markDeleting(tabId: string) {
+      const tab = this.getTabById(tabId)
+      if (!tab) {
+        throw new Error(`Tab doesn't exist: "${tabId}"`)
+      }
+      tab.deleting = true
+    }
+
     getTabs(): Tab[] {
         return this.#tabs;
     }

@@ -28,7 +28,7 @@
     if (currentTab) {
       document
         .querySelector(
-          currentTab.id === tabs[tabs.length - 1].id
+          currentTab.id === tabs[tabs.length - 1]?.id
             ? "#tablist>#new-tab-btn"
             : "#tablist>.active",
         )

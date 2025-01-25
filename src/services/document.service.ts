@@ -29,6 +29,7 @@ const deleteDocumentTab = async (): Promise<void> => {
   try {
     const currentTab: Tab | null = tabsStore.getCurrentTab();
     if (currentTab === null) return;
+    tabsStore._markDeleting(currentTab.id)
 
     await apiProvider.deleteDocument(currentTab.id);
     const tabs = await getAllDocumentTabs();
@@ -84,6 +85,12 @@ const saveDocument = async ({
   documentTitle: string;
   documentContent: any;
 }): Promise<void> => {
+  const tab = tabsStore.getTabById(documentId)
+  if (!tab || tab.deleting) {
+    // TODO: remove this workaround when state management centralized
+    console.error("Unable to save a deleted document", { documentId, documentTitle })
+    return
+  }
   await apiProvider.saveDocument({
     documentId,
     documentTitle,
