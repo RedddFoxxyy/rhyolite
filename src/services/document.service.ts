@@ -4,6 +4,7 @@ import { ApiProvider } from "./api.service";
 import TabService from "./tab.service";
 import type { Document } from "../types/document";
 import { isValidJSON } from "../helpers/common.helper";
+import { invoke } from "@tauri-apps/api/core";
 
 const apiProvider = new ApiProvider();
 
@@ -107,6 +108,10 @@ const loadDocument = async (
     return null;
   }
 };
+
+export const runDummyCommand = async (payload: Record<string, any>) => {
+  invoke('exec_command', payload)
+}
 
 export default {
   getAllDocumentTabs,

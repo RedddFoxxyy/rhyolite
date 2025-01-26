@@ -34,6 +34,8 @@ mdka = "1.2.12"
 regex = "1.11.1"
 markdown_engine = { path = "./Crates/markdown_engine" }
 tauri-plugin-fs = "2"
+tauri-plugin-log = "2"
+log = "0.4.25"
 
 
 [profile.dev]

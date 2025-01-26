@@ -14,7 +14,7 @@ pub fn html_to_markdown(html: &str) -> String {
 pub fn markdown_to_html(markdown: &str) -> String {
     let re = Regex::new(r"==(.+?)==").unwrap();
     let processed_markdown = re.replace_all(markdown, r"<mark>$1</mark>").to_string();
-    
+
     // Convert markdown to HTML
     let mut options = Options::empty();
     options.insert(Options::ENABLE_TABLES);

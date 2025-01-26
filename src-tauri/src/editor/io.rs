@@ -1,17 +1,19 @@
 //! This module provides IO related functions for the app.
 
 use std::fs; //Filesystem module
-use std::path::PathBuf; //PathBuf datatype to store path strings
+use std::path::PathBuf;
+use tauri::{Manager, State, Window};
+//PathBuf datatype to store path strings
 use uuid::Uuid; //Uuid module to generate unique ids
                 // use tauri_plugin_dialog::DialogExt; //DialogExt trait to show dialog boxes
 
 use dirs; //dirs module to get the path of the documents directory
 use sanitize_filename; //sanitize_filename module to sanitize filenames
 
+use crate::app_state::{AppState, DocumentData, UserData};
 use crate::editor::markdown_handler;
 
-use crate::{DocumentData, RecentFileInfo, UserData}; //Importing the DocumentData, RecentFileInfo and UserData structs
-use crate::{CURRENT_OPEN_TAB, RECENT_FILES, TABS}; //Importing the CURRENT_OPEN_TAB, RECENT_FILES and TABS mutexes
+use crate::RecentFileInfo; //Importing the DocumentData, RecentFileInfo and UserData structs
 
 /// This function returns the path to the documents directory.
 pub fn get_documents_dir() -> PathBuf {
@@ -51,29 +53,16 @@ pub fn get_trove_dir(trove_name: &str) -> PathBuf {
 }
 
 /// Runs when the app is closing and saves the user data.
-pub fn on_app_close() {
-    // Save the complete tabs information
-    let tabs = TABS
-        .lock()
-        .map_err(|e| format!("Failed to lock TABS: {}", e))
-        .unwrap();
+pub fn on_app_close(window: &Window) {
+    log::debug!("on_app_close init");
+    let state = window.state::<AppState>();
+    let mut state = state.lock().unwrap();
+    let tab_switcher = &mut state.tab_switcher.get_mut().unwrap();
 
-    let current_open_tab = CURRENT_OPEN_TAB
-        .lock()
-        .map_err(|e| format!("Failed to lock CURRENT_OPEN_TAB: {}", e))
-        .unwrap();
-
-    let recent_files = RECENT_FILES
-        .lock()
-        .map_err(|e| format!("Failed to lock RECENT_FILES: {}", e))
-        .unwrap();
-
-    // Convert HashMap values to Vec for storage
-    let tabs_vec: Vec<_> = tabs.values().cloned().collect();
     let user_data = UserData {
-        tabs: tabs_vec,
-        last_open_tab: current_open_tab.clone(),
-        recent_files: recent_files.clone(),
+        tabs: tab_switcher.tabs.values().cloned().collect::<Vec<_>>(),
+        last_open_tab: tab_switcher.current_tab_id.clone().unwrap(),
+        recent_files: state.workspace.recent_files.clone(),
     };
 
     let appdata_dir = get_documents_dir().join("appdata");
@@ -91,23 +80,16 @@ pub fn on_app_close() {
 }
 
 /// This function saves the user data to the userdata.json file.
-pub fn save_user_data() -> Result<(), String> {
-    let tabs = TABS
-        .lock()
-        .map_err(|e| format!("Failed to lock TABS: {}", e))?;
-    let current_open_tab = CURRENT_OPEN_TAB
-        .lock()
-        .map_err(|e| format!("Failed to lock CURRENT_OPEN_TAB: {}", e))?;
-    let recent_files = RECENT_FILES
-        .lock()
-        .map_err(|e| format!("Failed to lock RECENT_FILES: {}", e))?;
+pub fn save_user_data(state: &State<'_, AppState>) -> Result<(), String> {
+    let mut state_lock = state.lock().unwrap();
+    let tabswitcher = &mut state_lock.tab_switcher.get_mut().unwrap();
 
     // Convert HashMap values to Vec for storage
-    let tabs_vec: Vec<_> = tabs.values().cloned().collect();
+    let tabs_vec: Vec<_> = tabswitcher.tabs.values().cloned().collect();
     let user_data = UserData {
         tabs: tabs_vec,
-        last_open_tab: current_open_tab.clone(),
-        recent_files: recent_files.clone(),
+        last_open_tab: tabswitcher.current_tab_id.clone().unwrap(),
+        recent_files: state_lock.workspace.recent_files.clone(),
     };
 
     let appdata_dir = get_documents_dir().join("appdata");
@@ -123,14 +105,23 @@ pub fn save_user_data() -> Result<(), String> {
 
 /// This function saves the document.
 #[tauri::command]
-pub fn save_document(id: String, title: String, content: String) -> Result<String, String> {
-    let mut recent_files = RECENT_FILES
-        .lock()
-        .map_err(|e| format!("Failed to lock RECENT_FILES: {}", e))?;
-    if let Some(doc) = recent_files.iter_mut().find(|doc| doc.id == id) {
+pub fn save_document(
+    id: String,
+    title: String,
+    content: String,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    log::debug!("save_document init");
+    let mut state = state.lock().unwrap();
+    if let Some(doc) = state
+        .workspace
+        .recent_files
+        .iter_mut()
+        .find(|doc| doc.id == id)
+    {
         doc.title = title.clone();
     } else {
-        recent_files.push(RecentFileInfo {
+        state.workspace.recent_files.push(RecentFileInfo {
             id: id.clone(),
             title: title.clone(),
         });
@@ -145,13 +136,12 @@ pub fn save_document(id: String, title: String, content: String) -> Result<Strin
     let safe_filename = sanitize_filename::sanitize(format!("{}.md", title));
     let file_path = trove_dir.join(&safe_filename);
 
-    // Get the current open tab
-    let tabs = TABS
-        .lock()
-        .map_err(|e| format!("Failed to lock TABS: {}", e))?;
-
     // Get the old title and path(Old title is the title of the document before saving, if changed)
-    let old_title = tabs
+    let old_title = state
+        .tab_switcher
+        .get_mut()
+        .unwrap()
+        .tabs
         .get(&id)
         .map(|tab| tab.title.clone())
         .unwrap_or_else(|| String::from("Untitled"));
@@ -170,15 +160,15 @@ pub fn save_document(id: String, title: String, content: String) -> Result<Strin
 }
 
 #[tauri::command]
-pub fn delete_document(id: String) -> Result<Option<DocumentData>, String> {
-    //Get a lock on all the mutexes
-    let mut tabs = TABS
-        .lock()
-        .map_err(|e| format!("Failed to lock TABS: {}", e))?;
-
-    let mut recent_files = RECENT_FILES
-        .lock()
-        .map_err(|e| format!("Failed to lock RECENT_FILES: {}", e))?;
+pub fn delete_document(
+    id: String,
+    state: State<'_, AppState>,
+) -> Result<Option<DocumentData>, String> {
+    log::debug!("delete_document init");
+    let orig_state = &state;
+    let mut state_lock = state.lock().unwrap();
+    let tabswitcher = state_lock.tab_switcher.get_mut().unwrap();
+    let tabs = &mut tabswitcher.tabs;
 
     if !tabs.contains_key(&id) {
         return Err("Tab not found".to_string());
@@ -192,17 +182,21 @@ pub fn delete_document(id: String) -> Result<Option<DocumentData>, String> {
 
     // Clean up stale entries that don't exist on disk
     {
-        tabs.retain(|_, tab| {
-            let file_path =
-                trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &tab.title)));
-            file_path.exists()
-        });
+        // NOTE: Why do it here ?
+        // Why do we even expect to have docs which don't exist on disk ?
+        // Even if there are such docs, why is this the right place to delete them ?
 
-        recent_files.retain(|file| {
-            let file_path =
-                trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &file.title)));
-            file_path.exists()
-        });
+        // tabs.retain(|_, tab| {
+        //     let file_path =
+        //         trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &tab.title)));
+        //     file_path.exists()
+        // });
+        //
+        // state.workspace.recent_files.retain(|file| {
+        //     let file_path =
+        //         trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &file.title)));
+        //     file_path.exists()
+        // });
     }
     let filename = sanitize_filename::sanitize(format!("{}.md", tab_title));
     let file_path = trove_dir.join(&filename);
@@ -214,10 +208,7 @@ pub fn delete_document(id: String) -> Result<Option<DocumentData>, String> {
         let next_tab =
             if let Some((next_id, next_tab)) = tabs.get_index(index).or_else(|| tabs.last()) {
                 // Update current open tab
-                let mut current_open_tab = CURRENT_OPEN_TAB
-                    .lock()
-                    .map_err(|e| format!("Failed to lock CURRENT_OPEN_TAB: {}", e))?;
-                *current_open_tab = next_id.clone();
+                tabswitcher.current_tab_id = Some(next_id.clone());
                 // Get the document content for the next tab
                 get_document_content(next_id.clone(), next_tab.title.clone())?
             } else {
@@ -232,14 +223,11 @@ pub fn delete_document(id: String) -> Result<Option<DocumentData>, String> {
         }
 
         // Remove the document from the recent files
-        recent_files.retain(|doc| doc.id != id);
-
-        // Drop the locks on the mutexes
-        std::mem::drop(recent_files);
-        std::mem::drop(tabs);
+        state_lock.workspace.recent_files.retain(|doc| doc.id != id);
 
         // Save changes to userdata.json
-        save_user_data()?;
+        std::mem::drop(state_lock);
+        save_user_data(orig_state)?;
 
         // Return the next tab as Some(DocumentData) if it exists else None
         Ok(next_tab)
@@ -282,8 +270,9 @@ pub fn get_document_content(id: String, title: String) -> Result<Option<Document
 
 /// This function loads the tabs active/opened in the last app section.
 #[tauri::command]
-pub fn load_last_open_tabs() -> Result<Vec<DocumentData>, String> {
+pub fn load_last_open_tabs(state: State<'_, AppState>) -> Result<Vec<DocumentData>, String> {
     // Get the path of the userdata.json file
+    log::debug!("load_last_open_tabs init");
     let appdata_dir = get_documents_dir().join("appdata");
     let userdata_path = appdata_dir.join("userdata.json");
 
@@ -295,27 +284,19 @@ pub fn load_last_open_tabs() -> Result<Vec<DocumentData>, String> {
                 // Deserialize the UserData using serde_json
                 match serde_json::from_str::<UserData>(&content) {
                     Ok(user_data) => {
+                        let mut state = state.lock().unwrap();
                         // Lock the mutexes and update the values
-                        let mut recent_files_lock = RECENT_FILES
-                            .lock()
-                            .map_err(|e| format!("Failed to lock RECENT_FILES: {}", e))?;
-                        *recent_files_lock = user_data.recent_files.clone();
+                        state.workspace.recent_files = user_data.recent_files.clone();
+                        let tabswitcher = &mut state.tab_switcher.get_mut().unwrap();
 
                         // Create a vector to store the last open files
                         let mut last_open_files = Vec::new();
 
-                        // Update the current open tab
-                        let mut current_open_tab = CURRENT_OPEN_TAB
-                            .lock()
-                            .map_err(|e| format!("Failed to lock CURRENT_OPEN_TAB: {}", e))?;
-                        *current_open_tab = user_data.last_open_tab.clone();
+                        tabswitcher.current_tab_id = Some(user_data.last_open_tab.clone());
 
                         // Lock the tabs mutex and update the values
-                        let mut tabs = TABS
-                            .lock()
-                            .map_err(|e| format!("Failed to lock TABS: {}", e))?;
-
                         // Clear existing tabs and load from user_data
+                        let tabs = &mut tabswitcher.tabs;
                         tabs.clear();
                         for tab in user_data.tabs {
                             // Try to load each document by ID
@@ -364,8 +345,10 @@ pub fn load_last_open_tabs() -> Result<Vec<DocumentData>, String> {
 
 /// This function returns the metadata of the recent files.
 #[tauri::command]
-pub fn get_recent_files_metadata() -> Result<Vec<RecentFileInfo>, String> {
-    if let Err(e) = save_user_data() {
+pub fn get_recent_files_metadata(
+    state: State<'_, AppState>,
+) -> Result<Vec<RecentFileInfo>, String> {
+    if let Err(e) = save_user_data(&state) {
         eprintln!("Warning: Failed to save user data: {}", e);
     }
     let appdata_dir = get_documents_dir().join("appdata");

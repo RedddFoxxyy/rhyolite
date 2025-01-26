@@ -1,9 +1,12 @@
 <script lang="ts">
   import CommandPaletteStore from "../stores/command-palette.store";
-  import DocumentService from "../services/document.service";
+  import DocumentService, {
+    runDummyCommand,
+  } from "../services/document.service";
   import TabService from "../services/tab.service";
   import { onDestroy } from "svelte";
   import ContentEditorStore from "../stores/content-editor.store";
+  import { listen } from "@tauri-apps/api/event";
 
   let selectedIndex: number = $state(-1);
   let searchText: string = $state("");
@@ -14,14 +17,28 @@
     action: () => void;
   }
 
+  $effect(() => {
+    const unlisten = listen("dummy-event", (...args) => {
+      console.log("dummy-event fired with ", args);
+    });
+    return () => unlisten.then((s) => s());
+  });
+
   let commands: Command[] = [
     {
-       name: "Delete Tab",
-       shortcut: "Ctrl + D",
-       action: () => {
-         DocumentService.deleteDocumentTab();
-         CommandPaletteStore.toggleVisibility();
-       },
+      name: "Delete Tab",
+      shortcut: "Ctrl + D",
+      action: () => {
+        DocumentService.deleteDocumentTab();
+        CommandPaletteStore.toggleVisibility();
+      },
+    },
+    {
+      name: "Execute dummy command",
+      shortcut: "Ctrl + D",
+      action: () => {
+        runDummyCommand({ cmd: "dummy", payload: { hi: 2 } });
+      },
     },
     {
       name: "Close Tab",
@@ -71,13 +88,6 @@
         CommandPaletteStore.toggleVisibility();
       },
     },
-    // ...Array(5)
-    //   .fill(undefined)
-    //   .map((_, i) => ({
-    //     name: `Dummy Command ${i}`,
-    //     shortcut: `Ctrl + ${i}`,
-    //     action: () => {},
-    //   })),
   ];
 
   function handleKeydown(event: KeyboardEvent) {
