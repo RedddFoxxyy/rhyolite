@@ -4,9 +4,7 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
 
-use crate::
-    editor::io::get_documents_dir
-;
+use crate::editor::io::get_documents_dir;
 
 ///DocumentData struct, datatype that stores id, title and content of the document.
 #[derive(Serialize, Deserialize, Clone)]
@@ -47,6 +45,11 @@ pub struct CommandRegistry {
     // TODO: indexmap or hashmap ?
     pub commands: IndexMap<String, CommandItem>,
 }
+// impl CommandRegistry {
+//     fn add_command(&self, command_item: CommandItem) {
+//         self.commands.
+//     }
+// }
 
 #[derive(Debug)]
 pub struct Document {

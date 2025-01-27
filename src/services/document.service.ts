@@ -10,17 +10,18 @@ const apiProvider = new ApiProvider();
 
 const getAllDocumentTabs = async (): Promise<Tab[]> => {
   const tabs: Tab[] = await apiProvider.getAllDocumentTabs();
+  invoke("update_states");
   return tabsStore.updateTabsState(tabs);
 };
 
 export const addNewDocumentTab = async (): Promise<void> => {
   try {
-
     const newTab: Tab = await apiProvider.addNewDocumentTab();
     tabsStore.updateCurrentTabState(newTab);
+    invoke("update_states");
 
-    let tabs: Tab[] = await getAllDocumentTabs();
-    tabsStore.updateTabsState(tabs);
+    // let tabs: Tab[] = await getAllDocumentTabs();
+    // tabsStore.updateTabsState(tabs);
 
     await apiProvider.sendCurrentOpenTab(newTab.id);
   } catch (error) {
@@ -43,6 +44,7 @@ const deleteDocumentTab = async (): Promise<void> => {
     } else {
       await addNewDocumentTab();
     }
+    invoke("update_states");
   } catch (error) {
     console.error("Failed to delete document:", error);
   }
@@ -110,8 +112,8 @@ const loadDocument = async (
 };
 
 export const runDummyCommand = async (payload: Record<string, any>) => {
-  invoke('exec_command', payload)
-}
+  invoke("exec_command", payload);
+};
 
 export default {
   getAllDocumentTabs,

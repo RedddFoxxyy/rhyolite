@@ -34,6 +34,7 @@ pub fn run() {
             editor::io::delete_document,
             editor::io::get_document_content,
             editor::io::get_recent_files_metadata,
+            editor::tabs::update_states,
             editor::tabs::new_tab,
             editor::tabs::load_tab,
             editor::tabs::get_tabs,
