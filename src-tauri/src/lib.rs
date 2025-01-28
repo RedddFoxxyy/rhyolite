@@ -1,6 +1,6 @@
-use app_state::{AppStateInner, RecentFileInfo};
+use app_state::{AppState, AppStateInner, RecentFileInfo};
 use std::sync::Mutex;
-use tauri::{Manager, WindowEvent};
+use tauri::{AppHandle, Manager, WindowEvent};
 mod app_state;
 mod commands;
 mod editor;
@@ -14,6 +14,7 @@ pub fn run() {
             app.manage(Mutex::new(
                 AppStateInner::load().expect("Failed to load config"),
             ));
+            crate::commands::add_commands_to_registry(app.app_handle().to_owned());
             Ok(())
         })
         .on_window_event(|window, event| {

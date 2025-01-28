@@ -1,5 +1,5 @@
 //! This module provides document tabs related functions for the app.
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Manager, State};
 use uuid::Uuid;
 
 use crate::app_state::{AppState, Tab};
@@ -52,13 +52,15 @@ pub fn get_tabs(state: State<'_, AppState>) -> Result<Vec<Tab>, String> {
 }
 
 #[tauri::command]
-pub fn update_states(app: AppHandle, state: State<'_, AppState>) {
-    event_emitter(app, state);
+pub fn update_states(app: AppHandle) {
+    event_emitter(app);
 }
 
 #[tauri::command]
-pub fn new_tab(app: AppHandle, state: State<'_, AppState>) -> Result<Tab, String> {
+pub fn new_tab(app: AppHandle) -> Result<Tab, String> {
     log::debug!("new_tab init");
+    let temp_app = app.clone();
+    let state = temp_app.state::<AppState>();
     let orig_state = &state;
     let mut state = state.lock().unwrap();
 
@@ -108,7 +110,7 @@ pub fn new_tab(app: AppHandle, state: State<'_, AppState>) -> Result<Tab, String
     std::mem::drop(state);
     save_user_data(orig_state)?;
     let _ = save_document(new_id, title, String::new(), orig_state.to_owned());
-    event_emitter(app, orig_state.to_owned());
+    event_emitter(app);
 
     Ok(new_tab)
 }
@@ -163,7 +165,7 @@ pub fn load_tab(
     state: State<'_, AppState>,
 ) -> Result<Tab, String> {
     log::debug!("load_tab init");
-    let orig_state = &state;
+    // let orig_state = &state;
     let mut state = state.lock().unwrap();
     let tabs = &mut state.tab_switcher.get_mut().unwrap().tabs;
 
@@ -174,7 +176,7 @@ pub fn load_tab(
 
     tabs.insert(id, new_tab.clone());
     std::mem::drop(state);
-    event_emitter(app, orig_state.to_owned());
+    event_emitter(app);
 
     Ok(new_tab)
 }
@@ -186,7 +188,7 @@ pub fn close_tab(
     state: State<'_, AppState>,
 ) -> Result<Option<String>, String> {
     log::debug!("close_tab init");
-    let orig_state = &state;
+    // let orig_state = &state;
     let mut state = state.lock().unwrap();
     let tab_switcher = &mut state.tab_switcher.get_mut().unwrap();
     let tabs = &mut tab_switcher.tabs;
@@ -207,7 +209,7 @@ pub fn close_tab(
             tab_switcher.current_tab_id = Some(next_id.clone());
         }
         std::mem::drop(state);
-        event_emitter(app, orig_state.to_owned());
+        event_emitter(app);
 
         Ok(next_tab_id)
     } else {

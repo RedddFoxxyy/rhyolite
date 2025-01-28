@@ -1,18 +1,44 @@
-use crate::app_state::{AppState, Tab};
-use tauri::{AppHandle, Emitter, State};
+use crate::app_state::{AppState, CommandItem, Tab};
+use crate::editor::{io, tabs};
+use tauri::{AppHandle, Emitter, Manager, State};
 
 #[tauri::command]
 pub fn exec_command(cmd: String, payload: serde_json::Value, app: AppHandle) {
     log::debug!("exec command '{}' called with '{}'", cmd, payload);
-    log::debug!("payload is object: '{}'", payload.is_object());
-    if payload.is_object() {
-        let value = payload.as_object().unwrap().get("hi");
-        log::debug!("value of hi: '{:?}'", value);
+
+    let state = app.state::<AppState>();
+    let mut state_lock = state.lock().unwrap();
+
+    if let Some(command_item) = state_lock.command_registry.commands.get_mut(&cmd) {
+        std::mem::drop(state_lock);
+        (command_item.action)(app.clone(), payload.to_string());
+    } else {
+        log::debug!("Unknown command: {}", cmd);
+        if payload.is_object() {
+            let value = payload.as_object().unwrap().get("hi");
+            log::debug!("value of hi: '{:?}'", value);
+        }
+        let _ = app.emit("dummy-event", "hellllo");
     }
-    let _ = app.emit("dummy-event", "hellllo");
 }
 
-pub fn event_emitter(app: AppHandle, state: State<'_, AppState>) {
+pub fn add_commands_to_registry(app: AppHandle) {
+    let app_state = app.state::<AppState>();
+    let mut state_lock = app_state.lock().unwrap();
+
+    // let state = state.clone();
+    state_lock.command_registry.add_command(CommandItem {
+        name: "new_tab".to_string(),
+        action: Box::new(move |app: AppHandle, _: String| {
+            if let Ok(tab) = tabs::new_tab(app) {
+                log::debug!("Created new tab");
+            }
+        }),
+    });
+}
+
+pub fn event_emitter(app: AppHandle) {
+    let state = app.state::<AppState>();
     let current_state = state.lock().unwrap();
     let current_tab_id;
     {

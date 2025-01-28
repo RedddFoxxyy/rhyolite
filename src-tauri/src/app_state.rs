@@ -45,11 +45,12 @@ pub struct CommandRegistry {
     // TODO: indexmap or hashmap ?
     pub commands: IndexMap<String, CommandItem>,
 }
-// impl CommandRegistry {
-//     fn add_command(&self, command_item: CommandItem) {
-//         self.commands.
-//     }
-// }
+impl CommandRegistry {
+    pub fn add_command(&mut self, command_item: CommandItem) {
+        self.commands
+            .insert(command_item.name.clone(), command_item);
+    }
+}
 
 #[derive(Debug)]
 pub struct Document {
