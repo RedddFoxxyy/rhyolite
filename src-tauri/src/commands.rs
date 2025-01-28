@@ -10,7 +10,6 @@ pub fn exec_command(cmd: String, payload: serde_json::Value, app: AppHandle) {
     let mut state_lock = state.lock().unwrap();
 
     if let Some(command_item) = state_lock.command_registry.commands.get_mut(&cmd) {
-        std::mem::drop(state_lock);
         (command_item.action)(app.clone(), payload.to_string());
     } else {
         log::debug!("Unknown command: {}", cmd);
