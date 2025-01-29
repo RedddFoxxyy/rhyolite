@@ -1,6 +1,6 @@
 use crate::app_state::{AppState, CommandItem, Tab};
 use crate::editor::{io, tabs};
-use std::sync::{Arc, Mutex};
+// use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager, State};
 
 #[tauri::command]
@@ -42,7 +42,28 @@ pub fn add_commands_to_registry(app: AppHandle) {
 pub fn event_emitter(app: AppHandle) {
     let state = app.state::<AppState>();
     let current_state = state;
-    let current_tab_id;
+
+
+    // Get current tab ID, create new tab if none exists
+    let current_tab_id = {
+        let tab_switcher = current_state.tab_switcher.lock().unwrap();
+        match &tab_switcher.current_tab_id {
+            Some(id) => id.clone(),
+            None => {
+                // Release the lock before creating a new tab
+                drop(tab_switcher);
+                match tabs::new_tab(app.clone()) {
+                    Ok(new_tab) => new_tab.id,
+                    Err(e) => {
+                        log::error!("Failed to create new tab: {}", e);
+                        return; // Exit the function if we can't create a new tab
+                    }
+                }
+            }
+        }
+    };
+
+    // Emit all the tabs
     {
         let tabs: Vec<Tab> = current_state
             .tab_switcher
@@ -54,24 +75,12 @@ pub fn event_emitter(app: AppHandle) {
             .collect();
         let _ = app.emit("Tabs", tabs);
     }
+
+    // Emit current tab
     {
-        current_tab_id = current_state
-            .tab_switcher
-            .lock()
-            .unwrap()
-            .current_tab_id
-            .clone()
-            .unwrap();
-    }
-    {
-        let current_tab = current_state
-            .tab_switcher
-            .lock()
-            .unwrap()
-            .tabs
-            .get(&current_tab_id)
-            .map(|tab| (*tab).clone())
-            .unwrap();
-        let _ = app.emit("Current_Tab", current_tab);
+        let tab_switcher = current_state.tab_switcher.lock().unwrap();
+        if let Some(current_tab) = tab_switcher.tabs.get(&current_tab_id) {
+            let _ = app.emit("Current_Tab", current_tab.clone());
+        }
     }
 }

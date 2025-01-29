@@ -19,7 +19,7 @@ export const addNewDocumentTab = async (): Promise<void> => {
     invoke("exec_command", { cmd: "new_tab", payload: { hi: 2 } });
     // const newTab: Tab = await apiProvider.addNewDocumentTab();
     //tabsStore.updateCurrentTabState(newTab);
-    invoke("update_states");
+    // invoke("update_states");
 
     // let tabs: Tab[] = await getAllDocumentTabs();
     // tabsStore.updateTabsState(tabs);
