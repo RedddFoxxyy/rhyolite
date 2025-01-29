@@ -11,9 +11,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_log::Builder::new().build())
         .setup(|app| {
-            app.manage(Mutex::new(
-                AppStateInner::load().expect("Failed to load config"),
-            ));
+            app.manage(AppStateInner::load().expect("Failed to load config"));
             crate::commands::add_commands_to_registry(app.app_handle().to_owned());
             Ok(())
         })

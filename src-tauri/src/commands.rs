@@ -1,5 +1,6 @@
 use crate::app_state::{AppState, CommandItem, Tab};
 use crate::editor::{io, tabs};
+use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager, State};
 
 #[tauri::command]
@@ -22,23 +23,24 @@ pub fn exec_command(cmd: String, payload: serde_json::Value, app: AppHandle) {
 }
 
 pub fn add_commands_to_registry(app: AppHandle) {
-    let app_state = app.state::<AppState>();
-    let mut state_lock = app_state.lock().unwrap();
-
     // let state = state.clone();
-    state_lock.command_registry.add_command(CommandItem {
-        name: "new_tab".to_string(),
-        action: Box::new(move |app: AppHandle, _: String| {
-            if let Ok(tab) = tabs::new_tab(app) {
-                log::debug!("Created new tab");
-            }
-        }),
+    let action = Box::new(move |app: AppHandle, _: String| {
+        if let Ok(tab) = tabs::new_tab(app) {
+            log::debug!("created new tab");
+        }
     });
+
+    let app_state = app.state::<AppState>();
+
+    if let Ok(mut command_registry) = app_state.command_registry.lock() {
+        command_registry.add_command("new_tab".to_string(), action);
+    }
+    //command_registry.add_command("new_tab".to_string(), action);
 }
 
 pub fn event_emitter(app: AppHandle) {
     let state = app.state::<AppState>();
-    let current_state = state.lock().unwrap();
+    let current_state = state;
     let current_tab_id;
     {
         let tabs: Vec<Tab> = current_state

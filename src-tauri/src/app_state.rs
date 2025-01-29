@@ -1,4 +1,8 @@
-use std::{fs, path::PathBuf, sync::Mutex};
+use std::{
+    fs,
+    path::PathBuf,
+    sync::{Arc, Mutex},
+};
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -37,7 +41,7 @@ pub struct TabSwitcher {
 
 pub struct CommandItem {
     pub name: String,
-    pub action: Box<dyn FnMut(AppHandle, String) + Send + 'static>,
+    pub action: Arc<Mutex<Box<dyn FnMut(AppHandle, String) + Send + 'static>>>,
 }
 
 #[derive(Default)]
@@ -46,9 +50,18 @@ pub struct CommandRegistry {
     pub commands: IndexMap<String, CommandItem>,
 }
 impl CommandRegistry {
-    pub fn add_command(&mut self, command_item: CommandItem) {
-        self.commands
-            .insert(command_item.name.clone(), command_item);
+    pub fn add_command(
+        &mut self,
+        name: String,
+        action: Box<dyn FnMut(AppHandle, String) + Send + 'static>,
+    ) {
+        self.commands.insert(
+            name.clone(),
+            CommandItem {
+                name,
+                action: Arc::new(Mutex::new(action)),
+            },
+        );
     }
 }
 
@@ -81,7 +94,7 @@ pub struct AppStateInner {
     /// 2. multiple states which are mutex in themselves and are registered using multiple calls to
     ///    app.manage()
     pub tab_switcher: Mutex<TabSwitcher>,
-    pub command_registry: CommandRegistry,
+    pub command_registry: Mutex<CommandRegistry>,
     pub workspace: WorkSpace,
 }
 
@@ -134,4 +147,4 @@ impl AppStateInner {
     }
 }
 
-pub type AppState = Mutex<AppStateInner>;
+pub type AppState = AppStateInner;
