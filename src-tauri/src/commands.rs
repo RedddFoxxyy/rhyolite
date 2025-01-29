@@ -8,10 +8,10 @@ pub fn exec_command(cmd: String, payload: serde_json::Value, app: AppHandle) {
     log::debug!("exec command '{}' called with '{}'", cmd, payload);
 
     let state = app.state::<AppState>();
-    let mut state_lock = state.lock().unwrap();
 
-    if let Some(command_item) = state_lock.command_registry.commands.get_mut(&cmd) {
-        (command_item.action)(app.clone(), payload.to_string());
+    if let Some(command_item) = state.command_registry.lock().unwrap().commands.get_mut(&cmd) {
+        let mut action = command_item.action.lock().unwrap();
+        (action)(app.clone(), payload.to_string());
     } else {
         log::debug!("Unknown command: {}", cmd);
         if payload.is_object() {
@@ -19,7 +19,7 @@ pub fn exec_command(cmd: String, payload: serde_json::Value, app: AppHandle) {
             log::debug!("value of hi: '{:?}'", value);
         }
         let _ = app.emit("dummy-event", "hellllo");
-    }
+    };
 }
 
 pub fn add_commands_to_registry(app: AppHandle) {

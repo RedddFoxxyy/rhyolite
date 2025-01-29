@@ -95,7 +95,7 @@ pub struct AppStateInner {
     ///    app.manage()
     pub tab_switcher: Mutex<TabSwitcher>,
     pub command_registry: Mutex<CommandRegistry>,
-    pub workspace: WorkSpace,
+    pub workspace: Mutex<WorkSpace>,
 }
 
 impl AppStateInner {
@@ -131,7 +131,7 @@ impl AppStateInner {
                                 workspace: WorkSpace {
                                     recent_files,
                                     ..Default::default()
-                                },
+                                }.into(),
                                 ..Default::default()
                             });
                         }

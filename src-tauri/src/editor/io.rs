@@ -56,13 +56,12 @@ pub fn get_trove_dir(trove_name: &str) -> PathBuf {
 pub fn on_app_close(window: &Window) {
     log::debug!("on_app_close init");
     let state = window.state::<AppState>();
-    let mut state = state.lock().unwrap();
-    let tab_switcher = &mut state.tab_switcher.get_mut().unwrap();
+    let tab_switcher = &mut state.tab_switcher.lock().unwrap();
 
     let user_data = UserData {
         tabs: tab_switcher.tabs.values().cloned().collect::<Vec<_>>(),
         last_open_tab: tab_switcher.current_tab_id.clone().unwrap(),
-        recent_files: state.workspace.recent_files.clone(),
+        recent_files: state.workspace.lock().unwrap().recent_files.clone(),
     };
 
     let appdata_dir = get_documents_dir().join("appdata");
@@ -81,15 +80,15 @@ pub fn on_app_close(window: &Window) {
 
 /// This function saves the user data to the userdata.json file.
 pub fn save_user_data(state: &State<'_, AppState>) -> Result<(), String> {
-    let mut state_lock = state.lock().unwrap();
-    let tabswitcher = &mut state_lock.tab_switcher.get_mut().unwrap();
+    let state_lock = state;
+    let tabswitcher = &mut state_lock.tab_switcher.lock().unwrap();
 
     // Convert HashMap values to Vec for storage
     let tabs_vec: Vec<_> = tabswitcher.tabs.values().cloned().collect();
     let user_data = UserData {
         tabs: tabs_vec,
         last_open_tab: tabswitcher.current_tab_id.clone().unwrap(),
-        recent_files: state_lock.workspace.recent_files.clone(),
+        recent_files: state_lock.workspace.lock().unwrap().recent_files.clone(),
     };
 
     let appdata_dir = get_documents_dir().join("appdata");
@@ -112,16 +111,17 @@ pub fn save_document(
     state: State<'_, AppState>,
 ) -> Result<String, String> {
     log::debug!("save_document init");
-    let mut state = state.lock().unwrap();
+    let state = state;
     if let Some(doc) = state
         .workspace
+        .lock().unwrap()
         .recent_files
         .iter_mut()
         .find(|doc| doc.id == id)
     {
         doc.title = title.clone();
     } else {
-        state.workspace.recent_files.push(RecentFileInfo {
+        state.workspace.lock().unwrap().recent_files.push(RecentFileInfo {
             id: id.clone(),
             title: title.clone(),
         });
@@ -139,7 +139,7 @@ pub fn save_document(
     // Get the old title and path(Old title is the title of the document before saving, if changed)
     let old_title = state
         .tab_switcher
-        .get_mut()
+        .lock()
         .unwrap()
         .tabs
         .get(&id)
@@ -166,8 +166,7 @@ pub fn delete_document(
 ) -> Result<Option<DocumentData>, String> {
     log::debug!("delete_document init");
     let orig_state = &state;
-    let mut state_lock = state.lock().unwrap();
-    let tabswitcher = state_lock.tab_switcher.get_mut().unwrap();
+    let mut tabswitcher = state.tab_switcher.lock().unwrap();
     let tabs = &mut tabswitcher.tabs;
 
     if !tabs.contains_key(&id) {
@@ -223,10 +222,10 @@ pub fn delete_document(
         }
 
         // Remove the document from the recent files
-        state_lock.workspace.recent_files.retain(|doc| doc.id != id);
+        state.workspace.lock().unwrap().recent_files.retain(|doc| doc.id != id);
 
         // Save changes to userdata.json
-        std::mem::drop(state_lock);
+        // std::mem::drop(state_lock);
         save_user_data(orig_state)?;
 
         // Return the next tab as Some(DocumentData) if it exists else None
@@ -284,10 +283,9 @@ pub fn load_last_open_tabs(state: State<'_, AppState>) -> Result<Vec<DocumentDat
                 // Deserialize the UserData using serde_json
                 match serde_json::from_str::<UserData>(&content) {
                     Ok(user_data) => {
-                        let mut state = state.lock().unwrap();
                         // Lock the mutexes and update the values
-                        state.workspace.recent_files = user_data.recent_files.clone();
-                        let tabswitcher = &mut state.tab_switcher.get_mut().unwrap();
+                        state.workspace.lock().unwrap().recent_files = user_data.recent_files.clone();
+                        let tabswitcher = &mut state.tab_switcher.lock().unwrap();
 
                         // Create a vector to store the last open files
                         let mut last_open_files = Vec::new();
