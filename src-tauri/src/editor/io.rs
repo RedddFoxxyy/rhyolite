@@ -56,12 +56,17 @@ pub fn get_trove_dir(trove_name: &str) -> PathBuf {
 pub fn on_app_close(window: &Window) {
     log::debug!("on_app_close init");
     let state = window.state::<AppState>();
-    let tab_switcher = &mut state.tab_switcher.lock().unwrap();
+    // let tab_switcher = &mut state.tab_switcher.lock().unwrap();
 
-    let user_data = UserData {
-        tabs: tab_switcher.tabs.values().cloned().collect::<Vec<_>>(),
-        last_open_tab: tab_switcher.current_tab_id.clone().unwrap(),
-        recent_files: state.workspace.lock().unwrap().recent_files.clone(),
+    let user_data = {
+        let tab_switcher = state.tab_switcher.lock().unwrap();
+        let workspace = state.workspace.lock().unwrap();
+        
+        UserData {
+            tabs: tab_switcher.tabs.values().cloned().collect::<Vec<_>>(),
+            last_open_tab: tab_switcher.current_tab_id.clone().unwrap(),
+            recent_files: workspace.recent_files.clone(),
+        }
     };
 
     let appdata_dir = get_documents_dir().join("appdata");
@@ -80,16 +85,17 @@ pub fn on_app_close(window: &Window) {
 
 /// This function saves the user data to the userdata.json file.
 pub fn save_user_data(state: &State<'_, AppState>) -> Result<(), String> {
-    let state_lock = state;
-    let tabswitcher = &mut state_lock.tab_switcher.lock().unwrap();
-
-    // Convert HashMap values to Vec for storage
-    let tabs_vec: Vec<_> = tabswitcher.tabs.values().cloned().collect();
-    let user_data = UserData {
-        tabs: tabs_vec,
-        last_open_tab: tabswitcher.current_tab_id.clone().unwrap(),
-        recent_files: state_lock.workspace.lock().unwrap().recent_files.clone(),
+    let user_data = {
+        let tab_switcher = state.tab_switcher.lock().unwrap();
+        let workspace = state.workspace.lock().unwrap();
+        
+        UserData {
+            tabs: tab_switcher.tabs.values().cloned().collect(),
+            last_open_tab: tab_switcher.current_tab_id.clone().unwrap(),
+            recent_files: workspace.recent_files.clone(),
+        }
     };
+
 
     let appdata_dir = get_documents_dir().join("appdata");
     fs::create_dir_all(&appdata_dir).expect("Could not create appdata directory");
@@ -111,40 +117,34 @@ pub fn save_document(
     state: State<'_, AppState>,
 ) -> Result<String, String> {
     log::debug!("save_document init");
-    let state = state;
-    if let Some(doc) = state
-        .workspace
-        .lock().unwrap()
-        .recent_files
-        .iter_mut()
-        .find(|doc| doc.id == id)
+    
     {
-        doc.title = title.clone();
-    } else {
-        state.workspace.lock().unwrap().recent_files.push(RecentFileInfo {
-            id: id.clone(),
-            title: title.clone(),
-        });
+        let mut workspace = state.workspace.lock().unwrap();
+        if let Some(doc) = workspace.recent_files.iter_mut().find(|doc| doc.id == id) {
+            doc.title = title.clone();
+        } else {
+            workspace.recent_files.push(RecentFileInfo {
+                id: id.clone(),
+                title: title.clone(),
+            });
+        }
     }
-    // Create a vault directory within documents_dir
+
     let trove_dir = get_trove_dir("Untitled_Trove");
-
-    // Convert HTML to Markdown
     let markdown_content = markdown_handler::html_to_markdown(&content);
-
-    // Append .md to the title and sanitize it
     let safe_filename = sanitize_filename::sanitize(format!("{}.md", title));
     let file_path = trove_dir.join(&safe_filename);
 
-    // Get the old title and path(Old title is the title of the document before saving, if changed)
-    let old_title = state
-        .tab_switcher
-        .lock()
-        .unwrap()
-        .tabs
-        .get(&id)
-        .map(|tab| tab.title.clone())
-        .unwrap_or_else(|| String::from("Untitled"));
+    // Get the old title in a separate scope
+    let old_title = {
+        let tab_switcher = state.tab_switcher.lock().unwrap();
+        tab_switcher
+            .tabs
+            .get(&id)
+            .map(|tab| tab.title.clone())
+            .unwrap_or_else(|| String::from("Untitled"))
+    };
+
     let old_path = trove_dir.join(sanitize_filename::sanitize(format!("{}.md", old_title)));
 
     // if the title has changed, delete the old file
@@ -152,7 +152,6 @@ pub fn save_document(
         fs::remove_file(old_path).map_err(|e| format!("Failed to delete old file: {}", e))?;
     }
 
-    // Write markdown content directly to file
     match fs::write(&file_path, markdown_content) {
         Ok(_) => Ok(file_path.to_string_lossy().to_string()),
         Err(e) => Err(format!("Failed to write file: {}", e)),
@@ -166,74 +165,58 @@ pub fn delete_document(
 ) -> Result<Option<DocumentData>, String> {
     log::debug!("delete_document init");
     let orig_state = &state;
-    let mut tabswitcher = state.tab_switcher.lock().unwrap();
-    let tabs = &mut tabswitcher.tabs;
 
-    if !tabs.contains_key(&id) {
-        return Err("Tab not found".to_string());
-    }
+    // Get the tab information in a separate scope
+    let (tab_title, next_tab_info) = {
+        let tabswitcher = state.tab_switcher.lock().unwrap();
+        if !tabswitcher.tabs.contains_key(&id) {
+            return Err("Tab not found".to_string());
+        }
+        
+        let title = tabswitcher.tabs.get(&id).map(|tab| tab.title.clone()).unwrap();
+        let next = tabswitcher
+            .tabs
+            .get_index(0)
+            .or_else(|| tabswitcher.tabs.last())
+            .map(|(next_id, next_tab)| (next_id.clone(), next_tab.title.clone()));
+            
+        (title, next)
+    };
 
-    // Get the title of the document to be deleted from the tabs indexmap
-    let tab_title = tabs.get(&id).map(|tab| tab.title.clone()).unwrap();
-
-    // Get the path of the document to be deleted
-    let trove_dir = get_trove_dir("Untitled_Trove");
-
-    // Clean up stale entries that don't exist on disk
+    // Update tab switcher in a separate scope
     {
-        // NOTE: Why do it here ?
-        // Why do we even expect to have docs which don't exist on disk ?
-        // Even if there are such docs, why is this the right place to delete them ?
-
-        // tabs.retain(|_, tab| {
-        //     let file_path =
-        //         trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &tab.title)));
-        //     file_path.exists()
-        // });
-        //
-        // state.workspace.recent_files.retain(|file| {
-        //     let file_path =
-        //         trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &file.title)));
-        //     file_path.exists()
-        // });
+        let mut tabswitcher = state.tab_switcher.lock().unwrap();
+        tabswitcher.tabs.shift_remove(&id);
+        if let Some((next_id, _)) = &next_tab_info {
+            tabswitcher.current_tab_id = Some(next_id.clone());
+        }
     }
+
+    // Handle file operations
+    let trove_dir = get_trove_dir("Untitled_Trove");
     let filename = sanitize_filename::sanitize(format!("{}.md", tab_title));
     let file_path = trove_dir.join(&filename);
 
-    // Remove the tab and get its index(shift_remove_full returns the index of the removed tab)
-    if let Some((index, _, _)) = tabs.shift_remove_full(&id) {
-        // Get the tab at the same index (the one that shifted up)
-        // If no tab at that index, get the last tab
-        let next_tab =
-            if let Some((next_id, next_tab)) = tabs.get_index(index).or_else(|| tabs.last()) {
-                // Update current open tab
-                tabswitcher.current_tab_id = Some(next_id.clone());
-                // Get the document content for the next tab
-                get_document_content(next_id.clone(), next_tab.title.clone())?
-            } else {
-                None
-            };
-
-        // Check if the file exists
-        if file_path.exists() {
-            // Delete the file if it exists
-            fs::remove_file(&file_path)
-                .map_err(|e| format!("Failed to delete file {}: {}", file_path.display(), e))?;
-        }
-
-        // Remove the document from the recent files
-        state.workspace.lock().unwrap().recent_files.retain(|doc| doc.id != id);
-
-        // Save changes to userdata.json
-        // std::mem::drop(state_lock);
-        save_user_data(orig_state)?;
-
-        // Return the next tab as Some(DocumentData) if it exists else None
-        Ok(next_tab)
-    } else {
-        // If the tab is not found, return an error
-        Err("Tab not found".to_string())
+    if file_path.exists() {
+        fs::remove_file(&file_path)
+            .map_err(|e| format!("Failed to delete file {}: {}", file_path.display(), e))?;
     }
+
+    // Update recent files in a separate scope
+    {
+        let mut workspace = state.workspace.lock().unwrap();
+        workspace.recent_files.retain(|doc| doc.id != id);
+    }
+
+    save_user_data(orig_state)?;
+
+    // Get the content for the next tab
+    let next_tab = match next_tab_info {
+        Some((next_id, next_title)) => get_document_content(next_id, next_title)?,
+        None => None,
+    };
+
+    Ok(next_tab)
 }
 
 /// This function gets the content of the document by its id and title.
@@ -270,48 +253,48 @@ pub fn get_document_content(id: String, title: String) -> Result<Option<Document
 /// This function loads the tabs active/opened in the last app section.
 #[tauri::command]
 pub fn load_last_open_tabs(state: State<'_, AppState>) -> Result<Vec<DocumentData>, String> {
-    // Get the path of the userdata.json file
     log::debug!("load_last_open_tabs init");
     let appdata_dir = get_documents_dir().join("appdata");
     let userdata_path = appdata_dir.join("userdata.json");
 
-    // Check if userdata.json exists
     if userdata_path.exists() {
-        // Read and deserialize the UserData
         match fs::read_to_string(&userdata_path) {
-            Ok(content) => {
-                // Deserialize the UserData using serde_json
-                match serde_json::from_str::<UserData>(&content) {
-                    Ok(user_data) => {
-                        // Lock the mutexes and update the values
-                        state.workspace.lock().unwrap().recent_files = user_data.recent_files.clone();
-                        let tabswitcher = &mut state.tab_switcher.lock().unwrap();
+            Ok(content) => match serde_json::from_str::<UserData>(&content) {
+                Ok(user_data) => {
+                    // Update workspace in a separate scope
+                    {
+                        let mut workspace = state.workspace.lock().unwrap();
+                        workspace.recent_files = user_data.recent_files.clone();
+                    }
 
-                        // Create a vector to store the last open files
-                        let mut last_open_files = Vec::new();
-
+                    // Update tab switcher in a separate scope
+                    {
+                        let mut tabswitcher = state.tab_switcher.lock().unwrap();
                         tabswitcher.current_tab_id = Some(user_data.last_open_tab.clone());
-
-                        // Lock the tabs mutex and update the values
+                        
                         // Clear existing tabs and load from user_data
                         let tabs = &mut tabswitcher.tabs;
                         tabs.clear();
-                        for tab in user_data.tabs {
-                            // Try to load each document by ID
-                            match get_document_content(tab.id.clone(), tab.title.clone()) {
-                                Ok(Some(doc)) => {
-                                    last_open_files.push(doc);
-                                    tabs.insert(tab.id.clone(), tab.clone());
-                                }
-                                _ => continue,
-                            }
-                        }
-
-                        return Ok(last_open_files);
                     }
-                    Err(e) => return Err(format!("Failed to deserialize userdata: {}", e)),
+
+                    let mut last_open_files = Vec::new();
+
+                    // Process tabs and load documents
+                    for tab in user_data.tabs {
+                        match get_document_content(tab.id.clone(), tab.title.clone()) {
+                            Ok(Some(doc)) => {
+                                last_open_files.push(doc);
+                                let mut tabswitcher = state.tab_switcher.lock().unwrap();
+                                tabswitcher.tabs.insert(tab.id.clone(), tab.clone());
+                            }
+                            _ => continue,
+                        }
+                    }
+
+                    return Ok(last_open_files);
                 }
-            }
+                Err(e) => return Err(format!("Failed to deserialize userdata: {}", e)),
+            },
             Err(e) => return Err(format!("Failed to read userdata file: {}", e)),
         }
     }

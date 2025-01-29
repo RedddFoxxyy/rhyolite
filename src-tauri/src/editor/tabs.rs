@@ -71,6 +71,8 @@ pub fn new_tab(app: AppHandle) -> Result<Tab, String> {
                 trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &tab.title)));
             file_path.exists() && tab.title != title
         });
+    }
+    {
 
         state.workspace.lock().unwrap().recent_files.retain(|file| {
             let file_path =
@@ -86,20 +88,20 @@ pub fn new_tab(app: AppHandle) -> Result<Tab, String> {
     };
 
     // Insert into IndexMap
-    state
-        .tab_switcher
-        .lock()
-        .unwrap()
-        .tabs
-        .insert(new_id.clone(), new_tab.clone());
+    {
+        let mut tab_switcher = state.tab_switcher.lock().unwrap();
+        tab_switcher.tabs.insert(new_id.clone(), new_tab.clone());
+        tab_switcher.current_tab_id = Some(new_id.clone());
+    }
 
+    {
     state.workspace.lock().unwrap().recent_files.push(RecentFileInfo {
         id: new_id.clone(),
         // FIXME: hardcoded name may have conflict
         title: "Untitled".to_string(),
     });
+    }
 
-    state.tab_switcher.lock().unwrap().current_tab_id = Some(new_id.clone());
     save_user_data(orig_state)?;
     let _ = save_document(new_id, title, String::new(), orig_state.to_owned());
     event_emitter(app);
@@ -156,15 +158,17 @@ pub fn load_tab(
     state: State<'_, AppState>,
 ) -> Result<Tab, String> {
     log::debug!("load_tab init");
-    // let orig_state = &state;
-    let tabs = &mut state.tab_switcher.lock().unwrap().tabs;
 
     let new_tab = Tab {
         id: id.clone(),
         title,
     };
 
-    tabs.insert(id, new_tab.clone());
+    {
+        let mut tab_switcher = state.tab_switcher.lock().unwrap();
+        tab_switcher.tabs.insert(id, new_tab.clone());
+    }
+
     event_emitter(app);
 
     Ok(new_tab)
