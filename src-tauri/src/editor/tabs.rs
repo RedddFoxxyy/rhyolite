@@ -14,10 +14,8 @@ use super::io::{get_trove_dir, save_document, save_user_data};
 pub fn send_current_open_tab(id: String, state: State<'_, AppState>) {
     log::debug!("send_current_open_tab init");
     state
-        .lock()
-        .unwrap()
         .tab_switcher
-        .get_mut()
+        .lock()
         .unwrap()
         .current_tab_id = Some(id.clone());
 }
@@ -26,8 +24,6 @@ pub fn send_current_open_tab(id: String, state: State<'_, AppState>) {
 pub fn get_current_open_tab(state: State<'_, AppState>) -> Result<String, String> {
     log::debug!("get_current_open_tab init");
     return state
-        .lock()
-        .unwrap()
         .tab_switcher
         .lock()
         .unwrap()
@@ -40,8 +36,6 @@ pub fn get_current_open_tab(state: State<'_, AppState>) -> Result<String, String
 pub fn get_tabs(state: State<'_, AppState>) -> Result<Vec<Tab>, String> {
     log::debug!("get_tabs init");
     Ok(state
-        .lock()
-        .unwrap()
         .tab_switcher
         .lock()
         .unwrap()
@@ -62,7 +56,6 @@ pub fn new_tab(app: AppHandle) -> Result<Tab, String> {
     let temp_app = app.clone();
     let state = temp_app.state::<AppState>();
     let orig_state = &state;
-    let mut state = state.lock().unwrap();
 
     let new_id = Uuid::new_v4().to_string();
 
@@ -73,13 +66,13 @@ pub fn new_tab(app: AppHandle) -> Result<Tab, String> {
     // Clean up any stale entries in tabs and recent_files that don't exist on disk
     // but have the same title
     {
-        state.tab_switcher.get_mut().unwrap().tabs.retain(|_, tab| {
+        state.tab_switcher.lock().unwrap().tabs.retain(|_, tab| {
             let file_path =
                 trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &tab.title)));
             file_path.exists() && tab.title != title
         });
 
-        state.workspace.recent_files.retain(|file| {
+        state.workspace.lock().unwrap().recent_files.retain(|file| {
             let file_path =
                 trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &file.title)));
             file_path.exists() && file.title != title
@@ -95,19 +88,18 @@ pub fn new_tab(app: AppHandle) -> Result<Tab, String> {
     // Insert into IndexMap
     state
         .tab_switcher
-        .get_mut()
+        .lock()
         .unwrap()
         .tabs
         .insert(new_id.clone(), new_tab.clone());
 
-    state.workspace.recent_files.push(RecentFileInfo {
+    state.workspace.lock().unwrap().recent_files.push(RecentFileInfo {
         id: new_id.clone(),
         // FIXME: hardcoded name may have conflict
         title: "Untitled".to_string(),
     });
 
-    state.tab_switcher.get_mut().unwrap().current_tab_id = Some(new_id.clone());
-    std::mem::drop(state);
+    state.tab_switcher.lock().unwrap().current_tab_id = Some(new_id.clone());
     save_user_data(orig_state)?;
     let _ = save_document(new_id, title, String::new(), orig_state.to_owned());
     event_emitter(app);
@@ -139,8 +131,7 @@ pub fn update_tab_title(
     state: State<'_, AppState>,
 ) -> Result<Tab, String> {
     log::debug!("update_tab_title init");
-    let mut state = state.lock().unwrap();
-    let tabs = &mut state.tab_switcher.get_mut().unwrap().tabs;
+    let tabs = &mut state.tab_switcher.lock().unwrap().tabs;
 
     // Check if the new title already exists in other tabs
     if tabs.values().any(|tab| tab.id != id && tab.title == title) {
@@ -166,8 +157,7 @@ pub fn load_tab(
 ) -> Result<Tab, String> {
     log::debug!("load_tab init");
     // let orig_state = &state;
-    let mut state = state.lock().unwrap();
-    let tabs = &mut state.tab_switcher.get_mut().unwrap().tabs;
+    let tabs = &mut state.tab_switcher.lock().unwrap().tabs;
 
     let new_tab = Tab {
         id: id.clone(),
@@ -175,7 +165,6 @@ pub fn load_tab(
     };
 
     tabs.insert(id, new_tab.clone());
-    std::mem::drop(state);
     event_emitter(app);
 
     Ok(new_tab)
@@ -189,8 +178,7 @@ pub fn close_tab(
 ) -> Result<Option<String>, String> {
     log::debug!("close_tab init");
     // let orig_state = &state;
-    let mut state = state.lock().unwrap();
-    let tab_switcher = &mut state.tab_switcher.get_mut().unwrap();
+    let tab_switcher = &mut state.tab_switcher.lock().unwrap();
     let tabs = &mut tab_switcher.tabs;
 
     if tabs.is_empty() {
@@ -208,7 +196,6 @@ pub fn close_tab(
         if let Some(next_id) = &next_tab_id {
             tab_switcher.current_tab_id = Some(next_id.clone());
         }
-        std::mem::drop(state);
         event_emitter(app);
 
         Ok(next_tab_id)
