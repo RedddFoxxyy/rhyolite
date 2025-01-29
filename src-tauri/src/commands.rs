@@ -24,8 +24,9 @@ pub fn exec_command(cmd: String, payload: serde_json::Value, app: AppHandle) {
 
 pub fn add_commands_to_registry(app: AppHandle) {
     // let state = state.clone();
+    // let app_state_temp = app.clone();
     let action = Box::new(move |app: AppHandle, _: String| {
-        if let Ok(tab) = tabs::new_tab(app) {
+        if let Ok(tab) = tabs::new_tab(app.clone()) {
             log::debug!("created new tab");
         }
     });
@@ -34,7 +35,7 @@ pub fn add_commands_to_registry(app: AppHandle) {
 
     if let Ok(mut command_registry) = app_state.command_registry.lock() {
         command_registry.add_command("new_tab".to_string(), action);
-    }
+    };
     //command_registry.add_command("new_tab".to_string(), action);
 }
 
