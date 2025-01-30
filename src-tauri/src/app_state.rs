@@ -65,6 +65,10 @@ impl CommandRegistry {
     }
 }
 
+pub trait CommandRegistrar {
+    fn register_commands(registry: &mut CommandRegistry);
+}
+
 #[derive(Debug)]
 pub struct Document {
     pub path: PathBuf,
@@ -131,7 +135,8 @@ impl AppStateInner {
                                 workspace: WorkSpace {
                                     recent_files,
                                     ..Default::default()
-                                }.into(),
+                                }
+                                .into(),
                                 ..Default::default()
                             });
                         }

@@ -2,7 +2,7 @@
 use tauri::{AppHandle, Manager, State};
 use uuid::Uuid;
 
-use crate::app_state::{AppState, Tab};
+use crate::app_state::{AppState, CommandRegistrar, CommandRegistry, Tab};
 use crate::commands::event_emitter;
 
 use crate::RecentFileInfo;
@@ -10,14 +10,98 @@ use std::path::Path;
 
 use super::io::{get_trove_dir, save_document, save_user_data};
 
+pub struct TabCommands;
+impl TabCommands {
+    pub fn new_tab(app: AppHandle, _payload: String) {
+        log::debug!("new_tab init");
+        let temp_app = app.clone();
+        let state = temp_app.state::<AppState>();
+        let orig_state = &state;
+
+        let new_id = Uuid::new_v4().to_string();
+
+        let trove_dir = get_trove_dir("Untitled_Trove");
+
+        let title = TabCommands.check_path_exists(&trove_dir);
+
+        // Clean up any stale entries in tabs and recent_files that don't exist on disk
+        // but have the same title
+        {
+            state.tab_switcher.lock().unwrap().tabs.retain(|_, tab| {
+                let file_path =
+                    trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &tab.title)));
+                file_path.exists() && tab.title != title
+            });
+        }
+        {
+            state.workspace.lock().unwrap().recent_files.retain(|file| {
+                let file_path =
+                    trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &file.title)));
+                file_path.exists() && file.title != title
+            });
+        }
+
+        // Create new tab
+        let new_tab = Tab {
+            id: new_id.clone(),
+            title: title.clone(),
+        };
+
+        // Insert into IndexMap
+        {
+            let mut tab_switcher = state.tab_switcher.lock().unwrap();
+            tab_switcher.tabs.insert(new_id.clone(), new_tab.clone());
+            tab_switcher.current_tab_id = Some(new_id.clone());
+        }
+
+        {
+            state
+                .workspace
+                .lock()
+                .unwrap()
+                .recent_files
+                .push(RecentFileInfo {
+                    id: new_id.clone(),
+                    // FIXME: hardcoded name may have conflict
+                    title: "Untitled".to_string(),
+                });
+        }
+
+        let _ = save_user_data(orig_state);
+        let _ = save_document(new_id, title, String::new(), orig_state.to_owned());
+        event_emitter(app);
+    }
+
+    fn check_path_exists(&self, trove_dir: &Path) -> String {
+        let mut iteration: u32 = 0;
+        loop {
+            let title = if iteration == 0 {
+                sanitize_filename::sanitize("Untitled.md")
+            } else {
+                sanitize_filename::sanitize(format!("Untitled {}.md", &iteration))
+            };
+
+            let file_path = trove_dir.join(&title);
+            if !file_path.exists() {
+                return title.strip_suffix(".md").unwrap_or(&title).to_string();
+            }
+            iteration += 1;
+        }
+    }
+}
+
+impl CommandRegistrar for TabCommands {
+    fn register_commands(registry: &mut CommandRegistry) {
+        // Register the methods directly
+        registry.add_command("new_tab".to_string(), Box::new(Self::new_tab));
+        // etc...
+    }
+}
+
 #[tauri::command]
 pub fn send_current_open_tab(id: String, state: State<'_, AppState>) {
     log::debug!("send_current_open_tab init");
-    state
-        .tab_switcher
-        .lock()
-        .unwrap()
-        .current_tab_id = Some(id.clone());
+    state.tab_switcher.lock().unwrap().current_tab_id = Some(id.clone());
 }
 
 #[tauri::command]
@@ -73,7 +157,6 @@ pub fn new_tab(app: AppHandle) -> Result<Tab, String> {
         });
     }
     {
-
         state.workspace.lock().unwrap().recent_files.retain(|file| {
             let file_path =
                 trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &file.title)));
@@ -95,11 +178,16 @@ pub fn new_tab(app: AppHandle) -> Result<Tab, String> {
     }
 
     {
-    state.workspace.lock().unwrap().recent_files.push(RecentFileInfo {
-        id: new_id.clone(),
-        // FIXME: hardcoded name may have conflict
-        title: "Untitled".to_string(),
-    });
+        state
+            .workspace
+            .lock()
+            .unwrap()
+            .recent_files
+            .push(RecentFileInfo {
+                id: new_id.clone(),
+                // FIXME: hardcoded name may have conflict
+                title: "Untitled".to_string(),
+            });
     }
 
     save_user_data(orig_state)?;
