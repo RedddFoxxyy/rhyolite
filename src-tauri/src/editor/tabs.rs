@@ -138,6 +138,10 @@ impl TabCommands {
             log::debug!("Failed to parse JSON payload");
         }
     }
+
+    pub fn update_states(app: AppHandle, _payload: String) {
+        event_emitter(app);
+    }
 }
 
 impl CommandRegistrar for TabCommands {
@@ -145,8 +149,7 @@ impl CommandRegistrar for TabCommands {
         // Register the methods directly
         registry.add_command("new_tab".to_string(), Box::new(Self::new_tab));
         registry.add_command("close_tab".to_string(), Box::new(Self::close_tab));
-
-        // etc...
+        registry.add_command("update_states".to_string(), Box::new(Self::update_states));
     }
 }
 

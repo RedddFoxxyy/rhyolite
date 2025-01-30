@@ -1,9 +1,15 @@
 use crate::app_state::{AppState, CommandRegistrar, Tab};
 use crate::editor::tabs::TabCommands;
-use crate::editor::{io, tabs};
+use crate::editor::tabs;
 // use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager};
 
+
+/// TODO: The current organisation of exec_command function is not good
+/// We might need to change this and make it better and scalable.
+/// 
+/// 1. Improve handling of incoming payload(json).
+/// 2. Add more error handling so that app does not panic!
 #[tauri::command]
 pub fn exec_command(cmd: String, payload: serde_json::Value, app: AppHandle) {
     log::debug!("exec command '{}' called with '{}'", cmd, payload);
@@ -29,7 +35,8 @@ pub fn exec_command(cmd: String, payload: serde_json::Value, app: AppHandle) {
     };
 }
 
-pub fn add_commands_to_registry(app: AppHandle) {
+
+pub fn load_default_commands(app: AppHandle) {
     let app_state = app.state::<AppState>();
 
     if let Ok(mut command_registry) = app_state.command_registry.lock() {
