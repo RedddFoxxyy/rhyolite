@@ -37,11 +37,11 @@
 
   onMount(() => {
     // TabsStore.initTabsStore();
-    // Listen for the 'counter-updated' event from the backend
+    // Listen for the 'Tabs' event from the backend
     const tabslisten = listen<Tab[]>("Tabs", (event) => {
       tabs = event.payload;
     });
-    const currentTablisten = listen<Tab>("Tabs", (event) => {
+    const currentTablisten = listen<Tab>("Current_Tab", (event) => {
       // Update the Svelte store with the new counter value
       currentTab = event.payload;
     });
