@@ -89,32 +89,53 @@ impl TabCommands {
         }
     }
 
-    pub fn close_tab(app: AppHandle, id: String) {
+    pub fn close_tab(app: AppHandle, payload: String) {
         log::debug!("close_tab init");
-        // let orig_state = &state;
-        let temp_app = app.clone();
-        let state = temp_app.state::<AppState>();
-        let tab_switcher = &mut state.tab_switcher.lock().unwrap();
-        let tabs = &mut tab_switcher.tabs;
-
-        if tabs.is_empty() {
-            return; // Don't close the last tab
-        }
-
-        if let Some((index, _, _)) = tabs.shift_remove_full(&id) {
-            // Get the next tab ID (either at same index or last tab)
-            let next_tab_id = tabs
-                .get_index(index)
-                .or_else(|| tabs.last())
-                .map(|(id, _)| id.clone());
-
-            // Update current open tab if needed
-            if let Some(next_id) = &next_tab_id {
-                tab_switcher.current_tab_id = Some(next_id.clone());
+        
+        // Parse the JSON payload
+        if let Ok(json_value) = serde_json::from_str::<serde_json::Value>(&payload) {
+            if let Some(tab_id) = json_value.get("tabId").and_then(|v| v.as_str()) {
+                let temp_app = app.clone();
+                let state = temp_app.state::<AppState>();
+                
+                // Get next tab ID in a separate scope to minimize lock time
+                let next_tab_id = {
+                    let tab_switcher = state.tab_switcher.lock().unwrap();
+                    let tabs = &tab_switcher.tabs;
+                    
+                    if tabs.is_empty() {
+                        return; // Don't close the last tab
+                    }
+    
+                    if let Some((index, _, _)) = tabs.get_full(tab_id) {
+                        // Get the next tab ID (either at same index or last tab)
+                        tabs.get_index(index + 1)
+                            .or_else(|| tabs.last())
+                            .map(|(id, _)| id.clone())
+                    } else {
+                        None
+                    }
+                };
+    
+                // Update tabs in a separate lock scope
+                {
+                    let mut tab_switcher = state.tab_switcher.lock().unwrap();
+                    tab_switcher.tabs.shift_remove(tab_id);
+                    
+                    // Update current open tab if needed
+                    if let Some(next_id) = next_tab_id {
+                        tab_switcher.current_tab_id = Some(next_id);
+                    }
+                }
+    
+                // Call event emitter after releasing the lock
+                event_emitter(app);
+                
+            } else {
+                log::debug!("Invalid JSON payload format: missing or invalid tabId field");
             }
-            event_emitter(app);
         } else {
-            log::debug!("Tab not found.");
+            log::debug!("Failed to parse JSON payload");
         }
     }
 }
