@@ -21,24 +21,25 @@ const switchTab = async (tabId: string): Promise<Tab | undefined> => {
 const closeTab = async (tabId?: string) => {
   if (!tabId) return;
   try {
-    const tabToClose: Tab | undefined = TabsStore.getTabById(tabId);
-    if (!tabToClose) return;
-    const currentTab: Tab | null = TabsStore.getCurrentTabState();
-    if (!currentTab) return;
-    if (tabToClose.id === currentTab.id) {
-      await apiProvider.CloseCurrentTab(currentTab.id);
-      const tabs = await docservice.getAllDocumentTabs();
-      if (tabs.length > 0) {
-        const lastTab = tabs[tabs.length - 1];
-        TabsStore.updateCurrentTabState(lastTab);
-      } else {
-        await docservice.addNewDocumentTab();
-      }
-    } else {
-      await apiProvider.CloseCurrentTab(tabToClose.id);
-      const tabs = await docservice.getAllDocumentTabs();
-      TabsStore.updateCurrentTabState(currentTab);
-    }
+    invoke("exec_command", { cmd: "close_tab", payload: { tabId } });
+    // const tabToClose: Tab | undefined = TabsStore.getTabById(tabId);
+    // if (!tabToClose) return;
+    // const currentTab: Tab | null = TabsStore.getCurrentTabState();
+    // if (!currentTab) return;
+    // if (tabToClose.id === currentTab.id) {
+    //   await apiProvider.CloseCurrentTab(currentTab.id);
+    //   const tabs = await docservice.getAllDocumentTabs();
+    //   if (tabs.length > 0) {
+    //     const lastTab = tabs[tabs.length - 1];
+    //     TabsStore.updateCurrentTabState(lastTab);
+    //   } else {
+    //     await docservice.addNewDocumentTab();
+    //   }
+    // } else {
+    //   await apiProvider.CloseCurrentTab(tabToClose.id);
+    //   const tabs = await docservice.getAllDocumentTabs();
+    //   TabsStore.updateCurrentTabState(currentTab);
+    // }
     //invoke("update_states");
   } catch (error) {
     console.error("Failed to delete document:", error);
