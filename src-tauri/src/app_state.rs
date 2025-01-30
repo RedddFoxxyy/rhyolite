@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     fs,
     path::PathBuf,
     sync::{Arc, Mutex},
@@ -47,7 +48,7 @@ pub struct CommandItem {
 #[derive(Default)]
 pub struct CommandRegistry {
     // TODO: indexmap or hashmap ?
-    pub commands: IndexMap<String, CommandItem>,
+    pub commands: HashMap<String, CommandItem>,
 }
 impl CommandRegistry {
     pub fn add_command(

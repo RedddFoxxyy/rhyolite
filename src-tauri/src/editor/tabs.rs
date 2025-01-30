@@ -88,12 +88,43 @@ impl TabCommands {
             iteration += 1;
         }
     }
+
+    pub fn close_tab(app: AppHandle, id: String) {
+        log::debug!("close_tab init");
+        // let orig_state = &state;
+        let temp_app = app.clone();
+        let state = temp_app.state::<AppState>();
+        let tab_switcher = &mut state.tab_switcher.lock().unwrap();
+        let tabs = &mut tab_switcher.tabs;
+
+        if tabs.is_empty() {
+            return; // Don't close the last tab
+        }
+
+        if let Some((index, _, _)) = tabs.shift_remove_full(&id) {
+            // Get the next tab ID (either at same index or last tab)
+            let next_tab_id = tabs
+                .get_index(index)
+                .or_else(|| tabs.last())
+                .map(|(id, _)| id.clone());
+
+            // Update current open tab if needed
+            if let Some(next_id) = &next_tab_id {
+                tab_switcher.current_tab_id = Some(next_id.clone());
+            }
+            event_emitter(app);
+        } else {
+            log::debug!("Tab not found.");
+        }
+    }
 }
 
 impl CommandRegistrar for TabCommands {
     fn register_commands(registry: &mut CommandRegistry) {
         // Register the methods directly
         registry.add_command("new_tab".to_string(), Box::new(Self::new_tab));
+        registry.add_command("close_tab".to_string(), Box::new(Self::close_tab));
+
         // etc...
     }
 }
