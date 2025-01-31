@@ -10,12 +10,14 @@ const switchTab = async (tabId: string): Promise<Tab | undefined> => {
   const tab: Tab | undefined = TabsStore.getTabById(tabId);
   if (!tab) return undefined;
 
-  TabsStore.updateCurrentTabState(tab ?? null);
+  // Invoke the switch_tab command
+  invoke("exec_command", { 
+    cmd: "switch_tab", 
+    payload: { tabId } 
+  });
 
-  await apiProvider.sendCurrentOpenTab(tab.id);
-  invoke("update_states");
-
-  // invoke("exec_command", { cmd: "switch_tab", payload: { tabId } });
+  // Update local store
+  TabsStore.updateCurrentTabState(tab);
 
   return tab;
 };
