@@ -43,7 +43,7 @@ pub struct TabSwitcher {
 
 pub struct CommandItem {
     pub name: String,
-    pub action: Arc<Mutex<Box<dyn FnMut(AppHandle, String) + Send + 'static>>>,
+    pub action: CommandAction,
 }
 
 #[derive(Default)]
@@ -150,75 +150,76 @@ impl AppStateInner {
         }
 
         // If userdata.json doesn't exist, load all markdown files from the trove directory
-    let trove_dir = get_trove_dir("Untitled_Trove");
-    let mut tabs = IndexMap::new();
-    let mut recent_files = Vec::new();
-    let mut current_tab_id = None;
+        let trove_dir = get_trove_dir("Untitled_Trove");
+        let mut tabs = IndexMap::new();
+        let mut recent_files = Vec::new();
+        let mut current_tab_id = None;
 
-    // Read all .md files from the trove directory
-    if let Ok(entries) = fs::read_dir(&trove_dir) {
-        for entry in entries.filter_map(|e| e.ok()) {
-            if let Some(extension) = entry.path().extension() {
-                if extension == "md" {
-                    if let Some(stem) = entry.path().file_stem().and_then(|s| s.to_str()) {
-                        let id = Uuid::new_v4().to_string();
-                        let title = stem.to_string();
-                        
-                        let tab = Tab {
-                            id: id.clone(),
-                            title: title.clone(),
-                        };
-                        
-                        tabs.insert(id.clone(), tab);
-                        recent_files.push(RecentFileInfo {
-                            id: id.clone(),
-                            title,
-                        });
+        // Read all .md files from the trove directory
+        if let Ok(entries) = fs::read_dir(&trove_dir) {
+            for entry in entries.filter_map(|e| e.ok()) {
+                if let Some(extension) = entry.path().extension() {
+                    if extension == "md" {
+                        if let Some(stem) = entry.path().file_stem().and_then(|s| s.to_str()) {
+                            let id = Uuid::new_v4().to_string();
+                            let title = stem.to_string();
 
-                        if current_tab_id.is_none() {
-                            current_tab_id = Some(id);
+                            let tab = Tab {
+                                id: id.clone(),
+                                title: title.clone(),
+                            };
+
+                            tabs.insert(id.clone(), tab);
+                            recent_files.push(RecentFileInfo {
+                                id: id.clone(),
+                                title,
+                            });
+
+                            if current_tab_id.is_none() {
+                                current_tab_id = Some(id);
+                            }
                         }
                     }
                 }
             }
         }
-    }
 
-    // If no files were found, create a new empty file
-    if tabs.is_empty() {
-        let id = Uuid::new_v4().to_string();
-        let title = "Untitled".to_string();
-        
-        let tab = Tab {
-            id: id.clone(),
-            title: title.clone(),
-        };
-        
-        // Create empty file
-        let file_path = trove_dir.join("Untitled.md");
-        fs::write(&file_path, "").map_err(|e| format!("Failed to create empty file: {}", e))?;
-        
-        tabs.insert(id.clone(), tab);
-        recent_files.push(RecentFileInfo {
-            id: id.clone(),
-            title,
-        });
-        current_tab_id = Some(id);
-    }
+        // If no files were found, create a new empty file
+        if tabs.is_empty() {
+            let id = Uuid::new_v4().to_string();
+            let title = "Untitled".to_string();
 
-    Ok(Self {
-        tab_switcher: Mutex::new(TabSwitcher {
-            current_tab_id,
-            tabs,
-        }),
-        workspace: WorkSpace {
-            documents: Vec::new(),
-            recent_files,
+            let tab = Tab {
+                id: id.clone(),
+                title: title.clone(),
+            };
+
+            // Create empty file
+            let file_path = trove_dir.join("Untitled.md");
+            fs::write(&file_path, "").map_err(|e| format!("Failed to create empty file: {}", e))?;
+
+            tabs.insert(id.clone(), tab);
+            recent_files.push(RecentFileInfo {
+                id: id.clone(),
+                title,
+            });
+            current_tab_id = Some(id);
         }
-        .into(),
-        command_registry: Mutex::new(CommandRegistry::default()),
-    })
+
+        Ok(Self {
+            tab_switcher: Mutex::new(TabSwitcher {
+                current_tab_id,
+                tabs,
+            }),
+            workspace: WorkSpace {
+                documents: Vec::new(),
+                recent_files,
+            }
+            .into(),
+            command_registry: Mutex::new(CommandRegistry::default()),
+        })
     }
 }
 
 pub type AppState = AppStateInner;
+pub type CommandAction = Arc<Mutex<Box<dyn FnMut(AppHandle, String) + Send + 'static>>>;

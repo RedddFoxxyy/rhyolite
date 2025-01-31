@@ -15,6 +15,8 @@ const switchTab = async (tabId: string): Promise<Tab | undefined> => {
   await apiProvider.sendCurrentOpenTab(tab.id);
   invoke("update_states");
 
+  // invoke("exec_command", { cmd: "switch_tab", payload: { tabId } });
+
   return tab;
 };
 
@@ -73,13 +75,17 @@ const cycleTabs = async () => {
 };
 
 const updateTabTitleById = async (tabId: string, newTitle: string) => {
-  TabsStore.states.update((data: ITabsStates) => {
-    return {
-      ...data,
-      tabs: data.tabs.map((tab) =>
-        tab.id === tabId ? { ...tab, title: newTitle } : tab,
-      ),
-    };
+  //  TabsStore.states.update((data: ITabsStates) => {
+  //    return {
+  //      ...data,
+  //      tabs: data.tabs.map((tab) =>
+  //        tab.id === tabId ? { ...tab, title: newTitle } : tab,
+  //      ),
+  //    };
+  //  });
+  invoke("exec_command", {
+    cmd: "update_tab_title",
+    payload: { id: tabId, title: newTitle },
   });
 };
 

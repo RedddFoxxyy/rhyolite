@@ -10,6 +10,12 @@ use std::path::Path;
 
 use super::io::{get_trove_dir, save_document, save_user_data};
 
+#[derive(serde::Deserialize)]
+struct TabTitle {
+    id: String,
+    title: String,
+}
+
 pub struct TabCommands;
 impl TabCommands {
     pub fn new_tab(app: AppHandle, _payload: String) {
@@ -91,22 +97,22 @@ impl TabCommands {
 
     pub fn close_tab(app: AppHandle, payload: String) {
         log::debug!("close_tab init");
-        
+
         // Parse the JSON payload
         if let Ok(json_value) = serde_json::from_str::<serde_json::Value>(&payload) {
             if let Some(tab_id) = json_value.get("tabId").and_then(|v| v.as_str()) {
                 let temp_app = app.clone();
                 let state = temp_app.state::<AppState>();
-                
+
                 // Get next tab ID in a separate scope to minimize lock time
                 let next_tab_id = {
                     let tab_switcher = state.tab_switcher.lock().unwrap();
                     let tabs = &tab_switcher.tabs;
-                    
+
                     if tabs.is_empty() {
                         return; // Don't close the last tab
                     }
-    
+
                     if let Some((index, _, _)) = tabs.get_full(tab_id) {
                         // Get the next tab ID (either at same index or last tab)
                         tabs.get_index(index + 1)
@@ -116,21 +122,20 @@ impl TabCommands {
                         None
                     }
                 };
-    
+
                 // Update tabs in a separate lock scope
                 {
                     let mut tab_switcher = state.tab_switcher.lock().unwrap();
                     tab_switcher.tabs.shift_remove(tab_id);
-                    
+
                     // Update current open tab if needed
                     if let Some(next_id) = next_tab_id {
                         tab_switcher.current_tab_id = Some(next_id);
                     }
                 }
-    
+
                 // Call event emitter after releasing the lock
                 event_emitter(app);
-                
             } else {
                 log::debug!("Invalid JSON payload format: missing or invalid tabId field");
             }
@@ -142,6 +147,50 @@ impl TabCommands {
     pub fn update_states(app: AppHandle, _payload: String) {
         event_emitter(app);
     }
+
+    pub fn update_tab_title(app: AppHandle, payload: String) {
+        log::debug!("update_tab_title init");
+
+        if let Ok(payload_object) = serde_json::from_str::<TabTitle>(&payload) {
+            let temp_app = app.clone();
+            let state = temp_app.state::<AppState>();
+
+            let tabs = &mut state.tab_switcher.lock().unwrap().tabs;
+            let title = payload_object.title;
+            let id = payload_object.id;
+
+            // Check if the new title already exists in other tabs
+            if tabs.values().any(|tab| tab.id != id && tab.title == title) {
+                log::debug!("A tab with this title already exists.");
+            } else {
+                // Get the tab, update its title, and insert it back
+                if let Some(mut tab) = tabs.get(&id).cloned() {
+                    tab.title = title;
+                    tabs.insert(id, tab.clone());
+                } else {
+                    log::debug!("Tab not found");
+                }
+            }
+        }
+
+        event_emitter(app);
+    }
+    pub fn switch_tab(app: AppHandle, payload: String) {
+        if let Ok(json_value) = serde_json::from_str::<serde_json::Value>(&payload) {
+            if let Some(tab_id) = json_value.get("tabId").and_then(|v| v.as_str()) {
+                let temp_app = app.clone();
+                let state = temp_app.state::<AppState>();
+
+                let tab_switcher = &mut state.tab_switcher.lock().unwrap();
+
+                if tab_switcher.tabs.values().any(|tab| tab.id == tab_id) {
+                    // Update current open tab if needed
+                    tab_switcher.current_tab_id = Some(tab_id.to_string());
+                }
+            }
+        }
+        event_emitter(app);
+    }
 }
 
 impl CommandRegistrar for TabCommands {
@@ -150,6 +199,12 @@ impl CommandRegistrar for TabCommands {
         registry.add_command("new_tab".to_string(), Box::new(Self::new_tab));
         registry.add_command("close_tab".to_string(), Box::new(Self::close_tab));
         registry.add_command("update_states".to_string(), Box::new(Self::update_states));
+        registry.add_command(
+            "update_tab_title".to_string(),
+            Box::new(Self::update_tab_title),
+        );
+
+        registry.add_command("switch_tab".to_string(), Box::new(Self::switch_tab));
     }
 }
 
