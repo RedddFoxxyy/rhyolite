@@ -10,12 +10,6 @@ use std::path::Path;
 
 use super::io::{get_trove_dir, save_document, save_user_data};
 
-#[derive(serde::Deserialize)]
-struct TabTitle {
-    id: String,
-    title: String,
-}
-
 pub struct TabCommands;
 impl TabCommands {
     pub fn new_tab(app: AppHandle, _payload: String) {
@@ -151,7 +145,7 @@ impl TabCommands {
     pub fn update_tab_title(app: AppHandle, payload: String) {
         log::debug!("update_tab_title init");
 
-        if let Ok(payload_object) = serde_json::from_str::<TabTitle>(&payload) {
+        if let Ok(payload_object) = serde_json::from_str::<Tab>(&payload) {
             let temp_app = app.clone();
             let state = temp_app.state::<AppState>();
 
@@ -191,6 +185,27 @@ impl TabCommands {
         }
         event_emitter(app);
     }
+
+    pub fn load_tab(app: AppHandle, payload: String) {
+        log::debug!("load_tab init");
+        if let Ok(json_value) = serde_json::from_str::<Tab>(&payload) {
+            {
+                let temp_app = app.clone();
+                let state = temp_app.state::<AppState>();
+                let id = json_value.id;
+                let title = json_value.title;
+                let new_tab = Tab {
+                    id: id.clone(),
+                    title,
+                };
+
+                let mut tab_switcher = state.tab_switcher.lock().unwrap();
+                tab_switcher.tabs.insert(id, new_tab.clone());
+            }
+
+            event_emitter(app);
+        }
+    }
 }
 
 impl CommandRegistrar for TabCommands {
@@ -203,8 +218,8 @@ impl CommandRegistrar for TabCommands {
             "update_tab_title".to_string(),
             Box::new(Self::update_tab_title),
         );
-
         registry.add_command("switch_tab".to_string(), Box::new(Self::switch_tab));
+        registry.add_command("load_tab".to_string(), Box::new(Self::load_tab));
     }
 }
 
