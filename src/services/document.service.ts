@@ -105,7 +105,7 @@ const loadDocument = async (
     const doc = await apiProvider.getDocumentContent(documentId, documentTitle);
     if (!doc) return null;
 
-    invoke("update_states");
+    // invoke("update_states");
     return doc;
   } catch (error) {
     console.error("Failed to load document:", error);

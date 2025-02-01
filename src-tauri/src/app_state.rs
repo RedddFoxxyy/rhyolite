@@ -55,13 +55,13 @@ impl CommandRegistry {
     pub fn add_command(
         &mut self,
         name: String,
-        action: Box<dyn FnMut(AppHandle, String) + Send + 'static>,
+        action: CommandAction,
     ) {
         self.commands.insert(
             name.clone(),
             CommandItem {
                 name,
-                action: Arc::new(Mutex::new(action)),
+                action,
             },
         );
     }

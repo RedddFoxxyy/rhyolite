@@ -1,4 +1,4 @@
-//! This module provides document tabs related functions for the app.
+//! This module provides document tabs related commands for the app.
 use tauri::{AppHandle, Manager, State};
 use uuid::Uuid;
 
@@ -7,6 +7,7 @@ use crate::commands::event_emitter;
 
 use crate::RecentFileInfo;
 use std::path::Path;
+use std::sync::{Arc, Mutex};
 
 use super::io::{get_trove_dir, save_document, save_user_data};
 
@@ -211,15 +212,15 @@ impl TabCommands {
 impl CommandRegistrar for TabCommands {
     fn register_commands(registry: &mut CommandRegistry) {
         // Register the methods directly
-        registry.add_command("new_tab".to_string(), Box::new(Self::new_tab));
-        registry.add_command("close_tab".to_string(), Box::new(Self::close_tab));
-        registry.add_command("update_states".to_string(), Box::new(Self::update_states));
+        registry.add_command("new_tab".to_string(), Arc::new(Mutex::new(Box::new(Self::new_tab))));
+        registry.add_command("close_tab".to_string(), Arc::new(Mutex::new(Box::new(Self::close_tab))));
+        registry.add_command("update_states".to_string(), Arc::new(Mutex::new(Box::new(Self::update_states))));
         registry.add_command(
             "update_tab_title".to_string(),
-            Box::new(Self::update_tab_title),
+            Arc::new(Mutex::new(Box::new(Self::update_tab_title))),
         );
-        registry.add_command("switch_tab".to_string(), Box::new(Self::switch_tab));
-        registry.add_command("load_tab".to_string(), Box::new(Self::load_tab));
+        registry.add_command("switch_tab".to_string(), Arc::new(Mutex::new(Box::new(Self::switch_tab))));
+        registry.add_command("load_tab".to_string(), Arc::new(Mutex::new(Box::new(Self::load_tab))));
     }
 }
 
@@ -339,29 +340,29 @@ fn check_path_exists(trove_dir: &Path) -> String {
     }
 }
 
-#[tauri::command]
-pub fn update_tab_title(
-    id: String,
-    title: String,
-    state: State<'_, AppState>,
-) -> Result<Tab, String> {
-    log::debug!("update_tab_title init");
-    let tabs = &mut state.tab_switcher.lock().unwrap().tabs;
+// #[tauri::command]
+// pub fn update_tab_title(
+//     id: String,
+//     title: String,
+//     state: State<'_, AppState>,
+// ) -> Result<Tab, String> {
+//     log::debug!("update_tab_title init");
+//     let tabs = &mut state.tab_switcher.lock().unwrap().tabs;
 
-    // Check if the new title already exists in other tabs
-    if tabs.values().any(|tab| tab.id != id && tab.title == title) {
-        Err("A tab with this title already exists".to_string())
-    } else {
-        // Get the tab, update its title, and insert it back
-        if let Some(mut tab) = tabs.get(&id).cloned() {
-            tab.title = title;
-            tabs.insert(id, tab.clone());
-            Ok(tab)
-        } else {
-            Err("Tab not found".to_string())
-        }
-    }
-}
+//     // Check if the new title already exists in other tabs
+//     if tabs.values().any(|tab| tab.id != id && tab.title == title) {
+//         Err("A tab with this title already exists".to_string())
+//     } else {
+//         // Get the tab, update its title, and insert it back
+//         if let Some(mut tab) = tabs.get(&id).cloned() {
+//             tab.title = title;
+//             tabs.insert(id, tab.clone());
+//             Ok(tab)
+//         } else {
+//             Err("Tab not found".to_string())
+//         }
+//     }
+// }
 
 #[tauri::command]
 pub fn load_tab(
@@ -387,36 +388,36 @@ pub fn load_tab(
     Ok(new_tab)
 }
 
-#[tauri::command]
-pub fn close_tab(
-    app: AppHandle,
-    id: String,
-    state: State<'_, AppState>,
-) -> Result<Option<String>, String> {
-    log::debug!("close_tab init");
-    // let orig_state = &state;
-    let tab_switcher = &mut state.tab_switcher.lock().unwrap();
-    let tabs = &mut tab_switcher.tabs;
+// #[tauri::command]
+// pub fn close_tab(
+//     app: AppHandle,
+//     id: String,
+//     state: State<'_, AppState>,
+// ) -> Result<Option<String>, String> {
+//     log::debug!("close_tab init");
+//     // let orig_state = &state;
+//     let tab_switcher = &mut state.tab_switcher.lock().unwrap();
+//     let tabs = &mut tab_switcher.tabs;
 
-    if tabs.is_empty() {
-        return Ok(None); // Don't close the last tab
-    }
+//     if tabs.is_empty() {
+//         return Ok(None); // Don't close the last tab
+//     }
 
-    if let Some((index, _, _)) = tabs.shift_remove_full(&id) {
-        // Get the next tab ID (either at same index or last tab)
-        let next_tab_id = tabs
-            .get_index(index)
-            .or_else(|| tabs.last())
-            .map(|(id, _)| id.clone());
+//     if let Some((index, _, _)) = tabs.shift_remove_full(&id) {
+//         // Get the next tab ID (either at same index or last tab)
+//         let next_tab_id = tabs
+//             .get_index(index)
+//             .or_else(|| tabs.last())
+//             .map(|(id, _)| id.clone());
 
-        // Update current open tab if needed
-        if let Some(next_id) = &next_tab_id {
-            tab_switcher.current_tab_id = Some(next_id.clone());
-        }
-        event_emitter(app);
+//         // Update current open tab if needed
+//         if let Some(next_id) = &next_tab_id {
+//             tab_switcher.current_tab_id = Some(next_id.clone());
+//         }
+//         event_emitter(app);
 
-        Ok(next_tab_id)
-    } else {
-        Err("Tab not found".to_string())
-    }
-}
+//         Ok(next_tab_id)
+//     } else {
+//         Err("Tab not found".to_string())
+//     }
+// }
