@@ -9,7 +9,7 @@ import { catppuccinLatteTheme } from "$lib/themes/catppuccinLatte";
 import { rosePaneMainTheme } from "$lib/themes/rosePineMain";
 import { rosePaneMoonTheme } from "$lib/themes/rosePineMoon";
 import { rosePineDawnTheme } from "$lib/themes/rosePineDawn";
-import { CrimsonNocturne } from "$lib/themes/new_theme";
+import { CrimsonNocturne } from "$lib/themes/CrimsonNocturne";
 export interface IThemesStates {
   themes: Theme[];
   currentTheme: Theme;
