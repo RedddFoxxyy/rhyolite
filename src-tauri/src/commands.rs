@@ -1,7 +1,6 @@
 use crate::app_state::{AppState, CommandRegistrar, Tab};
 use crate::editor::tabs;
 use crate::editor::tabs::TabCommands;
-// use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager};
 
 /// TODO: The current organisation of exec_command function is not good
@@ -10,8 +9,15 @@ use tauri::{AppHandle, Emitter, Manager};
 /// 1. Improve handling of incoming payload(json).
 /// 2. Add more error handling so that app does not panic!
 #[tauri::command]
-pub fn exec_command(cmd: String, payload: serde_json::Value, app: AppHandle) {
-    log::debug!("exec command '{}' called with '{}'", cmd, payload);
+pub fn exec_command(cmd: String, payload: Option<String>, app: AppHandle) {
+    log::debug!(
+        "command::exec: {}({})",
+        cmd,
+        payload
+            .clone()
+            .map(|p| format!("\"{}\"", p.escape_default().to_string()))
+            .unwrap_or("".to_string())
+    );
 
     let state = app.state::<AppState>();
 
@@ -23,25 +29,22 @@ pub fn exec_command(cmd: String, payload: serde_json::Value, app: AppHandle) {
         .get_mut(&cmd)
     {
         let mut action = command_item.action.lock().unwrap();
-        (action)(app.clone(), payload.to_string());
+        (action)(app.clone(), payload);
     } else {
         log::debug!("Unknown command: {}", cmd);
-        if payload.is_object() {
-            let value = payload.as_object().unwrap().get("hi");
-            log::debug!("value of hi: '{:?}'", value);
-        }
         let _ = app.emit("dummy-event", "hellllo");
     };
 }
 
-pub fn load_default_commands(app: AppHandle) {
+pub fn load_default_commands(app: &AppHandle) {
     let app_state = app.state::<AppState>();
+    let mut command_registry = app_state
+        .command_registry
+        .lock()
+        .expect("Failed accessing command registry");
 
-    if let Ok(mut command_registry) = app_state.command_registry.lock() {
-        // Register commands from each module
-        TabCommands::register_commands(&mut command_registry);
-        // Add other module commands similarly:
-    };
+    // Register commands from each module
+    TabCommands::register_commands(&mut command_registry);
 }
 
 pub fn event_emitter(app: AppHandle) {

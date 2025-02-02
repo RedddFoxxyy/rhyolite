@@ -5,15 +5,16 @@ use uuid::Uuid;
 use crate::app_state::{AppState, CommandRegistrar, CommandRegistry, Tab};
 use crate::commands::event_emitter;
 
+use crate::utils::generate_available_path;
 use crate::FileInfo;
-use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 use super::io::{get_trove_dir, save_document, save_user_data};
 
 pub struct TabCommands;
+
 impl TabCommands {
-    pub fn new_tab(app: AppHandle, _payload: String) {
+    pub fn new_tab(app: AppHandle, _payload: Option<String>) {
         log::debug!("new_tab init");
         let temp_app = app.clone();
         let state = &temp_app.state::<AppState>();
@@ -22,7 +23,8 @@ impl TabCommands {
 
         let trove_dir = get_trove_dir("Untitled_Trove");
 
-        let title = TabCommands.check_path_exists(&trove_dir);
+        let new_path = generate_available_path(trove_dir.join("Untitled.md"));
+        let title = new_path.file_stem().unwrap().to_string_lossy().to_string();
 
         cleanup_deleted_files_workaround(state, trove_dir, &title);
 
@@ -47,8 +49,7 @@ impl TabCommands {
                 .recent_files
                 .push(FileInfo {
                     id: new_id.clone(),
-                    // FIXME: hardcoded name may have conflict
-                    title: "Untitled".to_string(),
+                    title: title.clone(),
                 });
         }
 
@@ -57,78 +58,69 @@ impl TabCommands {
         event_emitter(app);
     }
 
-    fn check_path_exists(&self, trove_dir: &Path) -> String {
-        let mut iteration: u32 = 0;
-        loop {
-            let title = if iteration == 0 {
-                sanitize_filename::sanitize("Untitled.md")
-            } else {
-                sanitize_filename::sanitize(format!("Untitled {}.md", &iteration))
-            };
-
-            let file_path = trove_dir.join(&title);
-            if !file_path.exists() {
-                return title.strip_suffix(".md").unwrap_or(&title).to_string();
-            }
-            iteration += 1;
-        }
-    }
-
-    pub fn close_tab(app: AppHandle, payload: String) {
+    pub fn close_tab(app: AppHandle, payload: Option<String>) {
         log::debug!("close_tab init");
+        let Some(payload) = payload else {
+            log::warn!("Invalid call to close_tab");
+            return;
+        };
 
         // Parse the JSON payload
-        if let Ok(json_value) = serde_json::from_str::<serde_json::Value>(&payload) {
-            if let Some(tab_id) = json_value.get("tabId").and_then(|v| v.as_str()) {
-                let temp_app = app.clone();
-                let state = temp_app.state::<AppState>();
-
-                // Get next tab ID in a separate scope to minimize lock time
-                let next_tab_id = {
-                    let tab_switcher = state.tab_switcher.read().unwrap();
-                    let tabs = &tab_switcher.tabs;
-
-                    if tabs.is_empty() {
-                        return; // Don't close the last tab
-                    }
-
-                    if let Some((index, _, _)) = tabs.get_full(tab_id) {
-                        // Get the next tab ID (either at same index or last tab)
-                        tabs.get_index(index + 1)
-                            .or_else(|| tabs.last())
-                            .map(|(id, _)| id.clone())
-                    } else {
-                        None
-                    }
-                };
-
-                // Update tabs in a separate lock scope
-                {
-                    let mut tab_switcher = state.tab_switcher.write().unwrap();
-                    tab_switcher.tabs.shift_remove(tab_id);
-
-                    // Update current open tab if needed
-                    if let Some(next_id) = next_tab_id {
-                        tab_switcher.current_tab_id = Some(next_id);
-                    }
-                }
-
-                // Call event emitter after releasing the lock
-                event_emitter(app);
-            } else {
-                log::debug!("Invalid JSON payload format: missing or invalid tabId field");
-            }
-        } else {
+        let Ok(json_value) = serde_json::from_str::<serde_json::Value>(&payload) else {
             log::debug!("Failed to parse JSON payload");
-        }
-    }
+            return;
+        };
+        let Some(tab_id) = json_value.get("tabId").and_then(|v| v.as_str()) else {
+            log::debug!("Invalid JSON payload format: missing or invalid tabId field");
+            return;
+        };
+        let temp_app = app.clone();
+        let state = temp_app.state::<AppState>();
 
-    pub fn update_states(app: AppHandle, _payload: String) {
+        // Get next tab ID in a separate scope to minimize lock time
+        let next_tab_id = {
+            let tab_switcher = state.tab_switcher.read().unwrap();
+            let tabs = &tab_switcher.tabs;
+
+            if tabs.is_empty() {
+                return; // Don't close the last tab
+            }
+
+            if let Some((index, _, _)) = tabs.get_full(tab_id) {
+                // Get the next tab ID (either at same index or last tab)
+                tabs.get_index(index + 1)
+                    .or_else(|| tabs.last())
+                    .map(|(id, _)| id.clone())
+            } else {
+                None
+            }
+        };
+
+        // Update tabs in a separate lock scope
+        {
+            let mut tab_switcher = state.tab_switcher.write().unwrap();
+            tab_switcher.tabs.shift_remove(tab_id);
+
+            // Update current open tab if needed
+            if let Some(next_id) = next_tab_id {
+                tab_switcher.current_tab_id = Some(next_id);
+            }
+        }
+
+        // Call event emitter after releasing the lock
         event_emitter(app);
     }
 
-    pub fn update_tab_title(app: AppHandle, payload: String) {
+    pub fn update_states(app: AppHandle, _payload: Option<String>) {
+        event_emitter(app);
+    }
+
+    pub fn update_tab_title(app: AppHandle, payload: Option<String>) {
         log::debug!("update_tab_title init");
+        let Some(payload) = payload else {
+            log::warn!("Invalid call to update_tab_title");
+            return;
+        };
 
         if let Ok(payload_object) = serde_json::from_str::<Tab>(&payload) {
             let temp_app = app.clone();
@@ -154,7 +146,12 @@ impl TabCommands {
 
         event_emitter(app);
     }
-    pub fn switch_tab(app: AppHandle, payload: String) {
+
+    pub fn switch_tab(app: AppHandle, payload: Option<String>) {
+        let Some(payload) = payload else {
+            log::warn!("Invalid call to switch_tab");
+            return;
+        };
         if let Ok(json_value) = serde_json::from_str::<serde_json::Value>(&payload) {
             if let Some(tab_id) = json_value.get("tabId").and_then(|v| v.as_str()) {
                 let temp_app = app.clone();
@@ -171,8 +168,12 @@ impl TabCommands {
         event_emitter(app);
     }
 
-    pub fn load_tab(app: AppHandle, payload: String) {
+    pub fn load_tab(app: AppHandle, payload: Option<String>) {
         log::debug!("load_tab init");
+        let Some(payload) = payload else {
+            log::warn!("Invalid call to load_tab");
+            return;
+        };
         if let Ok(json_value) = serde_json::from_str::<Tab>(&payload) {
             {
                 let temp_app = app.clone();
@@ -297,30 +298,10 @@ pub fn new_tab(app: AppHandle) -> Result<Tab, String> {
     let new_id = Uuid::new_v4().to_string();
 
     let trove_dir = get_trove_dir("Untitled_Trove");
+    let new_path = generate_available_path(trove_dir.join("Untitled.md"));
+    let title = new_path.file_stem().unwrap().to_string_lossy().to_string();
 
-    let title = check_path_exists(&trove_dir);
-
-    // Clean up any stale entries in tabs and recent_files that don't exist on disk
-    // but have the same title
-    {
-        state.tab_switcher.write().unwrap().tabs.retain(|_, tab| {
-            let file_path =
-                trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &tab.title)));
-            file_path.exists() && tab.title != title
-        });
-    }
-    {
-        state
-            .workspace
-            .write()
-            .unwrap()
-            .recent_files
-            .retain(|file| {
-                let file_path =
-                    trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &file.title)));
-                file_path.exists() && file.title != title
-            });
-    }
+    cleanup_deleted_files_workaround(&state, trove_dir, &title);
 
     // Create new tab
     let new_tab = Tab {
@@ -355,47 +336,6 @@ pub fn new_tab(app: AppHandle) -> Result<Tab, String> {
     Ok(new_tab)
 }
 
-fn check_path_exists(trove_dir: &Path) -> String {
-    let mut iteration: u32 = 0;
-    loop {
-        let title = if iteration == 0 {
-            sanitize_filename::sanitize("Untitled.md")
-        } else {
-            sanitize_filename::sanitize(format!("Untitled {}.md", &iteration))
-        };
-
-        let file_path = trove_dir.join(&title);
-        if !file_path.exists() {
-            return title.strip_suffix(".md").unwrap_or(&title).to_string();
-        }
-        iteration += 1;
-    }
-}
-
-// #[tauri::command]
-// pub fn update_tab_title(
-//     id: String,
-//     title: String,
-//     state: State<'_, AppState>,
-// ) -> Result<Tab, String> {
-//     log::debug!("update_tab_title init");
-//     let tabs = &mut state.tab_switcher.lock().unwrap().tabs;
-
-//     // Check if the new title already exists in other tabs
-//     if tabs.values().any(|tab| tab.id != id && tab.title == title) {
-//         Err("A tab with this title already exists".to_string())
-//     } else {
-//         // Get the tab, update its title, and insert it back
-//         if let Some(mut tab) = tabs.get(&id).cloned() {
-//             tab.title = title;
-//             tabs.insert(id, tab.clone());
-//             Ok(tab)
-//         } else {
-//             Err("Tab not found".to_string())
-//         }
-//     }
-// }
-
 #[tauri::command]
 pub fn load_tab(
     app: AppHandle,
@@ -419,37 +359,3 @@ pub fn load_tab(
 
     Ok(new_tab)
 }
-
-// #[tauri::command]
-// pub fn close_tab(
-//     app: AppHandle,
-//     id: String,
-//     state: State<'_, AppState>,
-// ) -> Result<Option<String>, String> {
-//     log::debug!("close_tab init");
-//     // let orig_state = &state;
-//     let tab_switcher = &mut state.tab_switcher.lock().unwrap();
-//     let tabs = &mut tab_switcher.tabs;
-
-//     if tabs.is_empty() {
-//         return Ok(None); // Don't close the last tab
-//     }
-
-//     if let Some((index, _, _)) = tabs.shift_remove_full(&id) {
-//         // Get the next tab ID (either at same index or last tab)
-//         let next_tab_id = tabs
-//             .get_index(index)
-//             .or_else(|| tabs.last())
-//             .map(|(id, _)| id.clone());
-
-//         // Update current open tab if needed
-//         if let Some(next_id) = &next_tab_id {
-//             tab_switcher.current_tab_id = Some(next_id.clone());
-//         }
-//         event_emitter(app);
-
-//         Ok(next_tab_id)
-//     } else {
-//         Err("Tab not found".to_string())
-//     }
-// }

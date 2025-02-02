@@ -3,6 +3,7 @@ use tauri::{Manager, WindowEvent};
 mod app_state;
 mod commands;
 mod editor;
+mod utils;
 
 //Main tauri function.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -11,7 +12,7 @@ pub fn run() {
         .plugin(tauri_plugin_log::Builder::new().build())
         .setup(|app| {
             app.manage(AppStateInner::load().expect("Failed to load config"));
-            crate::commands::load_default_commands(app.app_handle().to_owned());
+            crate::commands::load_default_commands(app.app_handle());
             Ok(())
         })
         .on_window_event(|window, event| {

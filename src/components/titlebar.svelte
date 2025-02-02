@@ -1,17 +1,14 @@
 <script lang="ts">
   import Close from "$lib/static/close.svg.svelte";
-  import Restore from "$lib/static/restore.svg.svelte";
   import Maximise from "$lib/static/maximise.svg.svelte";
   import Minimise from "$lib/static/minimise.svg.svelte";
-  import { getCurrentWindow, Window } from "@tauri-apps/api/window";
-  import { onDestroy } from "svelte";
-  import TabsStore from "../stores/tabs.store";
-  import { type Tab } from "../types/tab";
+  import Restore from "$lib/static/restore.svg.svelte";
+  import { listen } from "@tauri-apps/api/event";
+  import { getCurrentWindow } from "@tauri-apps/api/window";
+  import { onMount } from "svelte";
   import { addNewDocumentTab } from "../services/document.service";
   import tabService from "../services/tab.service";
-  import { listen } from "@tauri-apps/api/event";
-  import { invoke } from "@tauri-apps/api/core";
-  import { onMount } from "svelte";
+  import { type Tab } from "../types/tab";
 
   let tabs: Tab[] = $state([]);
   let currentTab: Tab | null = $state(null);
@@ -19,8 +16,6 @@
   let isMaximized: boolean = $state(false);
 
   const appWindow = getCurrentWindow();
-
-  let hoverTabId: string | null = $state(null);
 
   const onTabClose = async (tabId: string) => {
     await tabService.closeTab(tabId);
@@ -30,13 +25,7 @@
     isMaximized = await appWindow.isMaximized();
   });
 
-  // const unsubscribeTabsState = TabsStore.states.subscribe((value) => {
-  //   tabs = value.tabs;
-  //   currentTab = value.currentTab;
-  // });
-
   onMount(() => {
-    // TabsStore.initTabsStore();
     // Listen for the 'Tabs' event from the backend
     const tabslisten = listen<Tab[]>("Tabs", (event) => {
       tabs = event.payload;
@@ -51,9 +40,6 @@
     };
   });
 
-  // onDestroy(() => {
-  //   unsubscribeTabsState();
-  // }); // Clean up
   $effect(() => {
     if (currentTab) {
       document
@@ -94,8 +80,6 @@
           role="tab"
           aria-controls="editor"
           onclick={() => onOpenTab(tab)}
-          onmouseenter={() => (hoverTabId = tab.id)}
-          onmouseleave={() => (hoverTabId = null)}
         >
           {tab.title.length > 20
             ? tab.title.slice(0, 20) + "..."
@@ -103,14 +87,11 @@
           <!-- svelte-ignore a11y_click_events_have_key_events -->
           <!-- svelte-ignore a11y_no_static_element_interactions -->
           <div
-            class="text-text bg-transparent ml-2 p-1 rounded-[18px] h-[20px] w-[20px] flex justify-center items-center opacity-0 transition-opacity duration-100 hover:bg-surface2 hover:text-subtext1"
-            class:opacity-100={currentTab?.id === tab.id ||
-              hoverTabId === tab.id}
+            class="text-text bg-transparent ml-2 p-1 rounded-[18px] h-[20px] w-[20px] flex justify-center items-center opacity-0 transition-opacity duration-100 hover:bg-surface2 hover:text-subtext1 hover:opacity-80"
+            class:opacity-100={currentTab?.id === tab.id}
             onclick={(e) => {
               e.stopPropagation();
-              const tabToCloseId = hoverTabId || tab.id;
-              // console.log(`close tab ${tabToCloseId}`);
-              onTabClose(tabToCloseId);
+              onTabClose(tab.id);
             }}
           >
             <Close />

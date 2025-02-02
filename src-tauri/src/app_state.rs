@@ -51,6 +51,7 @@ pub struct CommandRegistry {
     // TODO: indexmap or hashmap ?
     pub commands: HashMap<String, CommandItem>,
 }
+
 impl CommandRegistry {
     pub fn add_command(&mut self, name: String, action: CommandAction) {
         self.commands
@@ -213,4 +214,4 @@ impl AppStateInner {
 }
 
 pub type AppState = AppStateInner;
-pub type CommandAction = Arc<Mutex<Box<dyn FnMut(AppHandle, String) + Send + 'static>>>;
+pub type CommandAction = Arc<Mutex<Box<dyn FnMut(AppHandle, Option<String>) + Send + 'static>>>;
