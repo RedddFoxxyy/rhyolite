@@ -1,8 +1,8 @@
 import type { Theme } from "../../types/theme";
 
-export const new_theme: Theme = {
-  name: "new_theme",
-  colorscheme: "light",
+export const CrimsonNocturne: Theme = {
+  name: "Crimson Nocturne",
+  colorscheme: "dark",
   colors: {
     text: "#FADCD5", // lightest: used for main text
     subtext2: "#FADCD5", // using the same light tone for high–contrast subtext

@@ -9,7 +9,7 @@ import { catppuccinLatteTheme } from "$lib/themes/catppuccinLatte";
 import { rosePaneMainTheme } from "$lib/themes/rosePineMain";
 import { rosePaneMoonTheme } from "$lib/themes/rosePineMoon";
 import { rosePineDawnTheme } from "$lib/themes/rosePineDawn";
-import { new_theme } from "$lib/themes/new_theme";
+import { CrimsonNocturne } from "$lib/themes/new_theme";
 export interface IThemesStates {
   themes: Theme[];
   currentTheme: Theme;
@@ -17,6 +17,7 @@ export interface IThemesStates {
 
 const DEFAULT_THEMES: Theme[] = [
   defaultTheme,
+  CrimsonNocturne,
   greenScreenTheme,
   coffeeTheme,
   catppuccinMacchiatoTheme,
@@ -25,7 +26,6 @@ const DEFAULT_THEMES: Theme[] = [
   rosePaneMainTheme,
   rosePaneMoonTheme,
   rosePineDawnTheme,
-  new_theme,
 ];
 
 const states: Writable<IThemesStates> = writable<IThemesStates>({
