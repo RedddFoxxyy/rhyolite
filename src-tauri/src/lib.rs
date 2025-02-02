@@ -1,5 +1,4 @@
 use app_state::{AppStateInner, RecentFileInfo};
-// use std::sync::Mutex;
 use tauri::{Manager, WindowEvent};
 mod app_state;
 mod commands;
@@ -25,7 +24,6 @@ pub fn run() {
                 window.close().unwrap();
             }
         })
-        .plugin(tauri_plugin_log::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             editor::io::save_document,
