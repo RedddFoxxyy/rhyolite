@@ -77,7 +77,7 @@
           blockquote: {
             HTMLAttributes: {
               class:
-                "border-l-2 border-subtext2 m-1 p-4 w-fit text-text text-base bg-base/60 font-normal not-italic leading-none before:content-none after:content-none",
+                "border-l-2 border-subtext2 m-1 px-4 py-2 w-fit text-text text-base bg-base/60 font-normal not-italic leading-none before:content-none after:content-none",
             },
           },
           paragraph: false,
