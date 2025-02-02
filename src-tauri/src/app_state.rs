@@ -2,7 +2,7 @@ use std::{
     collections::HashMap,
     fs,
     path::PathBuf,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, RwLock},
 };
 
 use indexmap::IndexMap;
@@ -52,18 +52,9 @@ pub struct CommandRegistry {
     pub commands: HashMap<String, CommandItem>,
 }
 impl CommandRegistry {
-    pub fn add_command(
-        &mut self,
-        name: String,
-        action: CommandAction,
-    ) {
-        self.commands.insert(
-            name.clone(),
-            CommandItem {
-                name,
-                action,
-            },
-        );
+    pub fn add_command(&mut self, name: String, action: CommandAction) {
+        self.commands
+            .insert(name.clone(), CommandItem { name, action });
     }
 }
 
@@ -99,9 +90,9 @@ pub struct AppStateInner {
     ///    AppStateInner::TabSwitcher::tabs could be mutex
     /// 2. multiple states which are mutex in themselves and are registered using multiple calls to
     ///    app.manage()
-    pub tab_switcher: Mutex<TabSwitcher>,
+    pub tab_switcher: RwLock<TabSwitcher>,
     pub command_registry: Mutex<CommandRegistry>,
-    pub workspace: Mutex<WorkSpace>,
+    pub workspace: RwLock<WorkSpace>,
 }
 
 impl AppStateInner {
@@ -130,7 +121,7 @@ impl AppStateInner {
                                 .collect();
 
                             return Ok(Self {
-                                tab_switcher: Mutex::new(TabSwitcher {
+                                tab_switcher: RwLock::new(TabSwitcher {
                                     current_tab_id,
                                     tabs,
                                 }),
@@ -207,7 +198,7 @@ impl AppStateInner {
         }
 
         Ok(Self {
-            tab_switcher: Mutex::new(TabSwitcher {
+            tab_switcher: RwLock::new(TabSwitcher {
                 current_tab_id,
                 tabs,
             }),

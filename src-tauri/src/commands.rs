@@ -1,13 +1,12 @@
 use crate::app_state::{AppState, CommandRegistrar, Tab};
-use crate::editor::tabs::TabCommands;
 use crate::editor::tabs;
+use crate::editor::tabs::TabCommands;
 // use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager};
 
-
 /// TODO: The current organisation of exec_command function is not good
 /// We might need to change this and make it better and scalable.
-/// 
+///
 /// 1. Improve handling of incoming payload(json).
 /// 2. Add more error handling so that app does not panic!
 #[tauri::command]
@@ -35,7 +34,6 @@ pub fn exec_command(cmd: String, payload: serde_json::Value, app: AppHandle) {
     };
 }
 
-
 pub fn load_default_commands(app: AppHandle) {
     let app_state = app.state::<AppState>();
 
@@ -52,7 +50,7 @@ pub fn event_emitter(app: AppHandle) {
 
     // Get current tab ID, create new tab if none exists
     let current_tab_id = {
-        let tab_switcher = current_state.tab_switcher.lock().unwrap();
+        let tab_switcher = current_state.tab_switcher.read().unwrap();
         match &tab_switcher.current_tab_id {
             Some(id) => id.clone(),
             None => {
@@ -73,7 +71,7 @@ pub fn event_emitter(app: AppHandle) {
     {
         let tabs: Vec<Tab> = current_state
             .tab_switcher
-            .lock()
+            .read()
             .unwrap()
             .tabs
             .values()
@@ -84,7 +82,7 @@ pub fn event_emitter(app: AppHandle) {
 
     // Emit current tab
     {
-        let tab_switcher = current_state.tab_switcher.lock().unwrap();
+        let tab_switcher = current_state.tab_switcher.read().unwrap();
         if let Some(current_tab) = tab_switcher.tabs.get(&current_tab_id) {
             let _ = app.emit("Current_Tab", current_tab.clone());
         }

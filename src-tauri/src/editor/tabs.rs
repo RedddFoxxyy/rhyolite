@@ -28,18 +28,23 @@ impl TabCommands {
         // Clean up any stale entries in tabs and recent_files that don't exist on disk
         // but have the same title
         {
-            state.tab_switcher.lock().unwrap().tabs.retain(|_, tab| {
+            state.tab_switcher.write().unwrap().tabs.retain(|_, tab| {
                 let file_path =
                     trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &tab.title)));
                 file_path.exists() && tab.title != title
             });
         }
         {
-            state.workspace.lock().unwrap().recent_files.retain(|file| {
-                let file_path =
-                    trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &file.title)));
-                file_path.exists() && file.title != title
-            });
+            state
+                .workspace
+                .write()
+                .unwrap()
+                .recent_files
+                .retain(|file| {
+                    let file_path =
+                        trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &file.title)));
+                    file_path.exists() && file.title != title
+                });
         }
 
         // Create new tab
@@ -50,7 +55,7 @@ impl TabCommands {
 
         // Insert into IndexMap
         {
-            let mut tab_switcher = state.tab_switcher.lock().unwrap();
+            let mut tab_switcher = state.tab_switcher.write().unwrap();
             tab_switcher.tabs.insert(new_id.clone(), new_tab.clone());
             tab_switcher.current_tab_id = Some(new_id.clone());
         }
@@ -58,7 +63,7 @@ impl TabCommands {
         {
             state
                 .workspace
-                .lock()
+                .write()
                 .unwrap()
                 .recent_files
                 .push(RecentFileInfo {
@@ -101,7 +106,7 @@ impl TabCommands {
 
                 // Get next tab ID in a separate scope to minimize lock time
                 let next_tab_id = {
-                    let tab_switcher = state.tab_switcher.lock().unwrap();
+                    let tab_switcher = state.tab_switcher.read().unwrap();
                     let tabs = &tab_switcher.tabs;
 
                     if tabs.is_empty() {
@@ -120,7 +125,7 @@ impl TabCommands {
 
                 // Update tabs in a separate lock scope
                 {
-                    let mut tab_switcher = state.tab_switcher.lock().unwrap();
+                    let mut tab_switcher = state.tab_switcher.write().unwrap();
                     tab_switcher.tabs.shift_remove(tab_id);
 
                     // Update current open tab if needed
@@ -150,7 +155,7 @@ impl TabCommands {
             let temp_app = app.clone();
             let state = temp_app.state::<AppState>();
 
-            let tabs = &mut state.tab_switcher.lock().unwrap().tabs;
+            let tabs = &mut state.tab_switcher.write().unwrap().tabs;
             let title = payload_object.title;
             let id = payload_object.id;
 
@@ -176,7 +181,7 @@ impl TabCommands {
                 let temp_app = app.clone();
                 let state = temp_app.state::<AppState>();
 
-                let tab_switcher = &mut state.tab_switcher.lock().unwrap();
+                let tab_switcher = &mut state.tab_switcher.write().unwrap();
 
                 if tab_switcher.tabs.values().any(|tab| tab.id == tab_id) {
                     // Update current open tab if needed
@@ -200,7 +205,7 @@ impl TabCommands {
                     title,
                 };
 
-                let mut tab_switcher = state.tab_switcher.lock().unwrap();
+                let mut tab_switcher = state.tab_switcher.write().unwrap();
                 tab_switcher.tabs.insert(id, new_tab.clone());
             }
 
@@ -212,22 +217,37 @@ impl TabCommands {
 impl CommandRegistrar for TabCommands {
     fn register_commands(registry: &mut CommandRegistry) {
         // Register the methods directly
-        registry.add_command("new_tab".to_string(), Arc::new(Mutex::new(Box::new(Self::new_tab))));
-        registry.add_command("close_tab".to_string(), Arc::new(Mutex::new(Box::new(Self::close_tab))));
-        registry.add_command("update_states".to_string(), Arc::new(Mutex::new(Box::new(Self::update_states))));
+        registry.add_command(
+            "new_tab".to_string(),
+            Arc::new(Mutex::new(Box::new(Self::new_tab))),
+        );
+        registry.add_command(
+            "close_tab".to_string(),
+            Arc::new(Mutex::new(Box::new(Self::close_tab))),
+        );
+        registry.add_command(
+            "update_states".to_string(),
+            Arc::new(Mutex::new(Box::new(Self::update_states))),
+        );
         registry.add_command(
             "update_tab_title".to_string(),
             Arc::new(Mutex::new(Box::new(Self::update_tab_title))),
         );
-        registry.add_command("switch_tab".to_string(), Arc::new(Mutex::new(Box::new(Self::switch_tab))));
-        registry.add_command("load_tab".to_string(), Arc::new(Mutex::new(Box::new(Self::load_tab))));
+        registry.add_command(
+            "switch_tab".to_string(),
+            Arc::new(Mutex::new(Box::new(Self::switch_tab))),
+        );
+        registry.add_command(
+            "load_tab".to_string(),
+            Arc::new(Mutex::new(Box::new(Self::load_tab))),
+        );
     }
 }
 
 #[tauri::command]
 pub fn send_current_open_tab(id: String, state: State<'_, AppState>) {
     log::debug!("send_current_open_tab init");
-    state.tab_switcher.lock().unwrap().current_tab_id = Some(id.clone());
+    state.tab_switcher.write().unwrap().current_tab_id = Some(id.clone());
 }
 
 #[tauri::command]
@@ -235,7 +255,7 @@ pub fn get_current_open_tab(state: State<'_, AppState>) -> Result<String, String
     log::debug!("get_current_open_tab init");
     return state
         .tab_switcher
-        .lock()
+        .read()
         .unwrap()
         .current_tab_id
         .clone()
@@ -247,7 +267,7 @@ pub fn get_tabs(state: State<'_, AppState>) -> Result<Vec<Tab>, String> {
     log::debug!("get_tabs init");
     Ok(state
         .tab_switcher
-        .lock()
+        .read()
         .unwrap()
         .tabs
         .values()
@@ -276,18 +296,23 @@ pub fn new_tab(app: AppHandle) -> Result<Tab, String> {
     // Clean up any stale entries in tabs and recent_files that don't exist on disk
     // but have the same title
     {
-        state.tab_switcher.lock().unwrap().tabs.retain(|_, tab| {
+        state.tab_switcher.write().unwrap().tabs.retain(|_, tab| {
             let file_path =
                 trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &tab.title)));
             file_path.exists() && tab.title != title
         });
     }
     {
-        state.workspace.lock().unwrap().recent_files.retain(|file| {
-            let file_path =
-                trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &file.title)));
-            file_path.exists() && file.title != title
-        });
+        state
+            .workspace
+            .write()
+            .unwrap()
+            .recent_files
+            .retain(|file| {
+                let file_path =
+                    trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &file.title)));
+                file_path.exists() && file.title != title
+            });
     }
 
     // Create new tab
@@ -298,7 +323,7 @@ pub fn new_tab(app: AppHandle) -> Result<Tab, String> {
 
     // Insert into IndexMap
     {
-        let mut tab_switcher = state.tab_switcher.lock().unwrap();
+        let mut tab_switcher = state.tab_switcher.write().unwrap();
         tab_switcher.tabs.insert(new_id.clone(), new_tab.clone());
         tab_switcher.current_tab_id = Some(new_id.clone());
     }
@@ -306,7 +331,7 @@ pub fn new_tab(app: AppHandle) -> Result<Tab, String> {
     {
         state
             .workspace
-            .lock()
+            .write()
             .unwrap()
             .recent_files
             .push(RecentFileInfo {
@@ -379,7 +404,7 @@ pub fn load_tab(
     };
 
     {
-        let mut tab_switcher = state.tab_switcher.lock().unwrap();
+        let mut tab_switcher = state.tab_switcher.write().unwrap();
         tab_switcher.tabs.insert(id, new_tab.clone());
     }
 

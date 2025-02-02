@@ -59,9 +59,9 @@ pub fn on_app_close(window: &Window) {
     // let tab_switcher = &mut state.tab_switcher.lock().unwrap();
 
     let user_data = {
-        let tab_switcher = state.tab_switcher.lock().unwrap();
-        let workspace = state.workspace.lock().unwrap();
-        
+        let tab_switcher = state.tab_switcher.read().unwrap();
+        let workspace = state.workspace.read().unwrap();
+
         UserData {
             tabs: tab_switcher.tabs.values().cloned().collect::<Vec<_>>(),
             last_open_tab: tab_switcher.current_tab_id.clone().unwrap(),
@@ -86,16 +86,15 @@ pub fn on_app_close(window: &Window) {
 /// This function saves the user data to the userdata.json file.
 pub fn save_user_data(state: &State<'_, AppState>) -> Result<(), String> {
     let user_data = {
-        let tab_switcher = state.tab_switcher.lock().unwrap();
-        let workspace = state.workspace.lock().unwrap();
-        
+        let tab_switcher = state.tab_switcher.read().unwrap();
+        let workspace = state.workspace.read().unwrap();
+
         UserData {
             tabs: tab_switcher.tabs.values().cloned().collect(),
             last_open_tab: tab_switcher.current_tab_id.clone().unwrap(),
             recent_files: workspace.recent_files.clone(),
         }
     };
-
 
     let appdata_dir = get_documents_dir().join("appdata");
     fs::create_dir_all(&appdata_dir).expect("Could not create appdata directory");
@@ -117,9 +116,9 @@ pub fn save_document(
     state: State<'_, AppState>,
 ) -> Result<String, String> {
     log::debug!("save_document init");
-    
+
     {
-        let mut workspace = state.workspace.lock().unwrap();
+        let mut workspace = state.workspace.write().unwrap();
         if let Some(doc) = workspace.recent_files.iter_mut().find(|doc| doc.id == id) {
             doc.title = title.clone();
         } else {
@@ -137,7 +136,7 @@ pub fn save_document(
 
     // Get the old title in a separate scope
     let old_title = {
-        let tab_switcher = state.tab_switcher.lock().unwrap();
+        let tab_switcher = state.tab_switcher.read().unwrap();
         tab_switcher
             .tabs
             .get(&id)
@@ -168,24 +167,28 @@ pub fn delete_document(
 
     // Get the tab information in a separate scope
     let (tab_title, next_tab_info) = {
-        let tabswitcher = state.tab_switcher.lock().unwrap();
+        let tabswitcher = state.tab_switcher.read().unwrap();
         if !tabswitcher.tabs.contains_key(&id) {
             return Err("Tab not found".to_string());
         }
-        
-        let title = tabswitcher.tabs.get(&id).map(|tab| tab.title.clone()).unwrap();
+
+        let title = tabswitcher
+            .tabs
+            .get(&id)
+            .map(|tab| tab.title.clone())
+            .unwrap();
         let next = tabswitcher
             .tabs
             .get_index(0)
             .or_else(|| tabswitcher.tabs.last())
             .map(|(next_id, next_tab)| (next_id.clone(), next_tab.title.clone()));
-            
+
         (title, next)
     };
 
     // Update tab switcher in a separate scope
     {
-        let mut tabswitcher = state.tab_switcher.lock().unwrap();
+        let mut tabswitcher = state.tab_switcher.write().unwrap();
         tabswitcher.tabs.shift_remove(&id);
         if let Some((next_id, _)) = &next_tab_info {
             tabswitcher.current_tab_id = Some(next_id.clone());
@@ -204,7 +207,7 @@ pub fn delete_document(
 
     // Update recent files in a separate scope
     {
-        let mut workspace = state.workspace.lock().unwrap();
+        let mut workspace = state.workspace.write().unwrap();
         workspace.recent_files.retain(|doc| doc.id != id);
     }
 
@@ -263,15 +266,15 @@ pub fn load_last_open_tabs(state: State<'_, AppState>) -> Result<Vec<DocumentDat
                 Ok(user_data) => {
                     // Update workspace in a separate scope
                     {
-                        let mut workspace = state.workspace.lock().unwrap();
+                        let mut workspace = state.workspace.write().unwrap();
                         workspace.recent_files = user_data.recent_files.clone();
                     }
 
                     // Update tab switcher in a separate scope
                     {
-                        let mut tabswitcher = state.tab_switcher.lock().unwrap();
+                        let mut tabswitcher = state.tab_switcher.write().unwrap();
                         tabswitcher.current_tab_id = Some(user_data.last_open_tab.clone());
-                        
+
                         // Clear existing tabs and load from user_data
                         let tabs = &mut tabswitcher.tabs;
                         tabs.clear();
@@ -284,7 +287,7 @@ pub fn load_last_open_tabs(state: State<'_, AppState>) -> Result<Vec<DocumentDat
                         match get_document_content(tab.id.clone(), tab.title.clone()) {
                             Ok(Some(doc)) => {
                                 last_open_files.push(doc);
-                                let mut tabswitcher = state.tab_switcher.lock().unwrap();
+                                let mut tabswitcher = state.tab_switcher.write().unwrap();
                                 tabswitcher.tabs.insert(tab.id.clone(), tab.clone());
                             }
                             _ => continue,
