@@ -32,11 +32,11 @@ pub struct Tab {
 pub struct UserData {
     pub tabs: Vec<Tab>,
     pub last_open_tab: String,
-    pub recent_files: Vec<RecentFileInfo>,
+    pub recent_files: Vec<FileInfo>,
 }
 
 #[derive(Default, Clone)]
-pub struct TabSwitcher {
+pub struct TabManager {
     pub tabs: IndexMap<String, Tab>,
     pub current_tab_id: Option<String>,
 }
@@ -70,15 +70,15 @@ pub struct Document {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RecentFileInfo {
+pub struct FileInfo {
     pub id: String,
     pub title: String,
 }
 
 #[derive(Debug, Default)]
-pub struct WorkSpace {
+pub struct FileManager {
     pub documents: Vec<Document>,
-    pub recent_files: Vec<RecentFileInfo>,
+    pub recent_files: Vec<FileInfo>,
 }
 
 #[derive(Default)]
@@ -90,9 +90,9 @@ pub struct AppStateInner {
     ///    AppStateInner::TabSwitcher::tabs could be mutex
     /// 2. multiple states which are mutex in themselves and are registered using multiple calls to
     ///    app.manage()
-    pub tab_switcher: RwLock<TabSwitcher>,
+    pub tab_switcher: RwLock<TabManager>,
     pub command_registry: Mutex<CommandRegistry>,
-    pub workspace: RwLock<WorkSpace>,
+    pub workspace: RwLock<FileManager>,
 }
 
 impl AppStateInner {
@@ -121,11 +121,11 @@ impl AppStateInner {
                                 .collect();
 
                             return Ok(Self {
-                                tab_switcher: RwLock::new(TabSwitcher {
+                                tab_switcher: RwLock::new(TabManager {
                                     current_tab_id,
                                     tabs,
                                 }),
-                                workspace: WorkSpace {
+                                workspace: FileManager {
                                     recent_files,
                                     ..Default::default()
                                 }
@@ -161,7 +161,7 @@ impl AppStateInner {
                             };
 
                             tabs.insert(id.clone(), tab);
-                            recent_files.push(RecentFileInfo {
+                            recent_files.push(FileInfo {
                                 id: id.clone(),
                                 title,
                             });
@@ -190,7 +190,7 @@ impl AppStateInner {
             fs::write(&file_path, "").map_err(|e| format!("Failed to create empty file: {}", e))?;
 
             tabs.insert(id.clone(), tab);
-            recent_files.push(RecentFileInfo {
+            recent_files.push(FileInfo {
                 id: id.clone(),
                 title,
             });
@@ -198,11 +198,11 @@ impl AppStateInner {
         }
 
         Ok(Self {
-            tab_switcher: RwLock::new(TabSwitcher {
+            tab_switcher: RwLock::new(TabManager {
                 current_tab_id,
                 tabs,
             }),
-            workspace: WorkSpace {
+            workspace: FileManager {
                 documents: Vec::new(),
                 recent_files,
             }

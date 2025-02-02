@@ -1,4 +1,4 @@
-use app_state::{AppStateInner, RecentFileInfo};
+use app_state::{AppStateInner, FileInfo};
 use tauri::{Manager, WindowEvent};
 mod app_state;
 mod commands;

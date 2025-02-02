@@ -5,7 +5,7 @@ use uuid::Uuid;
 use crate::app_state::{AppState, CommandRegistrar, CommandRegistry, Tab};
 use crate::commands::event_emitter;
 
-use crate::RecentFileInfo;
+use crate::FileInfo;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
@@ -16,8 +16,7 @@ impl TabCommands {
     pub fn new_tab(app: AppHandle, _payload: String) {
         log::debug!("new_tab init");
         let temp_app = app.clone();
-        let state = temp_app.state::<AppState>();
-        let orig_state = &state;
+        let state = &temp_app.state::<AppState>();
 
         let new_id = Uuid::new_v4().to_string();
 
@@ -25,27 +24,7 @@ impl TabCommands {
 
         let title = TabCommands.check_path_exists(&trove_dir);
 
-        // Clean up any stale entries in tabs and recent_files that don't exist on disk
-        // but have the same title
-        {
-            state.tab_switcher.write().unwrap().tabs.retain(|_, tab| {
-                let file_path =
-                    trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &tab.title)));
-                file_path.exists() && tab.title != title
-            });
-        }
-        {
-            state
-                .workspace
-                .write()
-                .unwrap()
-                .recent_files
-                .retain(|file| {
-                    let file_path =
-                        trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &file.title)));
-                    file_path.exists() && file.title != title
-                });
-        }
+        cleanup_deleted_files_workaround(state, trove_dir, &title);
 
         // Create new tab
         let new_tab = Tab {
@@ -66,15 +45,15 @@ impl TabCommands {
                 .write()
                 .unwrap()
                 .recent_files
-                .push(RecentFileInfo {
+                .push(FileInfo {
                     id: new_id.clone(),
                     // FIXME: hardcoded name may have conflict
                     title: "Untitled".to_string(),
                 });
         }
 
-        let _ = save_user_data(orig_state);
-        let _ = save_document(new_id, title, String::new(), orig_state.to_owned());
+        let _ = save_user_data(state);
+        let _ = save_document(new_id, title, String::new(), state.to_owned());
         event_emitter(app);
     }
 
@@ -214,6 +193,34 @@ impl TabCommands {
     }
 }
 
+fn cleanup_deleted_files_workaround(
+    state: &State<'_, crate::app_state::AppStateInner>,
+    trove_dir: std::path::PathBuf,
+    title: &String,
+) {
+    // Clean up any stale entries in tabs and recent_files that don't exist on disk
+    // but have the same title
+    {
+        state.tab_switcher.write().unwrap().tabs.retain(|_, tab| {
+            let file_path =
+                trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &tab.title)));
+            file_path.exists() && tab.title != *title
+        });
+    }
+    {
+        state
+            .workspace
+            .write()
+            .unwrap()
+            .recent_files
+            .retain(|file| {
+                let file_path =
+                    trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &file.title)));
+                file_path.exists() && file.title != *title
+            });
+    }
+}
+
 impl CommandRegistrar for TabCommands {
     fn register_commands(registry: &mut CommandRegistry) {
         // Register the methods directly
@@ -334,7 +341,7 @@ pub fn new_tab(app: AppHandle) -> Result<Tab, String> {
             .write()
             .unwrap()
             .recent_files
-            .push(RecentFileInfo {
+            .push(FileInfo {
                 id: new_id.clone(),
                 // FIXME: hardcoded name may have conflict
                 title: "Untitled".to_string(),

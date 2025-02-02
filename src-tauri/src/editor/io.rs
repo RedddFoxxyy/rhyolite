@@ -13,7 +13,7 @@ use sanitize_filename; //sanitize_filename module to sanitize filenames
 use crate::app_state::{AppState, DocumentData, UserData};
 use crate::editor::markdown_handler;
 
-use crate::RecentFileInfo; //Importing the DocumentData, RecentFileInfo and UserData structs
+use crate::FileInfo; //Importing the DocumentData, RecentFileInfo and UserData structs
 
 /// This function returns the path to the documents directory.
 pub fn get_documents_dir() -> PathBuf {
@@ -122,7 +122,7 @@ pub fn save_document(
         if let Some(doc) = workspace.recent_files.iter_mut().find(|doc| doc.id == id) {
             doc.title = title.clone();
         } else {
-            workspace.recent_files.push(RecentFileInfo {
+            workspace.recent_files.push(FileInfo {
                 id: id.clone(),
                 title: title.clone(),
             });
@@ -329,9 +329,7 @@ pub fn load_last_open_tabs(state: State<'_, AppState>) -> Result<Vec<DocumentDat
 
 /// This function returns the metadata of the recent files.
 #[tauri::command]
-pub fn get_recent_files_metadata(
-    state: State<'_, AppState>,
-) -> Result<Vec<RecentFileInfo>, String> {
+pub fn get_recent_files_metadata(state: State<'_, AppState>) -> Result<Vec<FileInfo>, String> {
     if let Err(e) = save_user_data(&state) {
         eprintln!("Warning: Failed to save user data: {}", e);
     }
