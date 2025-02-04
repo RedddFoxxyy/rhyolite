@@ -7,7 +7,7 @@ use crate::commands::event_emitter;
 
 use crate::utils::generate_available_path;
 use crate::FileInfo;
-use std::sync::{Arc, Mutex};
+// use std::sync::{Arc, Mutex};
 
 use super::io::{get_trove_dir, save_document, save_user_data};
 
@@ -227,27 +227,27 @@ impl CommandRegistrar for TabCommands {
         // Register the methods directly
         registry.add_command(
             "new_tab".to_string(),
-            Arc::new(Mutex::new(Box::new(Self::new_tab))),
+            Box::new(Self::new_tab),
         );
         registry.add_command(
             "close_tab".to_string(),
-            Arc::new(Mutex::new(Box::new(Self::close_tab))),
+            Box::new(Self::close_tab),
         );
         registry.add_command(
             "update_states".to_string(),
-            Arc::new(Mutex::new(Box::new(Self::update_states))),
+            Box::new(Self::update_states),
         );
         registry.add_command(
             "update_tab_title".to_string(),
-            Arc::new(Mutex::new(Box::new(Self::update_tab_title))),
+            Box::new(Self::update_tab_title),
         );
         registry.add_command(
             "switch_tab".to_string(),
-            Arc::new(Mutex::new(Box::new(Self::switch_tab))),
+            Box::new(Self::switch_tab),
         );
         registry.add_command(
             "load_tab".to_string(),
-            Arc::new(Mutex::new(Box::new(Self::load_tab))),
+            Box::new(Self::load_tab),
         );
     }
 }

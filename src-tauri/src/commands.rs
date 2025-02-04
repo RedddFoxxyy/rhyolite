@@ -28,7 +28,7 @@ pub fn exec_command(cmd: String, payload: Option<String>, app: AppHandle) {
         .commands
         .get_mut(&cmd)
     {
-        let mut action = command_item.action.lock().unwrap();
+        let action = &mut command_item.action;
         (action)(app.clone(), payload);
     } else {
         log::debug!("Unknown command: {}", cmd);

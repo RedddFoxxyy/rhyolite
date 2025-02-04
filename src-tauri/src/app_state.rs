@@ -1,3 +1,5 @@
+//! All the stuff related to state management for the app.
+
 use std::{
     collections::HashMap,
     fs,
@@ -214,4 +216,7 @@ impl AppStateInner {
 }
 
 pub type AppState = AppStateInner;
-pub type CommandAction = Arc<Mutex<Box<dyn FnMut(AppHandle, Option<String>) + Send + 'static>>>;
+///Todo: Implement Async for the CommandActions.
+/// I am also removing the Arc and Mutex for the command actions for now since it is
+/// not required. If needed we can wrap it again in arc and mutex.
+pub type CommandAction = Box<dyn FnMut(AppHandle, Option<String>) + Send + 'static>;

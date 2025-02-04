@@ -95,6 +95,7 @@ const saveDocument = async ({
     documentTitle,
     documentContent: documentContent || "",
   });
+  // invoke("exec_command", { cmd: "save_document", payload: { id: documentId, title: documentTitle, content: documentContent || ""}});
 };
 
 const loadDocument = async (
