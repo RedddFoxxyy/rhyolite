@@ -335,3 +335,4 @@ web_modules/
 /.vscode
 package-lock.json
 bun.lockb
+src-tauri/Cargo.lock
