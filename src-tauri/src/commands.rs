@@ -1,5 +1,5 @@
-use crate::app_state::{AppState, CommandRegistrar, Tab};
-use crate::editor::tabs;
+use crate::app_state::{AppState, CommandRegistrar};
+//use crate::editor::tabs;
 use crate::editor::tabs::TabCommands;
 use tauri::{AppHandle, Emitter, Manager};
 
@@ -15,7 +15,7 @@ pub fn exec_command(cmd: String, payload: Option<String>, app: AppHandle) {
         cmd,
         payload
             .clone()
-            .map(|p| format!("\"{}\"", p.escape_default().to_string()))
+            .map(|p| format!("\"{}\"", p.escape_default()))
             .unwrap_or("".to_string())
     );
 
@@ -45,49 +45,4 @@ pub fn load_default_commands(app: &AppHandle) {
 
     // Register commands from each module
     TabCommands::register_commands(&mut command_registry);
-}
-
-pub fn event_emitter(app: AppHandle) {
-    let state = app.state::<AppState>();
-    let current_state = state;
-
-    // Get current tab ID, create new tab if none exists
-    let current_tab_id = {
-        let tab_switcher = current_state.tab_switcher.read().unwrap();
-        match &tab_switcher.current_tab_id {
-            Some(id) => id.clone(),
-            None => {
-                // Release the lock before creating a new tab
-                drop(tab_switcher);
-                match tabs::new_tab(app.clone()) {
-                    Ok(new_tab) => new_tab.id,
-                    Err(e) => {
-                        log::error!("Failed to create new tab: {}", e);
-                        return; // Exit the function if we can't create a new tab
-                    }
-                }
-            }
-        }
-    };
-
-    // Emit all the tabs
-    {
-        let tabs: Vec<Tab> = current_state
-            .tab_switcher
-            .read()
-            .unwrap()
-            .tabs
-            .values()
-            .cloned()
-            .collect();
-        let _ = app.emit("Tabs", tabs);
-    }
-
-    // Emit current tab
-    {
-        let tab_switcher = current_state.tab_switcher.read().unwrap();
-        if let Some(current_tab) = tab_switcher.tabs.get(&current_tab_id) {
-            let _ = app.emit("Current_Tab", current_tab.clone());
-        }
-    }
 }

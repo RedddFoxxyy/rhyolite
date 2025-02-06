@@ -9,17 +9,17 @@ use uuid::Uuid; //Uuid module to generate unique ids
 use dirs; //dirs module to get the path of the documents directory
 use sanitize_filename; //sanitize_filename module to sanitize filenames
 
-use crate::app_state::{AppState, DocumentData, UserData, CommandRegistrar, CommandRegistry, Tab};
+use crate::app_state::{AppState, CommandRegistrar, CommandRegistry, DocumentData, UserData};
 use crate::editor::markdown_handler;
 
 use crate::FileInfo; //Importing the DocumentData, RecentFileInfo and UserData structs
 
 pub struct IOCommands;
+
 impl IOCommands {
-    pub fn save_document(
-        app: AppHandle,
-        payload: Option<String>
-    ) {
+    ///BUG: The save_document command does not save the document
+    ///when called from the frontend using exec_command.
+    pub fn save_document(app: AppHandle, payload: Option<String>) {
         let Some(payload) = payload else {
             log::warn!("Invalid call to save_document");
             return;
@@ -31,7 +31,11 @@ impl IOCommands {
         if let Ok(document_data) = serde_json::from_str::<DocumentData>(&payload) {
             {
                 let mut workspace = state.workspace.write().unwrap();
-                if let Some(doc) = workspace.recent_files.iter_mut().find(|doc| doc.id == document_data.id) {
+                if let Some(doc) = workspace
+                    .recent_files
+                    .iter_mut()
+                    .find(|doc| doc.id == document_data.id)
+                {
                     doc.title = document_data.title.clone();
                 } else {
                     workspace.recent_files.push(FileInfo {
@@ -40,12 +44,12 @@ impl IOCommands {
                     });
                 }
             }
-        
+
             let trove_dir = get_trove_dir("Untitled_Trove");
             let markdown_content = markdown_handler::html_to_markdown(&document_data.content);
             let safe_filename = sanitize_filename::sanitize(format!("{}.md", document_data.title));
             let file_path = trove_dir.join(&safe_filename);
-        
+
             // Get the old title in a separate scope
             let old_title = {
                 let tab_switcher = state.tab_switcher.read().unwrap();
@@ -55,29 +59,103 @@ impl IOCommands {
                     .map(|tab| tab.title.clone())
                     .unwrap_or_else(|| String::from("Untitled"))
             };
-        
+
             let old_path = trove_dir.join(sanitize_filename::sanitize(format!("{}.md", old_title)));
-        
+
             // if the title has changed, delete the old file
             if old_path != file_path && old_path.exists() {
-                let _ = fs::remove_file(old_path).map_err(|e| format!("Failed to delete old file: {}", e));
+                let _ = fs::remove_file(old_path)
+                    .map_err(|e| format!("Failed to delete old file: {}", e));
             }
-        
+
             let _ = if let Err(e) = fs::write(&file_path, markdown_content) {
                 Err(format!("Failed to write file: {}", e))
             } else {
                 Ok(file_path.to_string_lossy().to_string())
             };
         }
+    }
 
+    ///TODO: The delete_document command needs to be worked on to support
+    ///the new state management and remove all the legacy code.
+    pub fn delete_document(app: AppHandle, payload: Option<String>) {
+        let Some(payload) = payload else {
+            log::warn!("Invalid call to save_document");
+            return;
+        };
+
+        if let Ok(id) = serde_json::from_str::<String>(&payload) {
+            log::debug!("delete_document init");
+            let temp_app = app.clone();
+            let state = &temp_app.state::<AppState>();
+            let orig_state = &state;
+
+            // Get the tab information in a separate scope
+            let (tab_title, next_tab_info) = {
+                let tabswitcher = state.tab_switcher.read().unwrap();
+                if !tabswitcher.tabs.contains_key(&id) {
+                    log::debug!("Tab not found.");
+                    return;
+                }
+
+                let title = tabswitcher
+                    .tabs
+                    .get(&id)
+                    .map(|tab| tab.title.clone())
+                    .unwrap();
+                let next = tabswitcher
+                    .tabs
+                    .get_index(0)
+                    .or_else(|| tabswitcher.tabs.last())
+                    .map(|(next_id, next_tab)| (next_id.clone(), next_tab.title.clone()));
+
+                (title, next)
+            };
+
+            // Update tab switcher in a separate scope
+            {
+                let mut tabswitcher = state.tab_switcher.write().unwrap();
+                tabswitcher.tabs.shift_remove(&id);
+                if let Some((next_id, _)) = &next_tab_info {
+                    tabswitcher.current_tab_id = Some(next_id.clone());
+                }
+            }
+
+            // Handle file operations
+            let trove_dir = get_trove_dir("Untitled_Trove");
+            let filename = sanitize_filename::sanitize(format!("{}.md", tab_title));
+            let file_path = trove_dir.join(&filename);
+
+            if file_path.exists() {
+                let _ = fs::remove_file(&file_path)
+                    .map_err(|e| format!("Failed to delete file {}: {}", file_path.display(), e));
+            }
+
+            // Update recent files in a separate scope
+            {
+                let mut workspace = state.workspace.write().unwrap();
+                workspace.recent_files.retain(|doc| doc.id != id);
+            }
+
+            let _ = save_user_data(orig_state);
+
+            // Get the content for the next tab
+            let next_tab = if let Some((next_id, next_title)) = next_tab_info {
+                get_document_content(next_id, next_title).unwrap()
+            } else {
+                None
+            };
+        }
     }
 }
 
 impl CommandRegistrar for IOCommands {
     fn register_commands(registry: &mut CommandRegistry) {
+        registry.add_command("save_document".to_string(), Box::new(Self::save_document));
+
         registry.add_command(
-            "save_document".to_string(),
-            Box::new(Self::save_document),
+            "delete_document".to_string(),
+            Box::new(Self::delete_document),
         );
     }
 }

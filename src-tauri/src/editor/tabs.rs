@@ -1,9 +1,9 @@
 //! This module provides document tabs related commands for the app.
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 use uuid::Uuid;
 
 use crate::app_state::{AppState, CommandRegistrar, CommandRegistry, Tab};
-use crate::commands::event_emitter;
+//use crate::commands::event_emitter;
 
 use crate::utils::generate_available_path;
 use crate::FileInfo;
@@ -55,7 +55,7 @@ impl TabCommands {
 
         let _ = save_user_data(state);
         let _ = save_document(new_id, title, String::new(), state.to_owned());
-        event_emitter(app);
+        update_tabs_state(app);
     }
 
     pub fn close_tab(app: AppHandle, payload: Option<String>) {
@@ -108,11 +108,11 @@ impl TabCommands {
         }
 
         // Call event emitter after releasing the lock
-        event_emitter(app);
+        update_tabs_state(app);
     }
 
     pub fn update_states(app: AppHandle, _payload: Option<String>) {
-        event_emitter(app);
+        update_tabs_state(app);
     }
 
     pub fn update_tab_title(app: AppHandle, payload: Option<String>) {
@@ -144,7 +144,7 @@ impl TabCommands {
             }
         }
 
-        event_emitter(app);
+        update_tabs_state(app);
     }
 
     pub fn switch_tab(app: AppHandle, payload: Option<String>) {
@@ -165,7 +165,7 @@ impl TabCommands {
                 }
             }
         }
-        event_emitter(app);
+        update_tabs_state(app);
     }
 
     pub fn load_tab(app: AppHandle, payload: Option<String>) {
@@ -189,7 +189,7 @@ impl TabCommands {
                 tab_switcher.tabs.insert(id, new_tab.clone());
             }
 
-            event_emitter(app);
+            update_tabs_state(app);
         }
     }
 }
@@ -225,30 +225,15 @@ fn cleanup_deleted_files_workaround(
 impl CommandRegistrar for TabCommands {
     fn register_commands(registry: &mut CommandRegistry) {
         // Register the methods directly
-        registry.add_command(
-            "new_tab".to_string(),
-            Box::new(Self::new_tab),
-        );
-        registry.add_command(
-            "close_tab".to_string(),
-            Box::new(Self::close_tab),
-        );
-        registry.add_command(
-            "update_states".to_string(),
-            Box::new(Self::update_states),
-        );
+        registry.add_command("new_tab".to_string(), Box::new(Self::new_tab));
+        registry.add_command("close_tab".to_string(), Box::new(Self::close_tab));
+        registry.add_command("update_states".to_string(), Box::new(Self::update_states));
         registry.add_command(
             "update_tab_title".to_string(),
             Box::new(Self::update_tab_title),
         );
-        registry.add_command(
-            "switch_tab".to_string(),
-            Box::new(Self::switch_tab),
-        );
-        registry.add_command(
-            "load_tab".to_string(),
-            Box::new(Self::load_tab),
-        );
+        registry.add_command("switch_tab".to_string(), Box::new(Self::switch_tab));
+        registry.add_command("load_tab".to_string(), Box::new(Self::load_tab));
     }
 }
 
@@ -285,7 +270,7 @@ pub fn get_tabs(state: State<'_, AppState>) -> Result<Vec<Tab>, String> {
 
 #[tauri::command]
 pub fn update_states(app: AppHandle) {
-    event_emitter(app);
+    update_tabs_state(app);
 }
 
 #[tauri::command]
@@ -331,7 +316,7 @@ pub fn new_tab(app: AppHandle) -> Result<Tab, String> {
 
     save_user_data(orig_state)?;
     let _ = save_document(new_id, title, String::new(), orig_state.to_owned());
-    event_emitter(app);
+    update_tabs_state(app);
 
     Ok(new_tab)
 }
@@ -355,7 +340,58 @@ pub fn load_tab(
         tab_switcher.tabs.insert(id, new_tab.clone());
     }
 
-    event_emitter(app);
+    update_tabs_state(app);
 
     Ok(new_tab)
+}
+
+// I named this function based on the fact that it updates the reactive states
+// related to tabs on the frontend when called.
+///OPTIMIZE: 1. Use exec_command with new_tab command call
+///instead of using the new_tab function defined outside
+///the TabCOmmands Struct.
+///2. Improve Error Hnadling.
+pub fn update_tabs_state(app: AppHandle) {
+    let state = app.state::<AppState>();
+    let current_state = state;
+
+    // Get current tab ID, create new tab if none exists
+    let current_tab_id = {
+        let tab_switcher = current_state.tab_switcher.read().unwrap();
+        match &tab_switcher.current_tab_id {
+            Some(id) => id.clone(),
+            None => {
+                // Release the lock before creating a new tab
+                drop(tab_switcher);
+                match new_tab(app.clone()) {
+                    Ok(new_tab) => new_tab.id,
+                    Err(e) => {
+                        log::error!("Failed to create new tab: {}", e);
+                        return; // Exit the function if we can't create a new tab
+                    }
+                }
+            }
+        }
+    };
+
+    // Emit all the tabs
+    {
+        let tabs: Vec<Tab> = current_state
+            .tab_switcher
+            .read()
+            .unwrap()
+            .tabs
+            .values()
+            .cloned()
+            .collect();
+        let _ = app.emit("Tabs", tabs);
+    }
+
+    // Emit current tab
+    {
+        let tab_switcher = current_state.tab_switcher.read().unwrap();
+        if let Some(current_tab) = tab_switcher.tabs.get(&current_tab_id) {
+            let _ = app.emit("Current_Tab", current_tab.clone());
+        }
+    }
 }
