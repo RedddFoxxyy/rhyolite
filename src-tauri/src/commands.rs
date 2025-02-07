@@ -1,6 +1,7 @@
 use crate::app_state::{AppState, CommandRegistrar};
 //use crate::editor::tabs;
-use crate::editor::tabs::TabCommands;
+use crate::editor::{tabs::TabCommands, io::IOCommands};
+
 use tauri::{AppHandle, Emitter, Manager};
 
 /// TODO: The current organisation of exec_command function is not good
@@ -45,4 +46,5 @@ pub fn load_default_commands(app: &AppHandle) {
 
     // Register commands from each module
     TabCommands::register_commands(&mut command_registry);
+    IOCommands::register_commands(&mut command_registry);
 }

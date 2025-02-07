@@ -6,26 +6,26 @@ import { invoke } from "@tauri-apps/api/core";
 
 const apiProvider = new ApiProvider();
 
-const switchTab = async (tabId: string): Promise<Tab | undefined> => {
-  const tab: Tab | undefined = TabsStore.getTabById(tabId);
-  if (!tab) return undefined;
+const switchTab = async (tabId: string) => {
+  // const tab: Tab | undefined = TabsStore.getTabById(tabId);
+  // if (!tab) return undefined;
 
   // Invoke the switch_tab command
   invoke("exec_command", { 
     cmd: "switch_tab", 
-    payload: { tabId } 
+    payload: JSON.stringify({ tabId }) 
   });
 
   // Update local store
-  TabsStore.updateCurrentTabState(tab);
+  // TabsStore.updateCurrentTabState(tab);
 
-  return tab;
+  // return tab;
 };
 
 const closeTab = async (tabId?: string) => {
   if (!tabId) return;
   try {
-    invoke("exec_command", { cmd: "close_tab", payload: { tabId } });
+    invoke("exec_command", { cmd: "close_tab", payload: JSON.stringify({ tabId }) });
     // const tabToClose: Tab | undefined = TabsStore.getTabById(tabId);
     // if (!tabToClose) return;
     // const currentTab: Tab | null = TabsStore.getCurrentTabState();
@@ -87,7 +87,7 @@ const updateTabTitleById = async (tabId: string, newTitle: string) => {
   //  });
   invoke("exec_command", {
     cmd: "update_tab_title",
-    payload: { id: tabId, title: newTitle },
+    payload: JSON.stringify({ id: tabId, title: newTitle }),
   });
 };
 

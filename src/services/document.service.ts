@@ -10,7 +10,7 @@ const apiProvider = new ApiProvider();
 
 const getAllDocumentTabs = async (): Promise<Tab[]> => {
   const tabs: Tab[] = await apiProvider.getAllDocumentTabs();
-  invoke("update_states");
+  invoke("exec_command", { cmd: "update_states" });
   return tabsStore.updateTabsState(tabs);
 };
 
@@ -90,12 +90,12 @@ const saveDocument = async ({
   documentTitle: string;
   documentContent: any;
 }): Promise<void> => {
-  await apiProvider.saveDocument({
-    documentId,
-    documentTitle,
-    documentContent: documentContent || "",
-  });
-  // invoke("exec_command", { cmd: "save_document", payload: { id: documentId, title: documentTitle, content: documentContent || ""}});
+  // await apiProvider.saveDocument({
+  //   documentId,
+  //   documentTitle,
+  //   documentContent: documentContent || "",
+  // });
+  invoke("exec_command", { cmd: "save_document", payload: JSON.stringify({ id: documentId, title: documentTitle, content: documentContent || ""})});
 };
 
 const loadDocument = async (
@@ -106,7 +106,7 @@ const loadDocument = async (
     const doc = await apiProvider.getDocumentContent(documentId, documentTitle);
     if (!doc) return null;
 
-    // invoke("update_states");
+    invoke("exec_command", { cmd: "update_states" });
     return doc;
   } catch (error) {
     console.error("Failed to load document:", error);

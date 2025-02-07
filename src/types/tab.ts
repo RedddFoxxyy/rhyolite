@@ -1,3 +1,6 @@
+
+//TODO: Implement tabType either on the backend
+//or on the frontend.
 export interface Tab {
   id: string;
   title: string;

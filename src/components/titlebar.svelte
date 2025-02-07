@@ -9,6 +9,7 @@
   import { addNewDocumentTab } from "../services/document.service";
   import tabService from "../services/tab.service";
   import { type Tab } from "../types/tab";
+  import { invoke } from "@tauri-apps/api/core";
 
   let tabs: Tab[] = $state([]);
   let currentTab: Tab | null = $state(null);
@@ -58,7 +59,8 @@
 
   const onOpenTab = (tab: Tab) => {
     tabService.switchTab(tab.id);
-    //invoke("update_states");
+    invoke("exec_command", {cmd: "get_document_content", payload: JSON.stringify({ id: tab.id, title: tab.title })});
+    // invoke("update_states");
   };
 </script>
 

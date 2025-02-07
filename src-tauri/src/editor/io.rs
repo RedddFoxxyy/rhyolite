@@ -1,7 +1,7 @@
 //! This module provides IO related functions for the app.
 use std::fs; //Filesystem module
 use std::path::PathBuf;
-use tauri::{AppHandle, Manager, State, Window};
+use tauri::{AppHandle, Emitter, Manager, State, Window};
 //PathBuf datatype to store path strings
 use uuid::Uuid; //Uuid module to generate unique ids
                 // use tauri_plugin_dialog::DialogExt; //DialogExt trait to show dialog boxes
@@ -9,7 +9,7 @@ use uuid::Uuid; //Uuid module to generate unique ids
 use dirs; //dirs module to get the path of the documents directory
 use sanitize_filename; //sanitize_filename module to sanitize filenames
 
-use crate::app_state::{AppState, CommandRegistrar, CommandRegistry, DocumentData, UserData};
+use crate::app_state::{AppState, CommandRegistrar, CommandRegistry, DocumentData, Tab, UserData};
 use crate::editor::markdown_handler;
 
 use crate::FileInfo; //Importing the DocumentData, RecentFileInfo and UserData structs
@@ -147,15 +147,60 @@ impl IOCommands {
             };
         }
     }
+
+    pub fn get_document_content(app: AppHandle, payload: Option<String>) {
+        let Some(payload) = payload else {
+            log::warn!("Invalid call to save_document");
+            return;
+        };
+        // let temp_app = app.clone();
+        // let state = &temp_app.state::<AppState>();
+
+        if let Ok(tab_data) = serde_json::from_str::<Tab>(&payload) {
+            let id = tab_data.id;
+            let title = tab_data.title;
+
+            // Get the path of the document using title
+            let trove_dir = get_trove_dir("Untitled_Trove");
+            let file_path = trove_dir.join(format!("{}.md", title));
+
+            // Check if the file exists
+            if !file_path.exists() {
+                // If the file does not exist, return None
+                return;
+            }
+
+            // Read the file content using the file path
+            match fs::read_to_string(&file_path) {
+                // If the file is read successfully, convert the markdown content to HTML
+                Ok(content) => {
+                    let html_output = markdown_handler::markdown_to_html(&content);
+
+                    // Update the current content on the screen.
+                    let _ = app.emit("current_editor_content", html_output);
+                    //     Ok(Some(DocumentData {
+                    //         id,
+                    //         title,
+                    //         content: html_output,
+                    //     }))
+                }
+                // If there is an error in reading the file, return the error
+                Err(_e) => (),
+            }
+        }
+    }
 }
 
 impl CommandRegistrar for IOCommands {
     fn register_commands(registry: &mut CommandRegistry) {
         registry.add_command("save_document".to_string(), Box::new(Self::save_document));
-
         registry.add_command(
             "delete_document".to_string(),
             Box::new(Self::delete_document),
+        );
+        registry.add_command(
+            "get_document_content".to_string(),
+            Box::new(Self::get_document_content),
         );
     }
 }

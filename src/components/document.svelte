@@ -5,38 +5,58 @@
   import TabService from "../services/tab.service";
   import type { Tab } from "../types/tab";
   import ContentEditor from "./content-editor/content-editor.svelte";
+  import { listen } from "@tauri-apps/api/event";
+  import { invoke } from "@tauri-apps/api/core";
 
-  interface DocumentTabItemProps {
-    open?: boolean;
-    tab: Tab;
-    onclick: (event: Event) => void;
-  }
+  // interface DocumentTabItemProps {
+  //   open?: boolean;
+  //   tab: Tab;
+  //   onclick: (event: Event) => void;
+  // }
 
-  let { open, tab, onclick }: DocumentTabItemProps = $props();
+  // let { open, tab, onclick }: DocumentTabItemProps = $props();
 
+  let currentTab: Tab | null = $state(null);
   let documentTitle: string = $state("");
   let documentContent: any = $state();
   let wordCount: number = $state(0);
   let charCount: number = $state(0);
   let initialized: boolean = $state(false);
-  onMount(async () => {
-    documentTitle = tab.title;
-    // content = tab.content;
-    const doc = await DocumentService.loadDocument(tab.id, tab.title);
+  onMount(() => {
+    // documentTitle = tab.title;
+    // // content = tab.content;
+    // const doc = await DocumentService.loadDocument(tab.id, tab.title);
     initialized = true;
 
-    if (!doc) return;
-    documentContent = doc.content;
-    documentTitle = doc.title;
-    await TabService.updateTabTitleById(tab.id, documentTitle);
+    // if (!doc) return;
+    // documentContent = doc.content;
+    // documentTitle = doc.title;
+    // await TabService.updateTabTitleById(tab.id, documentTitle);
+    const currentTablisten = listen<any>("current_editor_content", (event) => {
+      // Update the Svelte store with the new counter value
+      documentContent = event.payload;
+    });
+    const docContentlisten = listen<Tab>("Current_Tab", (event) => {
+      // Update the Svelte store with the new counter value
+      currentTab = event.payload;
+      documentTitle = currentTab.title;
+    });
+    return () => {
+      currentTablisten.then((unsub) => unsub());
+    };
   });
 
   const handleTitleChange = (event: Event) => {
     const target = event.target as HTMLTextAreaElement;
     documentTitle = target.value;
-    TabService.updateTabTitleById(tab.id, target.value);
-
-    saveDocument();
+    // TabService.updateTabTitleById(currentTab.id, target.value);
+    if (currentTab) {
+      invoke("exec_command", {
+        cmd: "update_tab_title",
+        payload: JSON.stringify({ id: currentTab.id, title: target.value }),
+      });
+      saveDocument();
+    }
   };
 
   let saveTimeout: number | undefined;
@@ -55,17 +75,19 @@
     if (saveTimeout) clearTimeout(saveTimeout);
     // Set a new timeout to trigger `saveAction` after 0.5 seconds
     saveTimeout = setTimeout(() => {
-      DocumentService.saveDocument({
-        documentId: tab.id,
-        documentTitle,
-        documentContent,
-      });
+      if (currentTab) {
+        DocumentService.saveDocument({
+          documentId: currentTab.id,
+          documentTitle,
+          documentContent,
+        });
+      };
     }, delaySave ?? 500);
   };
 </script>
 
 <!-- TODO: Decide whether not open tabs should be hidden or removed from DOM -->
-<div class={`${open ? "" : "hidden"} flex flex-col w-full max-w-screen-xl`}>
+<div class={` flex flex-col w-full max-w-screen-xl`}>
   <div class="flex h-[80px] mb-6 mx-auto justify-center w-[50%] min-w-[300px]">
     <textarea
       class="w-full h-full resize-none border-none bg-base rounded-lg py-7 text-text text-[2rem] focus:outline-none focus:ring-0 shadow-lg"
