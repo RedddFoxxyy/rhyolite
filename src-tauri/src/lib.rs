@@ -29,7 +29,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             editor::io::save_document,
             editor::io::load_last_open_tabs,
-            editor::io::delete_document,
+            // editor::io::delete_document,
             editor::io::get_document_content,
             editor::io::get_recent_files_metadata,
             editor::tabs::update_states,

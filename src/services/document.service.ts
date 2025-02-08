@@ -31,24 +31,25 @@ export const addNewDocumentTab = async (): Promise<void> => {
 };
 
 const deleteDocumentTab = async (): Promise<void> => {
-  try {
-    const currentTab: Tab | null = tabsStore.getCurrentTabState();
-    if (currentTab === null) return;
+  // try {
+  //   const currentTab: Tab | null = tabsStore.getCurrentTabState();
+  //   if (currentTab === null) return;
 
-    await apiProvider.deleteDocument(currentTab.id);
-    const tabs = await getAllDocumentTabs();
-    tabsStore.updateTabsState(tabs);
+  //   await apiProvider.deleteDocument(currentTab.id);
+  //   const tabs = await getAllDocumentTabs();
+  //   tabsStore.updateTabsState(tabs);
 
-    if (tabs.length > 0) {
-      const lastTab = tabs[tabs.length - 1];
-      tabsStore.updateCurrentTabState(lastTab);
-    } else {
-      await addNewDocumentTab();
-    }
-    invoke("update_states");
-  } catch (error) {
-    console.error("Failed to delete document:", error);
-  }
+  //   if (tabs.length > 0) {
+  //     const lastTab = tabs[tabs.length - 1];
+  //     tabsStore.updateCurrentTabState(lastTab);
+  //   } else {
+  //     await addNewDocumentTab();
+  //   }
+  //   invoke("update_states");
+  // } catch (error) {
+  //   console.error("Failed to delete document:", error);
+  // }
+  invoke("exec_command", { cmd: "delete_document" });
 };
 
 const loadRecentDocuments = async (): Promise<void> => {
