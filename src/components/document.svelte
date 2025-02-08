@@ -8,14 +8,6 @@
   import { listen } from "@tauri-apps/api/event";
   import { invoke } from "@tauri-apps/api/core";
 
-  // interface DocumentTabItemProps {
-  //   open?: boolean;
-  //   tab: Tab;
-  //   onclick: (event: Event) => void;
-  // }
-
-  // let { open, tab, onclick }: DocumentTabItemProps = $props();
-
   let currentTab: Tab | null = $state(null);
   let documentTitle: string = $state("");
   let documentContent: any = $state();
@@ -23,26 +15,24 @@
   let charCount: number = $state(0);
   let initialized: boolean = $state(false);
   onMount(() => {
-    // documentTitle = tab.title;
-    // // content = tab.content;
-    // const doc = await DocumentService.loadDocument(tab.id, tab.title);
     initialized = true;
-
-    // if (!doc) return;
-    // documentContent = doc.content;
-    // documentTitle = doc.title;
-    // await TabService.updateTabTitleById(tab.id, documentTitle);
     const currentTablisten = listen<any>("current_editor_content", (event) => {
-      // Update the Svelte store with the new counter value
       documentContent = event.payload;
     });
     const docContentlisten = listen<Tab>("Current_Tab", (event) => {
-      // Update the Svelte store with the new counter value
       currentTab = event.payload;
       documentTitle = currentTab.title;
+      invoke("exec_command", {
+        cmd: "get_document_content",
+        payload: JSON.stringify({
+          id: currentTab.id,
+          title: currentTab.title,
+        }),
+      });
     });
     return () => {
       currentTablisten.then((unsub) => unsub());
+      docContentlisten.then((unsub) => unsub());
     };
   });
 
@@ -81,7 +71,7 @@
           documentTitle,
           documentContent,
         });
-      };
+      }
     }, delaySave ?? 500);
   };
 </script>

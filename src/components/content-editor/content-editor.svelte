@@ -264,6 +264,13 @@
   const unsubscribeStates = ContentEditorStore.states.subscribe((value) => {
     flagToolbarVisibility = value.flagToolbarVisibility;
   });
+
+  // $effect(() => {
+  //   if (content && editor) {
+  //     $editor.commands.setContent(content);
+  //   }
+  // });
+
   onDestroy(unsubscribeStates); // Clean up
 </script>
 

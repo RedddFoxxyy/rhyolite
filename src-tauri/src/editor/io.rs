@@ -2,19 +2,18 @@
 use std::fs; //Filesystem module
 use std::path::PathBuf;
 use tauri::{AppHandle, Emitter, Manager, State, Window};
-//PathBuf datatype to store path strings
-use uuid::Uuid; //Uuid module to generate unique ids
-                // use tauri_plugin_dialog::DialogExt; //DialogExt trait to show dialog boxes
+use uuid::Uuid; 
+// use tauri_plugin_dialog::DialogExt; //DialogExt trait to show dialog boxes
 
-use dirs; //dirs module to get the path of the documents directory
-use sanitize_filename; //sanitize_filename module to sanitize filenames
+use dirs; 
+use sanitize_filename; 
 
 use crate::app_state::{AppState, CommandRegistrar, CommandRegistry, DocumentData, Tab, UserData};
 use crate::editor::markdown_handler;
 use crate::editor::tabs::update_tabs_state;
 
 
-use crate::FileInfo; //Importing the DocumentData, RecentFileInfo and UserData structs
+use crate::FileInfo; 
 
 pub struct IOCommands;
 
@@ -166,7 +165,7 @@ impl IOCommands {
         // let state = &temp_app.state::<AppState>();
 
         if let Ok(tab_data) = serde_json::from_str::<Tab>(&payload) {
-            let id = tab_data.id;
+            // let id = tab_data.id;
             let title = tab_data.title;
 
             // Get the path of the document using title
@@ -198,6 +197,47 @@ impl IOCommands {
             }
         }
     }
+
+    pub fn load_last_open_tabs(app: AppHandle, _payload: Option<String>) {
+        log::debug!("load_last_open_tabs init");
+        let temp_app = app.clone();
+        let state = &temp_app.state::<AppState>();
+
+        let appdata_dir = get_documents_dir().join("appdata");
+        let userdata_path = appdata_dir.join("userdata.json");
+    
+        if userdata_path.exists() {
+            match fs::read_to_string(&userdata_path) {
+                Ok(content) => match serde_json::from_str::<UserData>(&content) {
+                    Ok(user_data) => {
+                        // Update workspace in a separate scope
+                        {
+                            let mut workspace = state.workspace.write().unwrap();
+                            workspace.recent_files = user_data.recent_files.clone();
+                        }
+    
+                        // Update tab switcher in a separate scope
+                        {
+                            let mut tabswitcher = state.tab_switcher.write().unwrap();
+                            tabswitcher.current_tab_id = Some(user_data.last_open_tab.clone());
+    
+                            // Clear existing tabs and load from user_data
+                            let tabs = &mut tabswitcher.tabs;
+                            tabs.clear();
+                            //tabswitcher.tabs = user_data.tabs.clone();
+                            for tab in user_data.tabs {
+                                tabswitcher.tabs.insert(tab.id.clone(), tab.clone());
+                            }
+        
+                        }
+                    }
+                    Err(e) => log::debug!("{}", format!("Failed to deserialize userdata: {}", e)),
+                },
+                Err(e) => log::debug!("{}", format!("Failed to read userdata file: {}", e)),
+            }
+        }
+        update_tabs_state(app.clone());
+    }
 }
 
 impl CommandRegistrar for IOCommands {
@@ -210,6 +250,10 @@ impl CommandRegistrar for IOCommands {
         registry.add_command(
             "get_document_content".to_string(),
             Box::new(Self::get_document_content),
+        );
+        registry.add_command(
+            "load_last_open_tabs".to_string(),
+            Box::new(Self::load_last_open_tabs),
         );
     }
 }

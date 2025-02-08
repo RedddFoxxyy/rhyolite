@@ -53,33 +53,34 @@ const deleteDocumentTab = async (): Promise<void> => {
 };
 
 const loadRecentDocuments = async (): Promise<void> => {
-  try {
-    const docs: Document[] = await apiProvider.getLastOpenedTabs();
+  // try {
+  //   const docs: Document[] = await apiProvider.getLastOpenedTabs();
 
-    if (docs.length > 0) {
-      // await apiProvider.resetTabsOrderCount();
+  //   if (docs.length > 0) {
+  //     // await apiProvider.resetTabsOrderCount();
 
-      // Load each document as a tab
-      for (const doc of docs) {
-        await apiProvider.loadTab({
-          documentId: doc.id,
-          documentTitle: doc.title,
-        });
-      }
+  //     // Load each document as a tab
+  //     for (const doc of docs) {
+  //       await apiProvider.loadTab({
+  //         documentId: doc.id,
+  //         documentTitle: doc.title,
+  //       });
+  //     }
 
-      // Update the tabs in UI
-      await getAllDocumentTabs();
+  //     // Update the tabs in UI
+  //     await getAllDocumentTabs();
 
-      // Load the last open document into the editor
-      const open_tab: string = await apiProvider.getCurrentOpenTab();
-      await TabService.switchTab(open_tab);
-    } else {
-      // If no documents exist, create a new tab
-      await addNewDocumentTab();
-    }
-  } catch (error) {
-    console.error("Failed to load documents:", error);
-  }
+  //     // Load the last open document into the editor
+  //     const open_tab: string = await apiProvider.getCurrentOpenTab();
+  //     await TabService.switchTab(open_tab);
+  //   } else {
+  //     // If no documents exist, create a new tab
+  //     await addNewDocumentTab();
+  //   }
+  // } catch (error) {
+  //   console.error("Failed to load documents:", error);
+  // }
+  invoke("exec_command", { cmd: "load_last_open_tabs" });
 };
 
 const saveDocument = async ({
