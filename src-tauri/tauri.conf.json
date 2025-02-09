@@ -29,6 +29,7 @@
     "icon": [
       "icons/icon.png",
       "icons/icon.ico",
+      "icons/icon.svg",
       "icons/icon.icns",
       "icons/Square44x44Logo.png",
       "icons/Square30x30Logo.png",
@@ -42,7 +43,9 @@
       "icons/StoreLogo.png",
       "icons/32x32.png",
       "icons/128x128.png",
-      "icons/128x128@2x.png"
+      "icons/128x128@2x.png",
+      "icons/1080x1080.png",
+      "icons/4320x4320.png"
     ],
     "licenseFile": "../LICENSE.txt",
     "license": "Apache-2.0",
