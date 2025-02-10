@@ -20,7 +20,7 @@ pub fn generate_available_path(path: PathBuf) -> PathBuf {
     if prefix.len() == prefix_without_num.len() && !prefix_without_num.ends_with(' ') {
         prefix_without_num.push(' ');
     }
-    let mut num = 2;
+    let mut num = 1;
     loop {
         let new_path = path.with_file_name(format!("{} {}{}", prefix_without_num, num, suffix));
         if !new_path.exists() {
