@@ -14,72 +14,19 @@ const getAllDocumentTabs = async (): Promise<Tab[]> => {
   return tabsStore.updateTabsState(tabs);
 };
 
-export const addNewDocumentTab = async (): Promise<void> => {
+export const addNewDocumentTab = (): void => {
   try {
     invoke("exec_command", { cmd: "new_tab" });
-    // const newTab: Tab = await apiProvider.addNewDocumentTab();
-    //tabsStore.updateCurrentTabState(newTab);
-    // invoke("update_states");
-
-    // let tabs: Tab[] = await getAllDocumentTabs();
-    // tabsStore.updateTabsState(tabs);
-
-    //await apiProvider.sendCurrentOpenTab(newTab.id);
   } catch (error) {
     console.error("Failed to create new document:", error);
   }
 };
 
-const deleteDocumentTab = async (): Promise<void> => {
-  // try {
-  //   const currentTab: Tab | null = tabsStore.getCurrentTabState();
-  //   if (currentTab === null) return;
-
-  //   await apiProvider.deleteDocument(currentTab.id);
-  //   const tabs = await getAllDocumentTabs();
-  //   tabsStore.updateTabsState(tabs);
-
-  //   if (tabs.length > 0) {
-  //     const lastTab = tabs[tabs.length - 1];
-  //     tabsStore.updateCurrentTabState(lastTab);
-  //   } else {
-  //     await addNewDocumentTab();
-  //   }
-  //   invoke("update_states");
-  // } catch (error) {
-  //   console.error("Failed to delete document:", error);
-  // }
+const deleteDocumentTab = (): void => {
   invoke("exec_command", { cmd: "delete_document" });
 };
 
-const loadRecentDocuments = async (): Promise<void> => {
-  // try {
-  //   const docs: Document[] = await apiProvider.getLastOpenedTabs();
-
-  //   if (docs.length > 0) {
-  //     // await apiProvider.resetTabsOrderCount();
-
-  //     // Load each document as a tab
-  //     for (const doc of docs) {
-  //       await apiProvider.loadTab({
-  //         documentId: doc.id,
-  //         documentTitle: doc.title,
-  //       });
-  //     }
-
-  //     // Update the tabs in UI
-  //     await getAllDocumentTabs();
-
-  //     // Load the last open document into the editor
-  //     const open_tab: string = await apiProvider.getCurrentOpenTab();
-  //     await TabService.switchTab(open_tab);
-  //   } else {
-  //     // If no documents exist, create a new tab
-  //     await addNewDocumentTab();
-  //   }
-  // } catch (error) {
-  //   console.error("Failed to load documents:", error);
-  // }
+const loadRecentDocuments = (): void => {
   invoke("exec_command", { cmd: "load_last_open_tabs" });
 };
 
@@ -92,11 +39,6 @@ const saveDocument = async ({
   documentTitle: string;
   documentContent: any;
 }): Promise<void> => {
-  // await apiProvider.saveDocument({
-  //   documentId,
-  //   documentTitle,
-  //   documentContent: documentContent || "",
-  // });
   invoke("exec_command", { cmd: "save_document", payload: JSON.stringify({ id: documentId, title: documentTitle, content: documentContent || ""})});
 };
 

@@ -58,8 +58,8 @@
   });
 
   const onOpenTab = (tab: Tab) => {
-    tabService.switchTab(tab.id);
-    invoke("exec_command", {cmd: "get_document_content", payload: JSON.stringify({ id: tab.id, title: tab.title })});
+    tabService.switchTab(tab);
+    //invoke("exec_command", {cmd: "get_document_content", payload: JSON.stringify({ id: tab.id, title: tab.title })});
     // invoke("update_states");
   };
 </script>

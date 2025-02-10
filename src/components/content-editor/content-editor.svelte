@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { listen } from "@tauri-apps/api/event";
+  import { invoke } from "@tauri-apps/api/core";
   import type { ChainedCommands } from "@tiptap/core";
   import { Extension } from "@tiptap/core";
   import Bold from "@tiptap/extension-bold";
@@ -160,6 +162,11 @@
 
   onMount(() => {
     setupEditor();
+    const currentTablisten = listen<any>("current_editor_content", (event) => {
+      let documentContent = event.payload;
+      $editor.commands.setContent(documentContent);
+    });
+    currentTablisten.then((unsub) => unsub());
   });
 
   const toggleMark = (mark: string) => {

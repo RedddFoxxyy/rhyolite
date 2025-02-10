@@ -6,7 +6,7 @@
   import Document from "./document.svelte";
   import { listen } from "@tauri-apps/api/event";
   import { getCurrentWindow } from "@tauri-apps/api/window";
-    import { invoke } from "@tauri-apps/api/core";
+  import { invoke } from "@tauri-apps/api/core";
 
   let tabs: Tab[] = $state([]);
   let currentTab: Tab | null = $state(null);
@@ -34,19 +34,19 @@
 
   const onOpenTab = (tab: Tab) => {
     //TabsStore.updateCurrentTabState(tab);
-    tabService.switchTab(tab.id);
+    tabService.switchTab(tab);
   };
 </script>
 
 <div class="flex grow justify-center mt-[30px] px-10 overflow-auto">
   <!-- {#each tabs as tab} -->
-    <!-- {#if tab.tabType === TabType.Document || tab.tabType === undefined} -->
-      <!-- TODO: Q: How to switch between tabs? -->
-      <!-- 1: Have all tabs as separate DOM Elements, set display:none on inactive tabs -->
-      <!--    Pro: possibly retained DOM states. Con: Too large DOM-->
-      <!-- 2: Have only active tab in DOM -->
-      <!--    Pro: possibly retained DOM states. Con: Too large DOM-->
-      <Document/>
-    <!-- {/if} -->
+  <!-- {#if tab.tabType === TabType.Document || tab.tabType === undefined} -->
+  <!-- TODO: Q: How to switch between tabs? -->
+  <!-- 1: Have all tabs as separate DOM Elements, set display:none on inactive tabs -->
+  <!--    Pro: possibly retained DOM states. Con: Too large DOM-->
+  <!-- 2: Have only active tab in DOM -->
+  <!--    Pro: possibly retained DOM states. Con: Too large DOM-->
+  <Document />
+  <!-- {/if} -->
   <!-- {/each} -->
 </div>
