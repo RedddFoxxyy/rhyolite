@@ -336,3 +336,4 @@ web_modules/
 package-lock.json
 bun.lockb
 src-tauri/Cargo.lock
+src-tauri/Cargo.lock
