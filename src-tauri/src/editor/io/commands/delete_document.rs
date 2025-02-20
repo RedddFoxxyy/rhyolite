@@ -1,10 +1,10 @@
-use std::fs;
-use tauri::{AppHandle, Emitter, Manager};
 use crate::app_state::AppState;
 use crate::editor::io::{get_document_content, get_trove_dir, save_user_data, IOCommands};
 use crate::editor::tabs::update_tabs_state;
+use std::fs;
+use tauri::{AppHandle, Emitter, Manager};
 
-impl IOCommands{
+impl IOCommands {
     ///TODO: The delete_document command needs to be worked on to support
     ///the new state management and remove all the legacy code.
     pub fn delete_document(app: AppHandle, _payload: Option<String>) {
@@ -13,12 +13,19 @@ impl IOCommands{
         let state = &temp_app.state::<AppState>();
         let orig_state = &state;
 
-        let current_tab_id = {
-            let tabswitcher = state.tab_switcher.read().unwrap();
-            //TODO: Handle the case where the current_tab_id can be none!
-            let current_tab_id = tabswitcher.current_tab_id.clone().unwrap();
-            current_tab_id
-        };
+        // let current_tab_id = {
+        //     let tabswitcher = state.tab_switcher.read().unwrap();
+        //     let current_tab_id = tabswitcher.current_tab_id.clone().unwrap();
+        //     current_tab_id
+        // };
+        //TODO: Handle the case where the current_tab_id can be none!
+        let current_tab_id = state
+            .tab_switcher
+            .read()
+            .unwrap()
+            .current_tab_id
+            .clone()
+            .unwrap();
 
         // Get the tab information in a separate scope
         let (tab_title, next_tab_info) = {
