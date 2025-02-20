@@ -4,7 +4,7 @@ use std::{
     collections::HashMap,
     fs,
     path::PathBuf,
-    sync::{Arc, Mutex, RwLock},
+    sync::{Mutex, RwLock},
 };
 
 use indexmap::IndexMap;
@@ -86,13 +86,9 @@ pub struct FileManager {
 
 #[derive(Default)]
 pub struct AppStateInner {
-    /// TODO: Since AppState will be having complex structure, we probably don't need to lock
-    /// the entire state when we only want to read a specific value.
-    /// Q. Hence, shall we have
-    /// 1. an AppState which itself isn't a mutex but the innermost values are mutex. Like
-    ///    AppStateInner::TabSwitcher::tabs could be mutex
-    /// 2. multiple states which are mutex in themselves and are registered using multiple calls to
-    ///    app.manage()
+    // TODO: Implement getters and setters for individual components of
+    // the AppStateInner type so that we do not have to write same code
+    // of getting state values again and again.
     pub tab_switcher: RwLock<TabManager>,
     pub command_registry: Mutex<CommandRegistry>,
     pub workspace: RwLock<FileManager>,
@@ -216,7 +212,7 @@ impl AppStateInner {
 }
 
 pub type AppState = AppStateInner;
-///Todo: Implement Async for the CommandActions.
-/// I am also removing the Arc and Mutex for the command actions for now since it is
-/// not required. If needed we can wrap it again in arc and mutex.
+// Todo: Implement Async for the CommandActions.
+// I am also removing the Arc and Mutex for the command actions for now since it is
+// not required. If needed we can wrap it again in arc and mutex.
 pub type CommandAction = Box<dyn FnMut(AppHandle, Option<String>) + Send + 'static>;

@@ -29,7 +29,10 @@ impl IOCommands {
 
         // Get the tab information in a separate scope
         let (tab_title, next_tab_info) = {
-            let tabswitcher = state.tab_switcher.read().unwrap();
+            let tabswitcher = state
+                .tab_switcher
+                .try_read()
+                .unwrap_or_else(|err| panic!("Cannot read tab_switcher: {:?}", err));
             if !tabswitcher.tabs.contains_key(&current_tab_id) {
                 log::debug!("Tab not found.");
                 return;
@@ -39,7 +42,7 @@ impl IOCommands {
                 .tabs
                 .get(&current_tab_id)
                 .map(|tab| tab.title.clone())
-                .unwrap();
+                .unwrap_or_else(|| panic!("Tab title does not exist"));
             let next = tabswitcher
                 .tabs
                 .get_index(0)
@@ -86,7 +89,11 @@ impl IOCommands {
         } else {
             None
         };
-        //TODO: Handle panic cases here when using unwrap.
-        let _ = app.emit("current_editor_content", next_tab.unwrap().content);
+        // TODO: Handle panic cases here when using unwrap.
+        // update: for now I handled this by using an if let pattern
+        // matcher to run the emit code only if tab is not none.
+        if let Some(tab) = next_tab {
+            let _ = app.emit("current_editor_content", tab.content);
+        }
     }
 }

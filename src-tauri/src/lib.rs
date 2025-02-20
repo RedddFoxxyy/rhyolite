@@ -1,7 +1,7 @@
-use app_state::{AppStateInner, FileInfo};
-use tauri::{Manager, WindowEvent};
 use crate::editor::io;
 use crate::editor::tabs;
+use app_state::{AppStateInner, FileInfo};
+use tauri::{Manager, WindowEvent};
 
 mod app_state;
 mod commands;
@@ -32,7 +32,6 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             io::save_document,
             io::load_last_open_tabs,
-            // editor::io::delete_document,
             io::get_document_content,
             io::get_recent_files_metadata,
             tabs::update_states,
@@ -41,8 +40,6 @@ pub fn run() {
             tabs::get_tabs,
             tabs::send_current_open_tab,
             tabs::get_current_open_tab,
-            // editor::tabs::update_tab_title,
-            // editor::tabs::close_tab,
             commands::exec_command
         ])
         .run(tauri::generate_context!())
