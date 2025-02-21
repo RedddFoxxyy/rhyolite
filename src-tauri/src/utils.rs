@@ -11,7 +11,7 @@ pub fn generate_available_path(path: PathBuf) -> PathBuf {
         .unwrap_or("".to_string());
     let prefix = path
         .file_stem()
-        .expect(format!("Unable to read path: {}", path.display()).as_str());
+        .unwrap_or_else(|| panic!("Unable to read path: {}", path.display()));
     let mut prefix_without_num = prefix
         .to_string_lossy()
         .to_string()

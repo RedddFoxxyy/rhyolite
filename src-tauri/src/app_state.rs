@@ -14,6 +14,18 @@ use uuid::Uuid;
 
 use crate::editor::io::{get_documents_dir, get_trove_dir};
 
+// TODO: If you find any code in the code base, that uses
+// string "Untitled_Trove" instead of this constant, replace it with
+// this constant!
+/// Name of the Default Trove used by the app!
+pub const TROVE_DIR: &str = "Untitled_Trove";
+
+// TODO: If you find any code in the code base, that uses
+// string "Untitled" instead of this constant, replace it with
+// this constant!
+/// Name of the Default Note Title used by the app!
+pub const DEFAULT_NOTE_TITLE: &str = "Untitled";
+
 ///DocumentData struct, datatype that stores id, title and content of the document.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct DocumentData {

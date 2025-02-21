@@ -1,11 +1,11 @@
+use crate::app_state::{AppState, FileInfo, Tab, DEFAULT_NOTE_TITLE, TROVE_DIR};
+use crate::editor::io::{get_trove_dir, save_document, save_user_data};
+use crate::editor::tabs::{cleanup_deleted_files_workaround, update_tabs_state, TabCommands};
+use crate::utils::generate_available_path;
 use tauri::{AppHandle, Manager};
 use uuid::Uuid;
-use crate::app_state::{AppState, FileInfo, Tab};
-use crate::editor::io::{get_trove_dir, save_document, save_user_data};
-use crate::editor::tabs::{update_tabs_state, cleanup_deleted_files_workaround, TabCommands};
-use crate::utils::generate_available_path;
 
-impl TabCommands{
+impl TabCommands {
     pub fn new_tab(app: AppHandle, _payload: Option<String>) {
         log::debug!("new_tab init");
         let temp_app = app.clone();
@@ -13,9 +13,10 @@ impl TabCommands{
 
         let new_id = Uuid::new_v4().to_string();
 
-        let trove_dir = get_trove_dir("Untitled_Trove");
+        let trove_dir = get_trove_dir(TROVE_DIR);
 
-        let new_path = generate_available_path(trove_dir.join("Untitled.md"));
+        let new_path =
+            generate_available_path(trove_dir.join(String::from(DEFAULT_NOTE_TITLE) + ".md"));
         let title = new_path.file_stem().unwrap().to_string_lossy().to_string();
 
         cleanup_deleted_files_workaround(state, trove_dir, &title);
