@@ -3,17 +3,17 @@
 use std::fs; //Filesystem module
 use std::path::PathBuf;
 use tauri::{Manager, State, Window};
-use uuid::Uuid; 
+use uuid::Uuid;
 // use tauri_plugin_dialog::DialogExt; //DialogExt trait to show dialog boxes
 
-use dirs; 
-use sanitize_filename; 
+use dirs;
+use sanitize_filename;
 
-use crate::app_state::{AppState, CommandRegistrar, CommandRegistry, DocumentData, UserData};
-use crate::editor::markdown_handler;
-
-
-use crate::FileInfo; 
+use crate::{
+    app_state::{AppState, CommandRegistrar, CommandRegistry, DocumentData, UserData},
+    editor::markdown_handler,
+    FileInfo,
+};
 
 pub struct IOCommands;
 
@@ -254,7 +254,7 @@ pub fn load_last_open_tabs(state: State<'_, AppState>) -> Result<Vec<DocumentDat
                 Err(e) => Err(format!("Failed to deserialize userdata: {}", e)),
             },
             Err(e) => Err(format!("Failed to read userdata file: {}", e)),
-        }
+        };
     }
 
     // If userdata.json doesn't exist, load all markdown files from the trove directory

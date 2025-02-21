@@ -1,6 +1,10 @@
-use crate::app_state::{AppState, Tab, TROVE_DIR};
-use crate::editor::io::{get_document_content, get_trove_dir, save_user_data, IOCommands};
-use crate::editor::tabs::update_tabs_state;
+use crate::{
+    app_state::{AppState, Tab, TROVE_DIR},
+    editor::{
+        io::{get_document_content, get_trove_dir, save_user_data, IOCommands},
+        tabs::update_tabs_state,
+    },
+};
 use std::fs;
 use tauri::{AppHandle, Emitter, Manager};
 

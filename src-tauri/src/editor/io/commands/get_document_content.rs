@@ -1,10 +1,14 @@
+use crate::{
+    app_state::Tab,
+    editor::{
+        io::{get_trove_dir, IOCommands},
+        markdown_handler,
+    },
+};
 use std::fs;
 use tauri::{AppHandle, Emitter};
-use crate::app_state::Tab;
-use crate::editor::io::{get_trove_dir, IOCommands};
-use crate::editor::markdown_handler;
 
-impl IOCommands{
+impl IOCommands {
     //TODO: Cleanup unused variables.
     pub fn get_document_content(app: AppHandle, payload: Option<String>) {
         let Some(payload) = payload else {

@@ -3,14 +3,15 @@
 use tauri::{AppHandle, Emitter, Manager, State};
 use uuid::Uuid;
 
-use crate::app_state::{AppState, CommandRegistrar, CommandRegistry, Tab};
 //use crate::commands::event_emitter;
 
-use crate::utils::generate_available_path;
-use crate::FileInfo;
+use crate::{
+    app_state::{AppState, CommandRegistrar, CommandRegistry, Tab},
+    editor::io::{get_trove_dir, save_document, save_user_data},
+    utils::generate_available_path,
+    FileInfo,
+};
 // use std::sync::{Arc, Mutex};
-
-use crate::editor::io::{get_trove_dir, save_document, save_user_data};
 
 pub struct TabCommands;
 

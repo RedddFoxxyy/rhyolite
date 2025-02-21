@@ -1,8 +1,12 @@
 use std::fs;
 
-use crate::app_state::{AppState, Tab, TROVE_DIR};
-use crate::editor::io::get_trove_dir;
-use crate::editor::tabs::{update_tabs_state, TabCommands};
+use crate::{
+    app_state::{AppState, Tab, TROVE_DIR},
+    editor::{
+        io::get_trove_dir,
+        tabs::{update_tabs_state, TabCommands},
+    },
+};
 use tauri::{AppHandle, Manager};
 
 impl TabCommands {

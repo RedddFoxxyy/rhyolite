@@ -1,12 +1,14 @@
+use crate::{
+    app_state::{AppState, DocumentData, FileInfo},
+    editor::{
+        io::{get_trove_dir, IOCommands},
+        markdown_handler,
+    },
+};
 use std::fs;
 use tauri::{AppHandle, Manager};
-use crate::app_state::{AppState, DocumentData, FileInfo};
-use crate::editor::io::{get_trove_dir, IOCommands};
-use crate::editor::markdown_handler;
 
 impl IOCommands {
-    ///BUG: The save_document command does not save the document
-    ///when called from the frontend using exec_command.
     pub fn save_document(app: AppHandle, payload: Option<String>) {
         let Some(payload) = payload else {
             log::warn!("Invalid call to save_document");

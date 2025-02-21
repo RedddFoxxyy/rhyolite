@@ -1,8 +1,10 @@
+use crate::{
+    app_state::AppState,
+    editor::tabs::{update_tabs_state, TabCommands},
+};
 use tauri::{AppHandle, Manager};
-use crate::app_state::AppState;
-use crate::editor::tabs::{update_tabs_state, TabCommands};
 
-impl TabCommands{
+impl TabCommands {
     pub fn switch_tab(app: AppHandle, payload: Option<String>) {
         let Some(payload) = payload else {
             log::warn!("Invalid call to switch_tab");

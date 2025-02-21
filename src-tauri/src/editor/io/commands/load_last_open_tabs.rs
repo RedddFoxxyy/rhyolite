@@ -1,10 +1,14 @@
+use crate::{
+    app_state::{AppState, UserData},
+    editor::{
+        io::{get_documents_dir, IOCommands},
+        tabs::update_tabs_state,
+    },
+};
 use std::fs;
 use tauri::{AppHandle, Manager};
-use crate::app_state::{AppState, UserData};
-use crate::editor::io::{get_documents_dir, IOCommands};
-use crate::editor::tabs::update_tabs_state;
 
-impl IOCommands{
+impl IOCommands {
     pub fn load_last_open_tabs(app: AppHandle, _payload: Option<String>) {
         log::debug!("load_last_open_tabs init");
         let temp_app = app.clone();
@@ -35,7 +39,6 @@ impl IOCommands{
                             for tab in user_data.tabs {
                                 tabswitcher.tabs.insert(tab.id.clone(), tab.clone());
                             }
-
                         }
                     }
                     Err(e) => log::debug!("{}", format!("Failed to deserialize userdata: {}", e)),

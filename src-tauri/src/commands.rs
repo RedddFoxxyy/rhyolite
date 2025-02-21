@@ -1,6 +1,7 @@
-use crate::app_state::{AppState, CommandRegistrar};
-//use crate::editor::tabs;
-use crate::editor::{io::IOCommands, tabs::TabCommands};
+use crate::{
+    app_state::{AppState, CommandRegistrar},
+    editor::{io::IOCommands, tabs::TabCommands},
+};
 
 use tauri::{AppHandle, Emitter, Manager};
 

@@ -1,8 +1,10 @@
+use crate::{
+    app_state::AppState,
+    editor::tabs::{update_tabs_state, TabCommands},
+};
 use tauri::{AppHandle, Manager};
-use crate::app_state::AppState;
-use crate::editor::tabs::{update_tabs_state, TabCommands};
 
-impl TabCommands{
+impl TabCommands {
     pub fn close_tab(app: AppHandle, payload: Option<String>) {
         log::debug!("close_tab init");
         let Some(payload) = payload else {

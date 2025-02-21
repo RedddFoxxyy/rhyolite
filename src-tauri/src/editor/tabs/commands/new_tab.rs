@@ -1,7 +1,11 @@
-use crate::app_state::{AppState, FileInfo, Tab, DEFAULT_NOTE_TITLE, TROVE_DIR};
-use crate::editor::io::{get_trove_dir, save_document, save_user_data};
-use crate::editor::tabs::{cleanup_deleted_files_workaround, update_tabs_state, TabCommands};
-use crate::utils::generate_available_path;
+use crate::{
+    app_state::{AppState, FileInfo, Tab, DEFAULT_NOTE_TITLE, TROVE_DIR},
+    editor::{
+        io::{get_trove_dir, save_document, save_user_data},
+        tabs::{cleanup_deleted_files_workaround, update_tabs_state, TabCommands},
+    },
+    utils::generate_available_path,
+};
 use tauri::{AppHandle, Manager};
 use uuid::Uuid;
 
