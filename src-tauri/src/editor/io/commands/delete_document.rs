@@ -17,32 +17,31 @@ impl IOCommands {
 
         let (next_tab, current_tab_id, current_tab_title) = {
             let tabswitcher_option = state.get_tab_switcher_mut();
-            if tabswitcher_option.is_some() {
-                let mut tabswitcher = tabswitcher_option.unwrap();
-
-                //TODO: Handle the case where the current_tab_id can be none!
-                let current_tab_id = tabswitcher.current_tab_id.clone().unwrap();
-                if !tabswitcher.tabs.contains_key(&current_tab_id) {
-                    log::debug!("Tab not found.");
-                    return;
-                }
-
-                let current_tab_title = tabswitcher
-                    .tabs
-                    .get(&current_tab_id)
-                    .map(|tab| tab.title.clone())
-                    .unwrap_or_else(|| panic!("Tab title does not exist"));
-
-                let next_tab = tabswitcher
-                    .tabs
-                    .shift_remove(&current_tab_id)
-                    .unwrap()
-                    .clone();
-
-                (next_tab, current_tab_id, current_tab_title)
-            } else {
+            if tabswitcher_option.is_none() {
                 return;
             }
+            let mut tabswitcher = tabswitcher_option.unwrap();
+
+            //TODO: Handle the case where the current_tab_id can be none!
+            let current_tab_id = tabswitcher.current_tab_id.clone().unwrap();
+            if !tabswitcher.tabs.contains_key(&current_tab_id) {
+                log::debug!("Tab not found.");
+                return;
+            }
+
+            let current_tab_title = tabswitcher
+                .tabs
+                .get(&current_tab_id)
+                .map(|tab| tab.title.clone())
+                .unwrap_or_else(|| panic!("Tab title does not exist"));
+
+            let next_tab = tabswitcher
+                .tabs
+                .shift_remove(&current_tab_id)
+                .unwrap()
+                .clone();
+
+            (next_tab, current_tab_id, current_tab_title)
         };
 
         update_tabs_state(app.clone());
@@ -60,8 +59,12 @@ impl IOCommands {
         // Remove the file in current_tab from the Recent Files in
         // a seperate scope to avoid deadlock.
         {
-            let mut workspace = state.workspace.try_write().unwrap();
-            workspace
+            let workspace_option = state.get_workspace_mut();
+            if workspace_option.is_none() {
+                return;
+            }
+            workspace_option
+                .unwrap()
                 .recent_files
                 .retain(|doc| doc.id != current_tab_id);
         }

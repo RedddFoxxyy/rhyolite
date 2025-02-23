@@ -34,26 +34,27 @@ impl TabCommands {
         // Insert into IndexMap
         {
             let tab_switcher_option = state.get_tab_switcher_mut();
-            if tab_switcher_option.is_some() {
-                let mut tab_switcher = tab_switcher_option.unwrap();
-                tab_switcher.tabs.insert(new_id.clone(), new_tab.clone());
-                tab_switcher.current_tab_id = Some(new_id.clone());
-            } else {
+            if tab_switcher_option.is_none() {
                 log::error!("Failed to create a new tab!");
                 return;
             }
+            let mut tab_switcher = tab_switcher_option.unwrap();
+            tab_switcher.tabs.insert(new_id.clone(), new_tab.clone());
+            tab_switcher.current_tab_id = Some(new_id.clone());
         }
 
         {
-            state
-                .workspace
-                .write()
-                .unwrap()
-                .recent_files
-                .push(FileInfo {
-                    id: new_id.clone(),
-                    title: title.clone(),
-                });
+            let workspace_option = state.get_workspace_mut();
+            if workspace_option.is_none() {
+                log::error!("Failed to add new tab to recent_files!");
+                return;
+            }
+            let mut workspace = workspace_option.unwrap();
+
+            workspace.recent_files.push(FileInfo {
+                id: new_id.clone(),
+                title: title.clone(),
+            });
         }
 
         let _ = save_user_data(state);

@@ -23,13 +23,20 @@ impl IOCommands {
                     Ok(user_data) => {
                         // Update workspace in a separate scope
                         {
-                            let mut workspace = state.workspace.write().unwrap();
-                            workspace.recent_files = user_data.recent_files.clone();
+                            let workspace_option = state.get_workspace_mut();
+                            if workspace_option.is_none() {
+                                return;
+                            }
+                            workspace_option.unwrap().recent_files = user_data.recent_files.clone();
                         }
 
                         // Update tab switcher in a separate scope
                         {
-                            let mut tabswitcher = state.tab_switcher.write().unwrap();
+                            let tabswitcher_option = state.get_tab_switcher_mut();
+                            if tabswitcher_option.is_none() {
+                                return;
+                            }
+                            let mut tabswitcher = tabswitcher_option.unwrap();
                             tabswitcher.current_tab_id = Some(user_data.last_open_tab.clone());
 
                             // Clear existing tabs and load from user_data

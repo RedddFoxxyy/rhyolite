@@ -30,22 +30,24 @@ impl TabCommands {
         // to avoid deadlocks!
         {
             let tab_switcher_option = state.get_tab_switcher_mut();
-            if tab_switcher_option.is_some() {
-                let mut tab_switcher = tab_switcher_option.unwrap();
-                let tabs = &tab_switcher.tabs;
-
-                // Do not delete the only remaining tab.
-                if tabs.len() == 1 {
-                    return;
-                }
-
-                // Assuming that there is a next tab that exists!
-                let next_tab = tab_switcher.tabs.shift_remove(tab_id).unwrap();
-
-                let next_tab_id = next_tab.id;
-
-                tab_switcher.current_tab_id = Some(next_tab_id);
+            if tab_switcher_option.is_none() {
+                log::error!("Failed to close tab!");
+                return;
             }
+            let mut tab_switcher = tab_switcher_option.unwrap();
+            let tabs = &tab_switcher.tabs;
+
+            // Do not delete the only remaining tab.
+            if tabs.len() == 1 {
+                return;
+            }
+
+            // Assuming that there is a next tab that exists!
+            let next_tab = tab_switcher.tabs.shift_remove(tab_id).unwrap();
+
+            let next_tab_id = next_tab.id;
+
+            tab_switcher.current_tab_id = Some(next_tab_id);
         }
 
         // Call event emitter after releasing the lock

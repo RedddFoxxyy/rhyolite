@@ -19,14 +19,15 @@ impl TabCommands {
                 let tab_switcher_option = state.get_tab_switcher_mut();
 
                 if tab_switcher_option.is_none() {
+                    error!("Failed to switch tabs!");
                     return;
-                } else {
-                    let mut tab_switcher = tab_switcher_option.unwrap();
+                }
 
-                    if tab_switcher.tabs.values().any(|tab| tab.id == tab_id) {
-                        // Update current open tab if needed
-                        tab_switcher.current_tab_id = Some(tab_id.to_string());
-                    }
+                let mut tab_switcher = tab_switcher_option.unwrap();
+
+                if tab_switcher.tabs.values().any(|tab| tab.id == tab_id) {
+                    // Update current open tab if needed
+                    tab_switcher.current_tab_id = Some(tab_id.to_string());
                 }
             }
         }

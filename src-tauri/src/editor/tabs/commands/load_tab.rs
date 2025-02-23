@@ -23,13 +23,12 @@ impl TabCommands {
                 };
 
                 let tab_switcher_option = state.get_tab_switcher_mut();
-                if tab_switcher_option.is_some() {
-                    let mut tab_switcher = tab_switcher_option.unwrap();
-                    tab_switcher.tabs.insert(id, new_tab.clone());
-                } else {
+                if tab_switcher_option.is_none() {
                     log::debug!("Failed to load Tab with documet {}", title);
                     return;
                 }
+                let mut tab_switcher = tab_switcher_option.unwrap();
+                tab_switcher.tabs.insert(id, new_tab.clone());
             }
 
             update_tabs_state(app);
