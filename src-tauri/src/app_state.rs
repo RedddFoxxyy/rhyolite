@@ -4,7 +4,7 @@ use std::{
     collections::HashMap,
     fs,
     path::PathBuf,
-    sync::{Mutex, RwLock},
+    sync::{Mutex, RwLock, RwLockReadGuard, RwLockWriteGuard},
 };
 
 use indexmap::IndexMap;
@@ -101,6 +101,9 @@ pub struct AppStateInner {
     // TODO: Implement getters and setters for individual components of
     // the AppStateInner type so that we do not have to write same code
     // of getting state values again and again.
+    //
+    // Q: Should the TabManager have an rwlock or should the elements in
+    // TabManager have RwLock
     pub tab_switcher: RwLock<TabManager>,
     pub command_registry: Mutex<CommandRegistry>,
     pub workspace: RwLock<FileManager>,

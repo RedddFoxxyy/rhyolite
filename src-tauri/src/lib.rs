@@ -6,6 +6,7 @@ use tauri::{Manager, WindowEvent};
 mod app_state;
 mod commands;
 mod editor;
+mod helpers;
 mod utils;
 
 //Main tauri function.

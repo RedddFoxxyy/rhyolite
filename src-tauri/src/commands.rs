@@ -5,11 +5,11 @@ use crate::{
 
 use tauri::{AppHandle, Emitter, Manager};
 
-/// TODO: The current organisation of exec_command function is not good
-/// We might need to change this and make it better and scalable.
-///
-/// 1. Improve handling of incoming payload(json).
-/// 2. Add more error handling so that app does not panic!
+// TODO: The current organisation of exec_command function is not good
+// We might need to change this and make it better and scalable.
+//
+// 1. Improve handling of incoming payload(json).
+// 2. Add more error handling so that app does not panic!
 #[tauri::command]
 pub fn exec_command(cmd: String, payload: Option<String>, app: AppHandle) {
     log::debug!(

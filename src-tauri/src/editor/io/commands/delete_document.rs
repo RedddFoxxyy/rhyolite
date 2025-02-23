@@ -1,5 +1,5 @@
 use crate::{
-    app_state::{AppState, Tab, TROVE_DIR},
+    app_state::{AppState, TROVE_DIR},
     editor::{
         io::{get_document_content, get_trove_dir, save_user_data, IOCommands},
         tabs::update_tabs_state,
@@ -15,49 +15,36 @@ impl IOCommands {
         let state = &temp_app.state::<AppState>();
         let orig_state = &state;
 
-        // Initialise Next Tab.
-        let next_tab: Tab;
+        let (next_tab, current_tab_id, current_tab_title) = {
+            let tabswitcher_option = state.get_tab_manager_mut();
+            if tabswitcher_option.is_some() {
+                let mut tabswitcher = tabswitcher_option.unwrap();
 
-        //TODO: Handle the case where the current_tab_id can be none!
-        let current_tab_id = state
-            .tab_switcher
-            .try_read()
-            .unwrap()
-            .current_tab_id
-            .clone()
-            .unwrap();
+                //TODO: Handle the case where the current_tab_id can be none!
+                let current_tab_id = tabswitcher.current_tab_id.clone().unwrap();
+                if !tabswitcher.tabs.contains_key(&current_tab_id) {
+                    log::debug!("Tab not found.");
+                    return;
+                }
 
-        // Get current_tab title(tab to be deleted).
-        let current_tab_title = {
-            let tabswitcher = state
-                .tab_switcher
-                .try_read()
-                .unwrap_or_else(|err| panic!("Cannot access tab_switcher: {:?}", err));
-            if !tabswitcher.tabs.contains_key(&current_tab_id) {
-                log::debug!("Tab not found.");
+                let current_tab_title = tabswitcher
+                    .tabs
+                    .get(&current_tab_id)
+                    .map(|tab| tab.title.clone())
+                    .unwrap_or_else(|| panic!("Tab title does not exist"));
+
+                let next_tab = tabswitcher
+                    .tabs
+                    .shift_remove(&current_tab_id)
+                    .unwrap()
+                    .clone();
+
+                (next_tab, current_tab_id, current_tab_title)
+            } else {
                 return;
             }
-
-            let title = tabswitcher
-                .tabs
-                .get(&current_tab_id)
-                .map(|tab| tab.title.clone())
-                .unwrap_or_else(|| panic!("Tab title does not exist"));
-
-            title
         };
 
-        // Update tab switcher in a separate scope to avoid deadlocks
-        // and get the next tab.
-        {
-            // TODO: Handle unwrap statements safely.
-            let mut tabswitcher = state.tab_switcher.write().unwrap();
-            next_tab = tabswitcher
-                .tabs
-                .shift_remove(&current_tab_id)
-                .unwrap()
-                .clone();
-        }
         update_tabs_state(app.clone());
 
         // Handle file operations
@@ -86,6 +73,7 @@ impl IOCommands {
             //TODO: Handle panic cases here when using unwrap.
             get_document_content(next_tab.id, next_tab.title).unwrap()
         };
+
         // TODO: Handle panic cases here when using unwrap.
         // update: for now I handled this by using an if let pattern
         // matcher to run the emit code only if tab is not none.
