@@ -19,11 +19,17 @@ impl TabCommands {
                 let title = json_value.title;
                 let new_tab = Tab {
                     id: id.clone(),
-                    title,
+                    title: title.clone(),
                 };
 
-                let mut tab_switcher = state.tab_switcher.write().unwrap();
-                tab_switcher.tabs.insert(id, new_tab.clone());
+                let tab_switcher_option = state.get_tab_switcher_mut();
+                if tab_switcher_option.is_some() {
+                    let mut tab_switcher = tab_switcher_option.unwrap();
+                    tab_switcher.tabs.insert(id, new_tab.clone());
+                } else {
+                    log::debug!("Failed to load Tab with documet {}", title);
+                    return;
+                }
             }
 
             update_tabs_state(app);

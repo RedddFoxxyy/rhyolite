@@ -16,7 +16,7 @@ impl IOCommands {
         let orig_state = &state;
 
         let (next_tab, current_tab_id, current_tab_title) = {
-            let tabswitcher_option = state.get_tab_manager_mut();
+            let tabswitcher_option = state.get_tab_switcher_mut();
             if tabswitcher_option.is_some() {
                 let mut tabswitcher = tabswitcher_option.unwrap();
 

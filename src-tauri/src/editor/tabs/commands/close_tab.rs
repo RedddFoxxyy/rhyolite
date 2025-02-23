@@ -17,40 +17,34 @@ impl TabCommands {
             log::debug!("Failed to parse JSON payload");
             return;
         };
+
         let Some(tab_id) = json_value.get("tabId").and_then(|v| v.as_str()) else {
             log::debug!("Invalid JSON payload format: missing or invalid tabId field");
             return;
         };
+
         let temp_app = app.clone();
         let state = temp_app.state::<AppState>();
 
-        // Get next tab ID in a separate scope to minimize lock time
-        let next_tab_id = {
-            let tab_switcher = state.tab_switcher.read().unwrap();
-            let tabs = &tab_switcher.tabs;
-
-            if tabs.is_empty() {
-                return; // Don't close the last tab
-            }
-
-            if let Some((index, _, _)) = tabs.get_full(tab_id) {
-                // Get the next tab ID (either at same index or last tab)
-                tabs.get_index(index + 1)
-                    .or_else(|| tabs.last())
-                    .map(|(id, _)| id.clone())
-            } else {
-                None
-            }
-        };
-
-        // Update tabs in a separate lock scope
+        // Close the tab and switch to the previous tab in a seperate scope
+        // to avoid deadlocks!
         {
-            let mut tab_switcher = state.tab_switcher.write().unwrap();
-            tab_switcher.tabs.shift_remove(tab_id);
+            let tab_switcher_option = state.get_tab_switcher_mut();
+            if tab_switcher_option.is_some() {
+                let mut tab_switcher = tab_switcher_option.unwrap();
+                let tabs = &tab_switcher.tabs;
 
-            // Update current open tab if needed
-            if let Some(next_id) = next_tab_id {
-                tab_switcher.current_tab_id = Some(next_id);
+                // Do not delete the only remaining tab.
+                if tabs.len() == 1 {
+                    return;
+                }
+
+                // Assuming that there is a next tab that exists!
+                let next_tab = tab_switcher.tabs.shift_remove(tab_id).unwrap();
+
+                let next_tab_id = next_tab.id;
+
+                tab_switcher.current_tab_id = Some(next_tab_id);
             }
         }
 

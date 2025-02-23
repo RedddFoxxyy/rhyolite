@@ -1,5 +1,3 @@
-use std::sync::RwLockWriteGuard;
-
 use crate::{
     app_state::AppState,
     editor::tabs::{update_tabs_state, TabCommands},
@@ -18,12 +16,12 @@ impl TabCommands {
                 let temp_app = app.clone();
                 let state = temp_app.state::<AppState>();
 
-                let tab_manager = state.get_tab_manager_mut();
+                let tab_switcher_option = state.get_tab_switcher_mut();
 
-                if tab_manager.is_none() {
+                if tab_switcher_option.is_none() {
                     return;
                 } else {
-                    let mut tab_switcher = tab_manager.unwrap();
+                    let mut tab_switcher = tab_switcher_option.unwrap();
 
                     if tab_switcher.tabs.values().any(|tab| tab.id == tab_id) {
                         // Update current open tab if needed

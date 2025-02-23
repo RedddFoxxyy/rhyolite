@@ -33,9 +33,15 @@ impl TabCommands {
 
         // Insert into IndexMap
         {
-            let mut tab_switcher = state.tab_switcher.write().unwrap();
-            tab_switcher.tabs.insert(new_id.clone(), new_tab.clone());
-            tab_switcher.current_tab_id = Some(new_id.clone());
+            let tab_switcher_option = state.get_tab_switcher_mut();
+            if tab_switcher_option.is_some() {
+                let mut tab_switcher = tab_switcher_option.unwrap();
+                tab_switcher.tabs.insert(new_id.clone(), new_tab.clone());
+                tab_switcher.current_tab_id = Some(new_id.clone());
+            } else {
+                log::error!("Failed to create a new tab!");
+                return;
+            }
         }
 
         {
