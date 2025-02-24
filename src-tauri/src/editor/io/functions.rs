@@ -32,6 +32,10 @@ impl CommandRegistrar for IOCommands {
             "load_last_open_tabs".to_string(),
             Box::new(Self::load_last_open_tabs),
         );
+        registry.add_command(
+            "get_recent_files_metadata".to_string(),
+            Box::new(Self::get_recent_files_metadata),
+        );
     }
 }
 
@@ -50,6 +54,7 @@ pub fn get_documents_dir() -> PathBuf {
     {
         // Original desktop behavior
         let mut path = dirs::document_dir().expect("Could not find Documents directory");
+        // TODO: Use a const for this name.
         path.push("Rhyolite");
         // Create the directory if it doesn't exist
         fs::create_dir_all(&path).expect("Could not create Rhyolite directory");
@@ -76,38 +81,65 @@ pub fn get_trove_dir(trove_name: &str) -> PathBuf {
 pub fn on_app_close(window: &Window) {
     log::debug!("on_app_close init");
     let state = window.state::<AppState>();
-    // let tab_switcher = &mut state.tab_switcher.lock().unwrap();
 
-    let user_data = {
-        let tab_switcher = state.tab_switcher.read().unwrap();
-        let workspace = state.workspace.read().unwrap();
-
-        UserData {
-            tabs: tab_switcher.tabs.values().cloned().collect::<Vec<_>>(),
-            last_open_tab: tab_switcher.current_tab_id.clone().unwrap(),
-            recent_files: workspace.recent_files.clone(),
-        }
-    };
-
-    let appdata_dir = get_documents_dir().join("appdata");
-    fs::create_dir_all(&appdata_dir).expect("Could not create appdata directory");
-    let userdata_path = appdata_dir.join("userdata.json");
-
-    match serde_json::to_string_pretty(&user_data) {
-        Ok(json_content) => {
-            if let Err(e) = fs::write(userdata_path, json_content) {
-                eprintln!("Failed to save userdata: {}", e);
-            }
-        }
-        Err(e) => eprintln!("Failed to serialize userdata: {}", e),
+    if let Err(err_saving) = save_user_data(&state) {
+        log::error!(
+            "Failed to save the workspace before closing: {}",
+            err_saving
+        );
     }
+
+    // NOTE: The given function was doing the same thing as the function
+    // save_user_data so instead of duplication of code, I called the function
+    // here and handled the error instead, I have not tested if it works or not.
+    // If it does work then the below commented code can be removed!
+    //
+    // let user_data = {
+    //     let maybe_tab_switcher = state.get_tab_switcher();
+    //     let maybe_workspace = state.get_workspace();
+
+    //     if maybe_tab_switcher.is_none() || maybe_workspace.is_none() {
+    //         log::error!("Failed to save the workspace before closing!");
+    //         return;
+    //     }
+
+    //     let tab_switcher = maybe_tab_switcher.unwrap();
+    //     let workspace = maybe_workspace.unwrap();
+
+    //     UserData {
+    //         tabs: tab_switcher.tabs.values().cloned().collect::<Vec<_>>(),
+    //         last_open_tab: tab_switcher.current_tab_id.clone().unwrap(),
+    //         recent_files: workspace.recent_files.clone(),
+    //     }
+    // };
+
+    // let appdata_dir = get_documents_dir().join("appdata");
+    // fs::create_dir_all(&appdata_dir).expect("Could not create appdata directory");
+    // let userdata_path = appdata_dir.join("userdata.json");
+
+    // match serde_json::to_string_pretty(&user_data) {
+    //     Ok(json_content) => {
+    //         if let Err(e) = fs::write(userdata_path, json_content) {
+    //             eprintln!("Failed to save userdata: {}", e);
+    //         }
+    //     }
+    //     Err(e) => eprintln!("Failed to serialize userdata: {}", e),
+    // }
 }
 
 /// This function saves the user data to the userdata.json file.
 pub fn save_user_data(state: &State<'_, AppState>) -> Result<(), String> {
     let user_data = {
-        let tab_switcher = state.tab_switcher.read().unwrap();
-        let workspace = state.workspace.read().unwrap();
+        let maybe_tab_switcher = state.get_tab_switcher();
+        let maybe_workspace = state.get_workspace();
+
+        if maybe_tab_switcher.is_none() || maybe_workspace.is_none() {
+            log::error!("Failed to save user data!");
+            return Err("Failed to save user data!".to_string());
+        }
+
+        let tab_switcher = maybe_tab_switcher.unwrap();
+        let workspace = maybe_workspace.unwrap();
 
         UserData {
             tabs: tab_switcher.tabs.values().cloned().collect(),
