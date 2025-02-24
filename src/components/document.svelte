@@ -16,10 +16,10 @@
   let initialized: boolean = $state(false);
   onMount(() => {
     initialized = true;
-    const currentTablisten = listen<any>("current_editor_content", (event) => {
-      documentContent = event.payload;
-    });
-    const docContentlisten = listen<Tab>("Current_Tab", (event) => {
+    // const docContentlisten = listen<any>("current_editor_content", (event) => {
+    //   documentContent = event.payload;
+    // });
+    const currentTablisten = listen<Tab>("Current_Tab", (event) => {
       currentTab = event.payload;
       documentTitle = currentTab.title;
       invoke("exec_command", {
@@ -32,7 +32,7 @@
     });
     return () => {
       currentTablisten.then((unsub) => unsub());
-      docContentlisten.then((unsub) => unsub());
+      // docContentlisten.then((unsub) => unsub());
     };
   });
 

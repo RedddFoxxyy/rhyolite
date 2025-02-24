@@ -162,11 +162,14 @@
 
   onMount(() => {
     setupEditor();
-    const currentTablisten = listen<any>("current_editor_content", (event) => {
+    const docContentlisten = listen<any>("current_editor_content", (event) => {
       let documentContent = event.payload;
+      console.log("Setting editor content from event");
       $editor.commands.setContent(documentContent);
     });
-    currentTablisten.then((unsub) => unsub());
+    return () => {
+      docContentlisten.then((unsub) => unsub());
+    };
   });
 
   const toggleMark = (mark: string) => {
