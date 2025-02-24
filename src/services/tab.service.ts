@@ -6,20 +6,26 @@ import { invoke } from "@tauri-apps/api/core";
 
 const apiProvider = new ApiProvider();
 
+// TODO: Let the backend exec loading of document too!
 const switchTab = (tab: Tab) => {
   // Invoke the switch_tab command
-  let Id = tab.id;
-  invoke("exec_command", { 
-    cmd: "switch_tab", 
-    payload: JSON.stringify({ Id }) 
+  invoke("exec_command", {
+    cmd: "switch_tab",
+    payload: JSON.stringify({ tabId: tab.id }),
   });
-  invoke("exec_command", {cmd: "get_document_content", payload: JSON.stringify({ id: tab.id, title: tab.title })});
+  invoke("exec_command", {
+    cmd: "get_document_content",
+    payload: JSON.stringify({ id: tab.id, title: tab.title }),
+  });
 };
 
 const closeTab = (tabId?: string) => {
   if (!tabId) return;
   try {
-    invoke("exec_command", { cmd: "close_tab", payload: JSON.stringify({ tabId }) });
+    invoke("exec_command", {
+      cmd: "close_tab",
+      payload: JSON.stringify({ tabId }),
+    });
   } catch (error) {
     console.error("Failed to delete document:", error);
   }
