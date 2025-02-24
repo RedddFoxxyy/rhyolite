@@ -19,7 +19,7 @@
   const appWindow = getCurrentWindow();
 
   const onTabClose = async (tabId: string) => {
-    await tabService.closeTab(tabId);
+    tabService.closeTab(tabId);
   };
 
   appWindow.listen("tauri://resize", async () => {
@@ -59,8 +59,6 @@
 
   const onOpenTab = (tab: Tab) => {
     tabService.switchTab(tab);
-    //invoke("exec_command", {cmd: "get_document_content", payload: JSON.stringify({ id: tab.id, title: tab.title })});
-    // invoke("update_states");
   };
 </script>
 

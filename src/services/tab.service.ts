@@ -13,10 +13,10 @@ const switchTab = (tab: Tab) => {
     cmd: "switch_tab",
     payload: JSON.stringify({ tabId: tab.id }),
   });
-  invoke("exec_command", {
-    cmd: "get_document_content",
-    payload: JSON.stringify({ id: tab.id, title: tab.title }),
-  });
+  // invoke("exec_command", {
+  //   cmd: "get_document_content",
+  //   payload: JSON.stringify({ id: tab.id, title: tab.title }),
+  // });
 };
 
 const closeTab = (tabId?: string) => {
