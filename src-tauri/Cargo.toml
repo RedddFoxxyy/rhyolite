@@ -42,7 +42,7 @@ log = "0.4.25"
 incremental = true # Compile your binary in smaller steps.
 
 [profile.release]
-# codegen-units = 1 # Allows LLVM to perform better optimization.
+codegen-units = 1 # Allows LLVM to perform better optimization.
 lto = true        # Enables link-time-optimizations.
 opt-level = 3     # Prioritizes speed. Use `z` if you prefer small binary size.
 # panic = "abort" # Higher performance by disabling panic handlers.

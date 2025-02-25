@@ -13,7 +13,7 @@
     "windows": [
       {
         "title": "Rhyolite",
-        "width": 1200,
+        "width": 1280,
         "height": 700,
         "resizable": true,
         "decorations": false

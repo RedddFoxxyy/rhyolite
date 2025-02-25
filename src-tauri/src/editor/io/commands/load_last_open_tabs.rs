@@ -23,28 +23,25 @@ impl IOCommands {
                     Ok(user_data) => {
                         // Update workspace in a separate scope
                         {
-                            let workspace_option = state.get_workspace_mut();
-                            if workspace_option.is_none() {
-                                return;
-                            }
-                            workspace_option.unwrap().recent_files = user_data.recent_files.clone();
-                        }
+                            let maybe_tab_switcher = state.get_tab_switcher_mut();
+                            let maybe_workspace = state.get_workspace_mut();
 
-                        // Update tab switcher in a separate scope
-                        {
-                            let tabswitcher_option = state.get_tab_switcher_mut();
-                            if tabswitcher_option.is_none() {
+                            if maybe_workspace.is_none() || maybe_tab_switcher.is_none() {
                                 return;
                             }
-                            let mut tabswitcher = tabswitcher_option.unwrap();
-                            tabswitcher.current_tab_id = Some(user_data.last_open_tab.clone());
+
+                            let mut tab_switcher = maybe_tab_switcher.unwrap();
+
+                            maybe_workspace.unwrap().recent_files = user_data.recent_files.clone();
+
+                            tab_switcher.current_tab_id = Some(user_data.last_open_tab.clone());
 
                             // Clear existing tabs and load from user_data
-                            let tabs = &mut tabswitcher.tabs;
+                            let tabs = &mut tab_switcher.tabs;
                             tabs.clear();
                             //tabswitcher.tabs = user_data.tabs.clone();
                             for tab in user_data.tabs {
-                                tabswitcher.tabs.insert(tab.id.clone(), tab.clone());
+                                tab_switcher.tabs.insert(tab.id.clone(), tab.clone());
                             }
                         }
                     }

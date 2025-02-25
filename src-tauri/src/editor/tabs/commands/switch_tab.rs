@@ -16,14 +16,14 @@ impl TabCommands {
                 let temp_app = app.clone();
                 let state = temp_app.state::<AppState>();
 
-                let tab_switcher_option = state.get_tab_switcher_mut();
+                let maybe_tab_switcher = state.get_tab_switcher_mut();
 
-                if tab_switcher_option.is_none() {
+                if maybe_tab_switcher.is_none() {
                     error!("Failed to switch tabs!");
                     return;
                 }
 
-                let mut tab_switcher = tab_switcher_option.unwrap();
+                let mut tab_switcher = maybe_tab_switcher.unwrap();
 
                 if tab_switcher.tabs.values().any(|tab| tab.id == tab_id) {
                     // Update current open tab if needed

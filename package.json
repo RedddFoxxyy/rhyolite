@@ -4,7 +4,7 @@
   "description": "A simple text editor written in Tauri, inspired by Obsidian.",
   "type": "module",
   "author": {
-    "name": "Rhyolite Team"
+    "name": "Suyog Tandel(RedddFoxxyy)"
   },
   "scripts": {
     "dev": "vite dev",

@@ -16,26 +16,26 @@ impl IOCommands {
         let orig_state = &state;
 
         let (next_tab, current_tab_id, current_tab_title) = {
-            let tabswitcher_option = state.get_tab_switcher_mut();
-            if tabswitcher_option.is_none() {
+            let maybe_tab_switcher = state.get_tab_switcher_mut();
+            if maybe_tab_switcher.is_none() {
                 return;
             }
-            let mut tabswitcher = tabswitcher_option.unwrap();
+            let mut tab_switcher = maybe_tab_switcher.unwrap();
 
             //TODO: Handle the case where the current_tab_id can be none!
-            let current_tab_id = tabswitcher.current_tab_id.clone().unwrap();
-            if !tabswitcher.tabs.contains_key(&current_tab_id) {
+            let current_tab_id = tab_switcher.current_tab_id.clone().unwrap();
+            if !tab_switcher.tabs.contains_key(&current_tab_id) {
                 log::debug!("Tab not found.");
                 return;
             }
 
-            let current_tab_title = tabswitcher
+            let current_tab_title = tab_switcher
                 .tabs
                 .get(&current_tab_id)
                 .map(|tab| tab.title.clone())
                 .unwrap_or_else(|| panic!("Tab title does not exist"));
 
-            let next_tab = tabswitcher
+            let next_tab = tab_switcher
                 .tabs
                 .shift_remove(&current_tab_id)
                 .unwrap()
@@ -46,6 +46,19 @@ impl IOCommands {
 
         update_tabs_state(app.clone());
 
+        // Remove the file in current_tab from the Recent Files in
+        // a seperate scope to avoid deadlock.
+        {
+            let maybe_workspace = state.get_workspace_mut();
+            if maybe_workspace.is_none() {
+                return;
+            }
+            maybe_workspace
+                .unwrap()
+                .recent_files
+                .retain(|doc| doc.id != current_tab_id);
+        }
+
         // Handle file operations
         let trove_dir = get_trove_dir(TROVE_DIR);
         let filename = sanitize_filename::sanitize(format!("{}.md", current_tab_title));
@@ -54,19 +67,6 @@ impl IOCommands {
         if file_path.exists() {
             let _ = fs::remove_file(&file_path)
                 .map_err(|e| format!("Failed to delete file {}: {}", file_path.display(), e));
-        }
-
-        // Remove the file in current_tab from the Recent Files in
-        // a seperate scope to avoid deadlock.
-        {
-            let workspace_option = state.get_workspace_mut();
-            if workspace_option.is_none() {
-                return;
-            }
-            workspace_option
-                .unwrap()
-                .recent_files
-                .retain(|doc| doc.id != current_tab_id);
         }
 
         let _ = save_user_data(orig_state);

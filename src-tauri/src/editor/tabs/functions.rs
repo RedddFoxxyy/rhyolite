@@ -43,25 +43,27 @@ pub fn cleanup_deleted_files_workaround(
 ) {
     // Clean up any stale entries in tabs and recent_files that don't exist on disk
     // but have the same title
-    {
-        state.tab_switcher.write().unwrap().tabs.retain(|_, tab| {
-            let file_path =
-                trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &tab.title)));
-            file_path.exists() && tab.title != *title
-        });
+
+    let maybe_tab_switcher = state.get_tab_switcher_mut();
+    let maybe_workspace = state.get_workspace_mut();
+
+    if maybe_tab_switcher.is_none() || maybe_workspace.is_none() {
+        log::error!("Failed to clean garbage files.");
+        return;
     }
-    {
-        state
-            .workspace
-            .write()
-            .unwrap()
-            .recent_files
-            .retain(|file| {
-                let file_path =
-                    trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &file.title)));
-                file_path.exists() && file.title != *title
-            });
-    }
+
+    let mut tab_switcher = maybe_tab_switcher.unwrap();
+    let mut workspace = maybe_workspace.unwrap();
+
+    tab_switcher.tabs.retain(|_, tab| {
+        let file_path = trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &tab.title)));
+        file_path.exists() && tab.title != *title
+    });
+
+    workspace.recent_files.retain(|file| {
+        let file_path = trove_dir.join(sanitize_filename::sanitize(format!("{}.md", &file.title)));
+        file_path.exists() && file.title != *title
+    });
 }
 
 #[tauri::command]
@@ -180,11 +182,15 @@ pub fn load_tab(
 ///2. Improve Error Handling.
 pub fn update_tabs_state(app: AppHandle) {
     let state = app.state::<AppState>();
-    let current_state = state;
 
     // Get current tab ID, create new tab if none exists
     let current_tab_id = {
-        let tab_switcher = current_state.tab_switcher.read().unwrap();
+        let maybe_tab_switcher = state.get_tab_switcher();
+        if maybe_tab_switcher.is_none() {
+            log::error!("Failed to update UI to new state!!!");
+            return;
+        }
+        let tab_switcher = maybe_tab_switcher.unwrap();
         match &tab_switcher.current_tab_id {
             Some(id) => id.clone(),
             None => {
@@ -203,20 +209,30 @@ pub fn update_tabs_state(app: AppHandle) {
 
     // Emit all the tabs
     {
-        let tabs: Vec<Tab> = current_state
-            .tab_switcher
-            .read()
-            .unwrap()
-            .tabs
-            .values()
-            .cloned()
-            .collect();
+        let maybe_tab_switcher = state.get_tab_switcher();
+
+        if maybe_tab_switcher.is_none() {
+            log::error!("Failed to update UI to new state!!!");
+            return;
+        }
+
+        let tab_switcher = maybe_tab_switcher.unwrap();
+
+        let tabs: Vec<Tab> = tab_switcher.tabs.values().cloned().collect();
         let _ = app.emit("Tabs", tabs);
     }
 
     // Emit current tab
     {
-        let tab_switcher = current_state.tab_switcher.read().unwrap();
+        let maybe_tab_switcher = state.get_tab_switcher();
+
+        if maybe_tab_switcher.is_none() {
+            log::error!("Failed to update UI to new state!!!");
+            return;
+        }
+
+        let tab_switcher = maybe_tab_switcher.unwrap();
+
         if let Some(current_tab) = tab_switcher.tabs.get(&current_tab_id) {
             let _ = app.emit("Current_Tab", current_tab.clone());
         }

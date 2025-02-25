@@ -20,13 +20,13 @@ impl IOCommands {
 
         if let Ok(document_data) = serde_json::from_str::<DocumentData>(&payload) {
             {
-                let workspace_option = state.get_workspace_mut();
-                if workspace_option.is_none() {
+                let maybe_workspace = state.get_workspace_mut();
+                if maybe_workspace.is_none() {
                     log::error!("Failed to save document!");
                     return;
                 }
 
-                let mut workspace = workspace_option.unwrap();
+                let mut workspace = maybe_workspace.unwrap();
 
                 if let Some(doc) = workspace
                     .recent_files
@@ -49,12 +49,12 @@ impl IOCommands {
 
             // Get the old title in a separate scope
             let old_title = {
-                let tab_switcher_option = state.get_tab_switcher();
-                if tab_switcher_option.is_none() {
+                let maybe_tab_switcher = state.get_tab_switcher();
+                if maybe_tab_switcher.is_none() {
                     log::error!("Failed to save document!");
                     return;
                 }
-                tab_switcher_option
+                maybe_tab_switcher
                     .unwrap()
                     .tabs
                     .get(&document_data.id)

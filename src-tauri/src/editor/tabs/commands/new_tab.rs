@@ -33,23 +33,23 @@ impl TabCommands {
 
         // Insert into IndexMap
         {
-            let tab_switcher_option = state.get_tab_switcher_mut();
-            if tab_switcher_option.is_none() {
+            let maybe_tab_switcher = state.get_tab_switcher_mut();
+            if maybe_tab_switcher.is_none() {
                 log::error!("Failed to create a new tab!");
                 return;
             }
-            let mut tab_switcher = tab_switcher_option.unwrap();
+            let mut tab_switcher = maybe_tab_switcher.unwrap();
             tab_switcher.tabs.insert(new_id.clone(), new_tab.clone());
             tab_switcher.current_tab_id = Some(new_id.clone());
         }
 
         {
-            let workspace_option = state.get_workspace_mut();
-            if workspace_option.is_none() {
+            let maybe_workspace = state.get_workspace_mut();
+            if maybe_workspace.is_none() {
                 log::error!("Failed to add new tab to recent_files!");
                 return;
             }
-            let mut workspace = workspace_option.unwrap();
+            let mut workspace = maybe_workspace.unwrap();
 
             workspace.recent_files.push(FileInfo {
                 id: new_id.clone(),
