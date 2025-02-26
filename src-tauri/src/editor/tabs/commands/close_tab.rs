@@ -1,5 +1,5 @@
 use crate::{
-    app_state::AppState,
+    app_state::{AppState, Tab},
     editor::tabs::{update_tabs_state, TabCommands},
 };
 use tauri::{AppHandle, Manager};
@@ -37,13 +37,35 @@ impl TabCommands {
             let mut tab_switcher = maybe_tab_switcher.unwrap();
             let tabs = &tab_switcher.tabs;
 
-            // Do not delete the only remaining tab.
+            // Do not close the only remaining tab. This will be removed in future..
             if tabs.len() == 1 {
                 return;
             }
 
-            // Assuming that there is a next tab that exists!
-            let next_tab = tab_switcher.tabs.shift_remove(tab_id).unwrap();
+            let current_tab_id = tab_switcher.current_tab_id.clone().unwrap();
+            if !tab_switcher.tabs.contains_key(&current_tab_id) {
+                log::debug!("Tab not found.");
+                return;
+            }
+
+            let next_tab_index = tab_switcher
+                .tabs
+                .shift_remove_full(&current_tab_id)
+                .unwrap()
+                .0;
+
+            let next_tab: Tab;
+
+            if let Some(next_tab_kv) = tab_switcher.tabs.get_index(next_tab_index) {
+                next_tab = next_tab_kv.1.clone();
+            } else {
+                next_tab = tab_switcher
+                    .tabs
+                    .get_index(next_tab_index - 1)
+                    .unwrap()
+                    .1
+                    .clone();
+            }
 
             let next_tab_id = next_tab.id;
 

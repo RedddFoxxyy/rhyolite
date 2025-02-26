@@ -1,5 +1,5 @@
 use crate::{
-    app_state::{AppState, TROVE_DIR},
+    app_state::{AppState, Tab, TROVE_DIR},
     editor::{
         io::{get_document_content, get_trove_dir, save_user_data, IOCommands},
         tabs::update_tabs_state,
@@ -15,7 +15,7 @@ impl IOCommands {
         let state = &temp_app.state::<AppState>();
         let orig_state = &state;
 
-        let (next_tab, current_tab_id, current_tab_title) = {
+        let (next_tab, current_tab_id, current_tab_title): (Tab, String, String) = {
             let maybe_tab_switcher = state.get_tab_switcher_mut();
             if maybe_tab_switcher.is_none() {
                 return;
@@ -35,11 +35,26 @@ impl IOCommands {
                 .map(|tab| tab.title.clone())
                 .unwrap_or_else(|| panic!("Tab title does not exist"));
 
-            let next_tab = tab_switcher
+            let next_tab_index = tab_switcher
                 .tabs
-                .shift_remove(&current_tab_id)
+                .shift_remove_full(&current_tab_id)
                 .unwrap()
-                .clone();
+                .0;
+
+            let next_tab: Tab;
+
+            if let Some(next_tab_kv) = tab_switcher.tabs.get_index(next_tab_index) {
+                next_tab = next_tab_kv.1.clone();
+            } else {
+                next_tab = tab_switcher
+                    .tabs
+                    .get_index(next_tab_index - 1)
+                    .unwrap()
+                    .1
+                    .clone();
+            }
+
+            tab_switcher.current_tab_id = Some(next_tab.id.clone());
 
             (next_tab, current_tab_id, current_tab_title)
         };
