@@ -155,7 +155,7 @@ impl AppStateInner {
         }
 
         // If userdata.json doesn't exist, load all markdown files from the trove directory
-        let trove_dir = get_trove_dir("Untitled_Trove");
+        let trove_dir = get_trove_dir(TROVE_DIR);
         let mut tabs = IndexMap::new();
         let mut recent_files = Vec::new();
         let mut current_tab_id = None;
@@ -192,7 +192,7 @@ impl AppStateInner {
         // If no files were found, create a new empty file
         if tabs.is_empty() {
             let id = Uuid::new_v4().to_string();
-            let title = "Untitled".to_string();
+            let title = DEFAULT_NOTE_TITLE.to_string();
 
             let tab = Tab {
                 id: id.clone(),
