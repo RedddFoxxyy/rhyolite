@@ -1,4 +1,7 @@
-//! All the stuff related to state management for the app.
+//! # App State.
+//! Stores the current state and defines core skeleton of the app.
+//!
+//! All the required global statics are declared in this module.
 
 use std::{
     collections::HashMap,

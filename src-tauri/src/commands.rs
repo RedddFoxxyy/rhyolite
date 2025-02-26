@@ -7,6 +7,26 @@ use crate::{
 
 use tauri::{AppHandle, Emitter, Manager};
 
+/// # Execute Command
+/// Executes the command with the given name(cmd) and passes the
+/// given payload to the command while executing.
+///
+/// This is used by tauri events on the frontend(svelte) to execute
+/// any io/tabs related logic on user input!
+///
+/// ___Example:___
+///
+/// On frontend you can invoke a command like this:
+/// `invoke("exec_command", { cmd: "delete_document" });`
+/// In the above given example we invoke and pass the tauri command `exec_command`,
+/// and along with it pass the name of the command we want to execute `delete_document`.
+///
+/// > NOTE: Tauri command and command called by this function are two different things!
+///
+/// or you can ivoke a command like this, if u need to pass some data:
+/// `invoke("exec_command", { cmd: "save_document", payload: JSON.stringify({ id: documentId, title: documentTitle, content: documentContent || ""})});`
+/// In the above example, we are also passing a payload( which is optional ), and the payload is basically the document
+/// data type( id, title, and document content).
 // TODO: The current organisation of exec_command function is not good
 // We might need to change this and make it better and scalable.
 //

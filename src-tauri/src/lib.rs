@@ -1,3 +1,11 @@
+//! # Rhyolite Library
+//! This is the entry point for the application backend
+//! and this is where the whole app is first initialised and
+//! runs.
+
+// NOTE: I need help with improving code documentation and comments
+// PRs are welcomed with regard to docs/comments! Thank You.
+
 use crate::editor::io;
 use crate::editor::tabs;
 use app_state::{AppStateInner, FileInfo};
