@@ -146,9 +146,8 @@
         },
       },
       // onTransaction: ({ editor }) => {
-      // // force re-render so `editor.isActive` works as expected
-      // editor = editor;
-
+      //   // force re-render so `editor.isActive` works as expected
+      //   editor = editor;
       // },
       onCreate: ({ editor }) => {
         // Update counts when editor is initialized
@@ -165,6 +164,7 @@
     const docContentlisten = listen<any>("current_editor_content", (event) => {
       let documentContent = event.payload;
       console.log("Setting editor content from event");
+      $editor.commands.clearContent();
       $editor.commands.setContent(documentContent);
     });
     return () => {

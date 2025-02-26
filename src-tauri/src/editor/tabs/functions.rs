@@ -176,10 +176,11 @@ pub fn load_tab(
 
 // I named this function based on the fact that it updates the reactive states
 // related to tabs on the frontend when called.
-///OPTIMIZE: 1. Use exec_command with new_tab command call
-///instead of using the new_tab function defined outside
-///the TabCommands Struct.
-///2. Improve Error Handling.
+// OPTIMIZE: 1. Use exec_command with new_tab command call
+// instead of using the new_tab function defined outside
+// the TabCommands Struct.
+//
+// 2. Improve Error Handling.
 pub fn update_tabs_state(app: AppHandle) {
     let state = app.state::<AppState>();
 
