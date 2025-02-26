@@ -31,41 +31,19 @@ const closeTab = (tabId?: string) => {
   }
 };
 
-// const gotoTab1 = async () => {
-//   const tabs: Tab[] = TabsStore.getTabsState();
-//   if (tabs.length > 0) {
-//     await switchTab(tabs[0].id);
-//   }
-// };
+const gotoTab1 = async () => {
+  invoke("exec_command", { cmd: "goto_tab_1" });
+};
 
-// const gotoLastTab = async () => {
-//   const tabs: Tab[] = TabsStore.getTabsState();
-//   if (tabs.length > 0) {
-//     const lastTabIndex = tabs.length - 1;
-//     await switchTab(tabs[lastTabIndex].id);
-//   }
-// };
+const gotoLastTab = async () => {
+  invoke("exec_command", { cmd: "goto_last_tab" });
+};
 
-// const cycleTabs = async () => {
-//   const tabs: Tab[] = TabsStore.getTabsState();
-//   const currentTab: Tab | null = TabsStore.getCurrentTabState();
-//   if (tabs.length > 0) {
-//     const currentTabIndex = tabs.findIndex((tab) => tab.id === currentTab?.id);
-//     const nextTabIndex = (currentTabIndex + 1) % tabs.length;
-//     const nextTab = tabs[nextTabIndex];
-//     await switchTab(nextTab.id);
-//   }
-// };
+const cycleTabs = async () => {
+  invoke("exec_command", { cmd: "cycle_tabs" });
+};
 
 const updateTabTitleById = (tabId: string, newTitle: string) => {
-  //  TabsStore.states.update((data: ITabsStates) => {
-  //    return {
-  //      ...data,
-  //      tabs: data.tabs.map((tab) =>
-  //        tab.id === tabId ? { ...tab, title: newTitle } : tab,
-  //      ),
-  //    };
-  //  });
   invoke("exec_command", {
     cmd: "update_tab_title",
     payload: JSON.stringify({ id: tabId, title: newTitle }),
@@ -74,9 +52,9 @@ const updateTabTitleById = (tabId: string, newTitle: string) => {
 
 export default {
   switchTab,
-  // gotoTab1,
-  // gotoLastTab,
-  // cycleTabs,
+  gotoTab1,
+  gotoLastTab,
+  cycleTabs,
   closeTab,
   updateTabTitleById,
 };

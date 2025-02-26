@@ -6,6 +6,7 @@
   import { onDestroy } from "svelte";
   import { ApiProvider } from "../services/api.service";
   import type { Document, RecentFileInfo } from "../types/document";
+  import { listen } from "@tauri-apps/api/event";
 
   let files: RecentFileInfo[] = $state([]);
   let selectedIndex: number = $state(-1);
@@ -13,13 +14,23 @@
 
   const apiProvider = new ApiProvider();
 
+  onMount(() => {
+    // Listen for the 'Tabs' event from the backend
+    const recentFileslisten = listen<RecentFileInfo[]>(
+      "recent_files_metadata",
+      (event) => {
+        files = event.payload;
+      },
+    );
+    return () => {
+      recentFileslisten.then((unsub) => unsub());
+    };
+  });
+
   async function loadFiles() {
     try {
-      const docs = await apiProvider.getRecentlyOpenedFiles();
-      files = docs.map((doc) => ({
-        id: doc.id,
-        title: doc.title,
-      }));
+      //const docs = await apiProvider.getRecentlyOpenedFiles();
+      apiProvider.getRecentlyOpenedFiles();
       // console.log("Loaded files:", files);
     } catch (error) {
       console.error("Failed to load files:", error);

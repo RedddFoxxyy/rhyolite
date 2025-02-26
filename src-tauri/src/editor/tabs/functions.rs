@@ -33,6 +33,9 @@ impl CommandRegistrar for TabCommands {
         );
         registry.add_command("switch_tab".to_string(), Box::new(Self::switch_tab));
         registry.add_command("load_tab".to_string(), Box::new(Self::load_tab));
+        registry.add_command("cycle_tabs".to_string(), Box::new(Self::cycle_tabs));
+        registry.add_command("goto_tab_1".to_string(), Box::new(Self::goto_tab_1));
+        registry.add_command("goto_last_tab".to_string(), Box::new(Self::goto_last_tab));
     }
 }
 

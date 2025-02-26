@@ -22,7 +22,7 @@ export interface IApiServiceProvider {
 
   getLastOpenedTabs(): Promise<Document[]>;
 
-  getRecentlyOpenedFiles(): Promise<RecentFileInfo[]>;
+  getRecentlyOpenedFiles(): void;
 
   loadTab({
     documentId,

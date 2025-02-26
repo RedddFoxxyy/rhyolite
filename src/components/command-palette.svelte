@@ -17,12 +17,12 @@
     action: () => void;
   }
 
-  $effect(() => {
-    const unlisten = listen("dummy-event", (...args) => {
-      console.log("dummy-event fired with ", args);
-    });
-    return () => unlisten.then((s) => s());
-  });
+  // $effect(() => {
+  //   const unlisten = listen("dummy-event", (...args) => {
+  //     console.log("dummy-event fired with ", args);
+  //   });
+  //   return () => unlisten.then((s) => s());
+  // });
 
   let commands: Command[] = [
     {
@@ -33,13 +33,13 @@
         CommandPaletteStore.toggleVisibility();
       },
     },
-    {
-      name: "Execute dummy command",
-      shortcut: "Ctrl + D",
-      action: () => {
-        runDummyCommand({ cmd: "dummy", payload: { hi: 2 } });
-      },
-    },
+    // {
+    //   name: "Execute dummy command",
+    //   shortcut: "Ctrl + D",
+    //   action: () => {
+    //     runDummyCommand({ cmd: "dummy", payload: { hi: 2 } });
+    //   },
+    // },
     {
       name: "Close Tab",
       shortcut: "Ctrl + C",

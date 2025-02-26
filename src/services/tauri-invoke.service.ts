@@ -50,8 +50,9 @@ export class TauriInvokeServiceProvider implements IApiServiceProvider {
     return await invoke<Document[]>("load_last_open_tabs");
   }
 
-  async getRecentlyOpenedFiles(): Promise<RecentFileInfo[]> {
-    return await invoke<RecentFileInfo[]>("get_recent_files_metadata");
+  getRecentlyOpenedFiles() {
+    invoke("exec_command", { cmd: "get_recent_files_metadata" });
+    //return await invoke<RecentFileInfo[]>("get_recent_files_metadata");
   }
 
   async loadTab({

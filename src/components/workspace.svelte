@@ -17,7 +17,6 @@
       tabs = event.payload;
     });
     const currentTablisten = listen<Tab>("Current_Tab", (event) => {
-      // Update the Svelte store with the new counter value
       currentTab = event.payload;
     });
     return () => {
@@ -26,14 +25,7 @@
     };
   });
 
-  // const unsubscribeTabsState = TabsStore.states.subscribe((value) => {
-  //   tabs = value.tabs;
-  //   currentTab = value.currentTab;
-  // });
-  // onDestroy(unsubscribeTabsState); // Clean up
-
   const onOpenTab = (tab: Tab) => {
-    //TabsStore.updateCurrentTabState(tab);
     tabService.switchTab(tab);
   };
 </script>
