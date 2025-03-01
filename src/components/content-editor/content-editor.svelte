@@ -30,6 +30,7 @@
   import { ChevronDownOutline, ChevronUpOutline } from "flowbite-svelte-icons";
   import { all, createLowlight } from "lowlight";
   import ContentEditorStore from "../../stores/content-editor.store";
+  import documentservice from "../../services/document.service";
   // import ToolbarButton from "./components/toolbar-button.svelte";
   import {
     CustomHeader,

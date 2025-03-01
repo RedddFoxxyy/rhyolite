@@ -9,6 +9,20 @@ use std::fs;
 use tauri::{AppHandle, Emitter, Manager};
 
 impl IOCommands {
+    /// # Delete Document!
+    ///
+    /// Get's the current open tab and the next tab and deletes the file
+    /// in the current tab and also removes it`s tab from app state.
+    ///
+    /// The next tab is the tab after the current tab(if it exists) or
+    /// the tab before it if the above condition is not true.
+    ///
+    /// ___Example:(frontend)___
+    /// ```
+    /// invoke("exec_command", { cmd: "delete_document" });
+    /// ```
+    /// TODO: Delete the tab that is passed as payload rather than deleting
+    /// the current open tab.
     pub fn delete_document(app: AppHandle, _payload: Option<String>) {
         log::debug!("delete_document init");
         let temp_app = app.clone();
@@ -43,9 +57,15 @@ impl IOCommands {
 
             let next_tab: Tab;
 
+            // TODO: Allow deletion of only remaining tab too, the editor should also be
+            // able to handle no open tabs.
             if let Some(next_tab_kv) = tab_switcher.tabs.get_index(next_tab_index) {
                 next_tab = next_tab_kv.1.clone();
             } else {
+                if tab_switcher.tabs.is_empty() {
+                    log::info!("Cannot delete the only open tab(this will be fixed in future).");
+                    return;
+                }
                 next_tab = tab_switcher
                     .tabs
                     .get_index(next_tab_index - 1)
