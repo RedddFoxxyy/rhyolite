@@ -43,9 +43,7 @@
       "icons/StoreLogo.png",
       "icons/32x32.png",
       "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/1080x1080.png",
-      "icons/4320x4320.png"
+      "icons/128x128@2x.png"
     ],
     "licenseFile": "../LICENSE.txt",
     "license": "Apache-2.0",
