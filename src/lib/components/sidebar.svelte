@@ -2,10 +2,10 @@
   import CommandIcon from "$lib/static/command_palette.svg.svelte";
   import RecentFilesIcon from "$lib/static/recent_files.svg.svelte";
   import { getContext } from "svelte";
-  import CommandPaletteStore from "../stores/command-palette.store";
-  import RecentFilesMenuStore from "../stores/recent-files.store";
+  import CommandPaletteStore from "$lib/stores/command-palette.store";
+  import RecentFilesMenuStore from "$lib/stores/recent-files.store";
   import SettingsIcon from "$lib/static/settings.svg.svelte";
-  import SettingsMenuStore from "../stores/settings-menu.store";
+  import SettingsMenuStore from "$lib/stores/settings-menu.store";
   import SettingsMenu from "./settingsmenu.svelte";
   const editor: any = getContext("editor");
 </script>

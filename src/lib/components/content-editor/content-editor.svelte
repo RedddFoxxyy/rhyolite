@@ -29,15 +29,15 @@
   import Paragraph from "@tiptap/extension-paragraph";
   import { ChevronDownOutline, ChevronUpOutline } from "flowbite-svelte-icons";
   import { all, createLowlight } from "lowlight";
-  import ContentEditorStore from "../../stores/content-editor.store";
-  import documentservice from "../../services/document.service";
+  import ContentEditorStore from "$lib/stores/content-editor.store";
+  import documentservice from "$lib/services/document.service";
   // import ToolbarButton from "./components/toolbar-button.svelte";
   import {
     CustomHeader,
     CustomParagraph,
     CustomLineBreak,
     TabIndent,
-  } from "./components/custom-extentions";
+  } from "$lib/components/content-editor/components/custom-extentions";
 
   let editor = $state() as Readable<Editor>;
   const lowlight = createLowlight(all);

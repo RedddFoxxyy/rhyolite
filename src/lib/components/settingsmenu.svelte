@@ -7,9 +7,9 @@
     Info,
   } from "lucide-svelte";
   import { onDestroy } from "svelte";
-  import settingsMenuStore from "../stores/settings-menu.store";
-  import ThemeStore from "../stores/theme.store";
-  import type { Theme } from "../types/theme";
+  import settingsMenuStore from "$lib/stores/settings-menu.store";
+  import ThemeStore from "$lib/stores/theme.store";
+  import type { Theme } from "$lib/types/theme";
 
   let settingsVisible = $state(false);
   let showThemeOptions = $state(false);
@@ -26,7 +26,7 @@
     {
       label: "General Settings",
       icon: SlidersHorizontal,
-      onClick: () => console.log("Opening General Settings...")
+      onClick: () => console.log("Opening General Settings..."),
     },
     {
       label: "Theme",
@@ -37,13 +37,13 @@
     {
       label: "Keyboard Shortcuts",
       icon: Keyboard,
-      onClick: () => console.log("Opening Keyboard Shortcuts...")
+      onClick: () => console.log("Opening Keyboard Shortcuts..."),
     },
     {
       label: "About",
       icon: Info,
-      onClick: () => console.log("Opening About...")
-    }
+      onClick: () => console.log("Opening About..."),
+    },
   ];
 
   const handleCloseEvent = (e: MouseEvent | KeyboardEvent) => {

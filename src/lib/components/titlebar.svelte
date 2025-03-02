@@ -6,9 +6,9 @@
   import { listen } from "@tauri-apps/api/event";
   import { getCurrentWindow } from "@tauri-apps/api/window";
   import { onMount } from "svelte";
-  import { addNewDocumentTab } from "../services/document.service";
-  import tabService from "../services/tab.service";
-  import { type Tab } from "../types/tab";
+  import { addNewDocumentTab } from "$lib/services/document.service";
+  import tabService from "$lib/services/tab.service";
+  import { type Tab } from "$lib/types/tab";
   import { invoke } from "@tauri-apps/api/core";
 
   let tabs: Tab[] = $state([]);

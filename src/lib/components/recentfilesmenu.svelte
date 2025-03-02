@@ -1,11 +1,11 @@
 <script lang="ts">
-  import RecentFilesMenuStore from "../stores/recent-files.store";
-  import DocumentService from "../services/document.service";
+  import RecentFilesMenuStore from "$lib/stores/recent-files.store";
+  import DocumentService from "$lib/services/document.service";
   import { onMount, getContext } from "svelte";
   // import Close from "$lib/static/close.svg";
   import { onDestroy } from "svelte";
-  import { ApiProvider } from "../services/api.service";
-  import type { Document, RecentFileInfo } from "../types/document";
+  import { ApiProvider } from "$lib/services/api.service";
+  import type { Document, RecentFileInfo } from "$lib/types/document";
   import { listen } from "@tauri-apps/api/event";
 
   let files: RecentFileInfo[] = $state([]);

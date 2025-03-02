@@ -1,6 +1,6 @@
-import type { Tab } from "../types/tab";
+import type { Tab } from "$lib/types/tab";
 import { invoke } from "@tauri-apps/api/core";
-import type { Document, RecentFileInfo } from "../types/document";
+import type { Document, RecentFileInfo } from "$lib/types/document";
 import type { IApiServiceProvider } from "./api.interface";
 
 export class TauriInvokeServiceProvider implements IApiServiceProvider {

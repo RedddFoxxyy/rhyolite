@@ -1,12 +1,12 @@
 <script lang="ts">
-  import DocumentService from "../services/document.service";
-  import TabService from "../services/tab.service";
-  import CommandPaletteStore from "../stores/command-palette.store";
-  import TabsStore from "../stores/tabs.store";
-  import ContentEditorStore from "../stores/content-editor.store";
+  import DocumentService from "$lib/services/document.service";
+  import TabService from "$lib/services/tab.service";
+  import CommandPaletteStore from "$lib/stores/command-palette.store";
+  import TabsStore from "$lib/stores/tabs.store";
+  import ContentEditorStore from "$lib/stores/content-editor.store";
   import { onMount } from "svelte";
   import { listen } from "@tauri-apps/api/event";
-  import type { Tab } from "../types/tab";
+  import type { Tab } from "$lib/types/tab";
 
   let activeKeys = new Set();
   let currentTabId: string | null = $state(null);

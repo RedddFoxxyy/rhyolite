@@ -1,9 +1,8 @@
-import type { Tab } from "../types/tab";
-import tabsStore from "../stores/tabs.store";
-import { ApiProvider } from "./api.service";
-import TabService from "./tab.service";
-import type { Document } from "../types/document";
-import { isValidJSON } from "../helpers/common.helper";
+import type { Tab } from "$lib/types/tab";
+import tabsStore from "$lib/stores/tabs.store";
+import { ApiProvider } from "$lib/services/api.service";
+import TabService from "$lib/services/tab.service";
+import type { Document } from "$lib/types/document";
 import { invoke } from "@tauri-apps/api/core";
 
 const apiProvider = new ApiProvider();

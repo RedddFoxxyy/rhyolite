@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Editor } from "svelte-tiptap";
-  import DocumentService from "../services/document.service";
-  import TabService from "../services/tab.service";
-  import type { Tab } from "../types/tab";
+  import DocumentService from "$lib/services/document.service";
+  import TabService from "$lib/services/tab.service";
+  import type { Tab } from "$lib/types/tab";
   import ContentEditor from "./content-editor/content-editor.svelte";
   import { listen } from "@tauri-apps/api/event";
   import { invoke } from "@tauri-apps/api/core";

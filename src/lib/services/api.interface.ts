@@ -1,5 +1,5 @@
-import type { Tab } from "../types/tab";
-import type { Document, RecentFileInfo } from "../types/document";
+import type { Tab } from "$lib/types/tab";
+import type { Document, RecentFileInfo } from "$lib/types/document";
 
 export interface IApiServiceProvider {
   addNewDocumentTab(): Promise<Tab>;

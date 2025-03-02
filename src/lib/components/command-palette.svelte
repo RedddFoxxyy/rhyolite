@@ -1,11 +1,11 @@
 <script lang="ts">
-  import CommandPaletteStore from "../stores/command-palette.store";
+  import CommandPaletteStore from "$lib/stores/command-palette.store";
   import DocumentService, {
     runDummyCommand,
-  } from "../services/document.service";
-  import TabService from "../services/tab.service";
+  } from "$lib/services/document.service";
+  import TabService from "$lib/services/tab.service";
   import { onDestroy } from "svelte";
-  import ContentEditorStore from "../stores/content-editor.store";
+  import ContentEditorStore from "$lib/stores/content-editor.store";
   import { listen } from "@tauri-apps/api/event";
 
   let selectedIndex: number = $state(-1);

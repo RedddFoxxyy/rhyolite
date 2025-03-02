@@ -1,5 +1,5 @@
 import { type Writable, writable, get } from "svelte/store";
-import type { Theme } from "../types/theme";
+import type { Theme } from "$lib/types/theme";
 import { defaultTheme } from "$lib/themes/default";
 import { greenScreenTheme } from "$lib/themes/greenscreen";
 import { coffeeTheme } from "$lib/themes/coffee";
@@ -21,7 +21,7 @@ const DEFAULT_THEMES: Theme[] = [
   catppuccinMochaTheme,
   catppuccinLatteTheme,
   rosePaneMainTheme,
-  ]
+];
 
 const states: Writable<IThemesStates> = writable<IThemesStates>({
   themes: DEFAULT_THEMES,

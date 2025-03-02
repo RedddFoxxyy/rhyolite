@@ -1,14 +1,14 @@
 <script lang="ts">
-  import "../styles/styles.css";
+  import "$lib/styles/styles.css";
 
   import { onMount } from "svelte";
-  import CommandPalette from "../components/command-palette.svelte";
-  import RecentFiles from "../components/recentfilesmenu.svelte";
-  import Workspace from "../components/workspace.svelte";
-  import TitleBar from "../components/titlebar.svelte";
-  import HomeHotkeys from "../components/home-hotkeys.svelte";
-  import DocumentService from "../services/document.service";
-  import Sidebar from "../components/sidebar.svelte";
+  import CommandPalette from "$lib/components/command-palette.svelte";
+  import RecentFiles from "$lib/components/recentfilesmenu.svelte";
+  import Workspace from "$lib/components/workspace.svelte";
+  import TitleBar from "$lib/components/titlebar.svelte";
+  import HomeHotkeys from "$lib/components/home-hotkeys.svelte";
+  import DocumentService from "$lib/services/document.service";
+  import Sidebar from "$lib/components/sidebar.svelte";
   import { invoke } from "@tauri-apps/api/core";
 
   onMount(() => {
