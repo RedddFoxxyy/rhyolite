@@ -1,4 +1,4 @@
-name: 'publish'
+name: 'publish-nightly'
 on:
   push:
     branches:
@@ -59,8 +59,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: v__VERSION__
-          releaseName: 'Rhyolite(v__VERSION__)'
-          releaseBody: 'Draft Release'
+          releaseName: 'Rhyolite(v__VERSION__)-nightly'
+          releaseBody: 'Rhyolite app(v__VERSION__) nightly release.'
           releaseDraft: true
           prerelease: true
           args: ${{ matrix.args }}
