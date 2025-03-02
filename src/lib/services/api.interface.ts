@@ -30,7 +30,7 @@ export interface IApiServiceProvider {
   }: {
     documentId: string;
     documentTitle: string;
-  }): Promise<void>;
+  }): void;
 
   deleteDocument(documentId: string): Promise<void>;
 }

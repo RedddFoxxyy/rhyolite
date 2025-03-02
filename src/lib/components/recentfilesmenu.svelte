@@ -7,6 +7,7 @@
   import { ApiProvider } from "$lib/services/api.service";
   import type { Document, RecentFileInfo } from "$lib/types/document";
   import { listen } from "@tauri-apps/api/event";
+  import { invoke } from "@tauri-apps/api/core";
 
   let files: RecentFileInfo[] = $state([]);
   let selectedIndex: number = $state(-1);
@@ -15,7 +16,7 @@
   const apiProvider = new ApiProvider();
 
   onMount(() => {
-    // Listen for the 'Tabs' event from the backend
+    // Listen for the 'recent_files_metadata' event from the backend
     const recentFileslisten = listen<RecentFileInfo[]>(
       "recent_files_metadata",
       (event) => {
@@ -27,24 +28,20 @@
     };
   });
 
-  async function loadFiles() {
+  function loadFiles() {
     try {
-      //const docs = await apiProvider.getRecentlyOpenedFiles();
       apiProvider.getRecentlyOpenedFiles();
-      // console.log("Loaded files:", files);
     } catch (error) {
       console.error("Failed to load files:", error);
     }
   }
 
-  async function openFile(file: RecentFileInfo) {
+  function openFile(file: RecentFileInfo) {
     try {
-      await apiProvider.loadTab({
-        documentId: file.id,
-        documentTitle: file.title,
+      invoke("exec_command", {
+        cmd: "load_tab",
+        payload: JSON.stringify({ id: file.id, title: file.title }),
       });
-      await DocumentService.getAllDocumentTabs();
-      await apiProvider.sendCurrentOpenTab(file.id);
       toggleFilesMenu();
     } catch (error) {
       console.error("Failed to open file:", error);

@@ -55,16 +55,16 @@ export class TauriInvokeServiceProvider implements IApiServiceProvider {
     //return await invoke<RecentFileInfo[]>("get_recent_files_metadata");
   }
 
-  async loadTab({
+  loadTab({
     documentId,
     documentTitle,
   }: {
     documentId: string;
     documentTitle: string;
-  }): Promise<void> {
-    await invoke("load_tab", {
-      id: documentId,
-      title: documentTitle,
+  }): void {
+    invoke("exec_command", {
+      cmd: "load_tab",
+      payload: JSON.stringify({ id: documentId, title: documentTitle }),
     });
   }
 

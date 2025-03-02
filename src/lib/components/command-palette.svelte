@@ -4,12 +4,14 @@
     runDummyCommand,
   } from "$lib/services/document.service";
   import TabService from "$lib/services/tab.service";
-  import { onDestroy } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import ContentEditorStore from "$lib/stores/content-editor.store";
   import { listen } from "@tauri-apps/api/event";
+  import type { Tab } from "$lib/types/tab";
 
   let selectedIndex: number = $state(-1);
   let searchText: string = $state("");
+  let currentTabId: string | null = $state(null);
 
   interface Command {
     name: string;
@@ -17,29 +19,27 @@
     action: () => void;
   }
 
-  // $effect(() => {
-  //   const unlisten = listen("dummy-event", (...args) => {
-  //     console.log("dummy-event fired with ", args);
-  //   });
-  //   return () => unlisten.then((s) => s());
-  // });
+  onMount(() => {
+    const currentTablisten = listen<Tab>("Current_Tab", (event) => {
+      // Update the Svelte store with the new counter value
+      currentTabId = event.payload.id;
+    });
+    return () => {
+      currentTablisten.then((unsub) => unsub());
+    };
+  });
 
   let commands: Command[] = [
     {
       name: "Delete Tab",
       shortcut: "Ctrl + D",
       action: () => {
-        DocumentService.deleteDocumentTab();
+        if (currentTabId) {
+          DocumentService.deleteDocumentTab(currentTabId);
+        }
         CommandPaletteStore.toggleVisibility();
       },
     },
-    // {
-    //   name: "Execute dummy command",
-    //   shortcut: "Ctrl + D",
-    //   action: () => {
-    //     runDummyCommand({ cmd: "dummy", payload: { hi: 2 } });
-    //   },
-    // },
     {
       name: "Close Tab",
       shortcut: "Ctrl + C",

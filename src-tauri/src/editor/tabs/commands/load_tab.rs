@@ -28,7 +28,9 @@ impl TabCommands {
                     return;
                 }
                 let mut tab_switcher = maybe_tab_switcher.unwrap();
-                tab_switcher.tabs.insert(id, new_tab.clone());
+                tab_switcher.tabs.insert(id.clone(), new_tab.clone());
+
+                tab_switcher.current_tab_id = Some(id);
             }
 
             update_tabs_state(app);
