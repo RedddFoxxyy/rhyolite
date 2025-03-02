@@ -167,6 +167,8 @@
       console.log("Setting editor content from event");
       $editor.commands.clearContent();
       $editor.commands.setContent(documentContent);
+
+      onchange($editor);
     });
     return () => {
       docContentlisten.then((unsub) => unsub());
