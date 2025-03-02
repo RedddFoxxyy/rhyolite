@@ -28,6 +28,7 @@
     "targets": "all",
     "icon": [
       "icons/icon.png",
+      "icons/icon.svg",
       "icons/icon.ico",
       "icons/icon.icns",
       "icons/Square44x44Logo.png",
