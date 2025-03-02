@@ -42,17 +42,7 @@ impl TabCommands {
                 return;
             }
 
-            let current_tab_id = tab_switcher.current_tab_id.clone().unwrap();
-            if !tab_switcher.tabs.contains_key(&current_tab_id) {
-                log::debug!("Tab not found.");
-                return;
-            }
-
-            let next_tab_index = tab_switcher
-                .tabs
-                .shift_remove_full(&current_tab_id)
-                .unwrap()
-                .0;
+            let next_tab_index = tab_switcher.tabs.shift_remove_full(tab_id).unwrap().0;
 
             let next_tab: Tab;
 

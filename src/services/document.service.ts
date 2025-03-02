@@ -22,8 +22,13 @@ export const addNewDocumentTab = (): void => {
   }
 };
 
-const deleteDocumentTab = (): void => {
-  invoke("exec_command", { cmd: "delete_document" });
+const deleteDocumentTab = (id: string): void => {
+  // invoke("exec_command", { cmd: "delete_document" });
+
+  invoke("exec_command", {
+    cmd: "delete_document",
+    payload: JSON.stringify(id),
+  });
 };
 
 const loadRecentDocuments = (): void => {
@@ -39,7 +44,14 @@ const saveDocument = async ({
   documentTitle: string;
   documentContent: any;
 }): Promise<void> => {
-  invoke("exec_command", { cmd: "save_document", payload: JSON.stringify({ id: documentId, title: documentTitle, content: documentContent || ""})});
+  invoke("exec_command", {
+    cmd: "save_document",
+    payload: JSON.stringify({
+      id: documentId,
+      title: documentTitle,
+      content: documentContent || "",
+    }),
+  });
 };
 
 const loadDocument = async (

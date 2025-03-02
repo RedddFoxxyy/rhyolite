@@ -23,13 +23,25 @@ impl IOCommands {
     /// ```
     /// TODO: Delete the tab that is passed as payload rather than deleting
     /// the current open tab.
-    pub fn delete_document(app: AppHandle, _payload: Option<String>) {
+    pub fn delete_document(app: AppHandle, payload: Option<String>) {
         log::debug!("delete_document init");
         let temp_app = app.clone();
         let state = &temp_app.state::<AppState>();
         let orig_state = &state;
 
-        let (next_tab, current_tab_id, current_tab_title): (Tab, String, String) = {
+        let Some(payload) = payload else {
+            log::warn!("Invalid call to save_document");
+            return;
+        };
+
+        if let Err(e) = serde_json::from_str::<String>(&payload) {
+            log::error!("Invalid payload found, ERROR: {}", e);
+            return;
+        }
+
+        let delete_tab_id = serde_json::from_str::<String>(&payload).unwrap();
+
+        let (next_tab, current_tab_id, delete_tab_title): (Tab, String, String) = {
             let maybe_tab_switcher = state.get_tab_switcher_mut();
             if maybe_tab_switcher.is_none() {
                 return;
@@ -43,15 +55,15 @@ impl IOCommands {
                 return;
             }
 
-            let current_tab_title = tab_switcher
+            let delete_tab_title = tab_switcher
                 .tabs
-                .get(&current_tab_id)
+                .get(&delete_tab_id)
                 .map(|tab| tab.title.clone())
                 .unwrap_or_else(|| panic!("Tab title does not exist"));
 
             let next_tab_index = tab_switcher
                 .tabs
-                .shift_remove_full(&current_tab_id)
+                .shift_remove_full(&delete_tab_id)
                 .unwrap()
                 .0;
 
@@ -76,7 +88,7 @@ impl IOCommands {
 
             tab_switcher.current_tab_id = Some(next_tab.id.clone());
 
-            (next_tab, current_tab_id, current_tab_title)
+            (next_tab, current_tab_id, delete_tab_title)
         };
 
         update_tabs_state(app.clone());
@@ -91,12 +103,12 @@ impl IOCommands {
             maybe_workspace
                 .unwrap()
                 .recent_files
-                .retain(|doc| doc.id != current_tab_id);
+                .retain(|doc| doc.id != delete_tab_id);
         }
 
         // Handle file operations
         let trove_dir = get_trove_dir(TROVE_DIR);
-        let filename = sanitize_filename::sanitize(format!("{}.md", current_tab_title));
+        let filename = sanitize_filename::sanitize(format!("{}.md", delete_tab_title));
         let file_path = trove_dir.join(&filename);
 
         if file_path.exists() {

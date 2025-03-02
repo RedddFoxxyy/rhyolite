@@ -32,7 +32,9 @@
     } else return;
     if (event.ctrlKey && event.key === "d") {
       event.preventDefault();
-      DocumentService.deleteDocumentTab();
+      if (currentTabId) {
+        DocumentService.deleteDocumentTab(currentTabId);
+      }
     }
     if (event.ctrlKey && event.key === "c") {
       event.preventDefault();
