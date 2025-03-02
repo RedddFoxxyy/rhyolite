@@ -56,15 +56,16 @@ jobs:
 
       - name: Extract version from Cargo.toml
         id: get_version
+        shell: bash
         run: |
-          # Define the path to your Cargo.toml file (relative to the repository root)
-          cargo_file="src-tauri/cargo.toml"
-
-          # Extract the version from Cargo.toml (assumes a line like: version = "0.1.5")
+          # Define the path to your Cargo.toml file
+          cargo_file="src-tauri/Cargo.toml"
+          # Extract just the version number using a more precise pattern
           version=$(grep -m 1 '^version' "$cargo_file" | sed -E 's/version\s*=\s*"(.*)"/\1/')
-
+          # Output for debugging
           echo "Version found: $version"
-          echo "::set-output name=version::$version"
+          # Set the output correctly for GitHub Actions
+          echo "version=$version" >> $GITHUB_ENV
 
       # Step 1: Generate auto-generated changelog (using a community Action)
       - name: Generate Changelog
@@ -72,7 +73,7 @@ jobs:
         uses: requarks/changelog-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: v${{ steps.get_version.outputs.version }} # Adjust to your version variable or strategy
+          tag: v${{ env.version }}
 
       # Step 2: Generate "What's Changed" block from commits
       - name: Generate "What's Changed" block
