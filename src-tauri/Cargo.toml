@@ -1,6 +1,6 @@
 [package]
 name = "Rhyolite"
-version = "0.1.5"
+version = "0.1.6"
 description = "A simple text editor written in Tauri, inspired by Obsidian."
 authors = ["Suyog Tandel(RedddFoxxyy)"]
 license = "Apache-2.0"
