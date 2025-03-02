@@ -7,11 +7,10 @@ use uuid::Uuid;
 // use tauri_plugin_dialog::DialogExt; //DialogExt trait to show dialog boxes
 
 use dirs;
-use sanitize_filename;
 
 use crate::{
-    app_state::{AppState, CommandRegistrar, CommandRegistry, DocumentData, UserData},
-    editor::markdown_handler,
+    app_state::{AppState, CommandRegistrar, CommandRegistry, DocumentData, Tab, UserData},
+    editor::{io::commands::get_document_content::get_document_content_helper, themes::Theme},
     FileInfo,
 };
 
@@ -88,43 +87,6 @@ pub fn on_app_close(window: &Window) {
             err_saving
         );
     }
-
-    // NOTE: The given function was doing the same thing as the function
-    // save_user_data so instead of duplication of code, I called the function
-    // here and handled the error instead, I have not tested if it works or not.
-    // If it does work then the below commented code can be removed!
-    //
-    // let user_data = {
-    //     let maybe_tab_switcher = state.get_tab_switcher();
-    //     let maybe_workspace = state.get_workspace();
-
-    //     if maybe_tab_switcher.is_none() || maybe_workspace.is_none() {
-    //         log::error!("Failed to save the workspace before closing!");
-    //         return;
-    //     }
-
-    //     let tab_switcher = maybe_tab_switcher.unwrap();
-    //     let workspace = maybe_workspace.unwrap();
-
-    //     UserData {
-    //         tabs: tab_switcher.tabs.values().cloned().collect::<Vec<_>>(),
-    //         last_open_tab: tab_switcher.current_tab_id.clone().unwrap(),
-    //         recent_files: workspace.recent_files.clone(),
-    //     }
-    // };
-
-    // let appdata_dir = get_documents_dir().join("appdata");
-    // fs::create_dir_all(&appdata_dir).expect("Could not create appdata directory");
-    // let userdata_path = appdata_dir.join("userdata.json");
-
-    // match serde_json::to_string_pretty(&user_data) {
-    //     Ok(json_content) => {
-    //         if let Err(e) = fs::write(userdata_path, json_content) {
-    //             eprintln!("Failed to save userdata: {}", e);
-    //         }
-    //     }
-    //     Err(e) => eprintln!("Failed to serialize userdata: {}", e),
-    // }
 }
 
 /// This function saves the user data to the userdata.json file.
@@ -145,6 +107,7 @@ pub fn save_user_data(state: &State<'_, AppState>) -> Result<(), String> {
             tabs: tab_switcher.tabs.values().cloned().collect(),
             last_open_tab: tab_switcher.current_tab_id.clone().unwrap(),
             recent_files: workspace.recent_files.clone(),
+            current_theme: Theme::default(),
         }
     };
 
@@ -156,87 +119,6 @@ pub fn save_user_data(state: &State<'_, AppState>) -> Result<(), String> {
         Ok(json_content) => fs::write(userdata_path, json_content)
             .map_err(|e| format!("Failed to save userdata: {}", e)),
         Err(e) => Err(format!("Failed to serialize userdata: {}", e)),
-    }
-}
-
-/// This function saves the document.
-#[tauri::command]
-pub fn save_document(
-    id: String,
-    title: String,
-    content: String,
-    state: State<'_, AppState>,
-) -> Result<String, String> {
-    log::debug!("save_document init");
-
-    {
-        let mut workspace = state.workspace.write().unwrap();
-        if let Some(doc) = workspace.recent_files.iter_mut().find(|doc| doc.id == id) {
-            doc.title = title.clone();
-        } else {
-            workspace.recent_files.push(FileInfo {
-                id: id.clone(),
-                title: title.clone(),
-            });
-        }
-    }
-
-    let trove_dir = get_trove_dir("Untitled_Trove");
-    let markdown_content = markdown_handler::html_to_markdown(&content);
-    let safe_filename = sanitize_filename::sanitize(format!("{}.md", title));
-    let file_path = trove_dir.join(&safe_filename);
-
-    // Get the old title in a separate scope
-    let old_title = {
-        let tab_switcher = state.tab_switcher.read().unwrap();
-        tab_switcher
-            .tabs
-            .get(&id)
-            .map(|tab| tab.title.clone())
-            .unwrap_or_else(|| String::from("Untitled"))
-    };
-
-    let old_path = trove_dir.join(sanitize_filename::sanitize(format!("{}.md", old_title)));
-
-    // if the title has changed, delete the old file
-    if old_path != file_path && old_path.exists() {
-        fs::remove_file(old_path).map_err(|e| format!("Failed to delete old file: {}", e))?;
-    }
-
-    match fs::write(&file_path, markdown_content) {
-        Ok(_) => Ok(file_path.to_string_lossy().to_string()),
-        Err(e) => Err(format!("Failed to write file: {}", e)),
-    }
-}
-
-/// This function gets the content of the document by its id and title.
-#[tauri::command]
-pub fn get_document_content(id: String, title: String) -> Result<Option<DocumentData>, String> {
-    // Get the path of the document using title
-    let trove_dir = get_trove_dir("Untitled_Trove");
-    let file_path = trove_dir.join(format!("{}.md", title));
-
-    // Check if the file exists
-    if !file_path.exists() {
-        // If the file does not exist, return None
-        return Ok(None);
-    }
-
-    // Read the file content using the file path
-    match fs::read_to_string(&file_path) {
-        // If the file is read successfully, convert the markdown content to HTML
-        Ok(content) => {
-            let html_output = markdown_handler::markdown_to_html(&content);
-
-            // Return the document data as Some(DocumentData)
-            Ok(Some(DocumentData {
-                id,
-                title,
-                content: html_output,
-            }))
-        }
-        // If there is an error in reading the file, return the error
-        Err(e) => Err(format!("Failed to read file: {}", e)),
     }
 }
 
@@ -271,8 +153,8 @@ pub fn load_last_open_tabs(state: State<'_, AppState>) -> Result<Vec<DocumentDat
 
                     // Process tabs and load documents
                     for tab in user_data.tabs {
-                        match get_document_content(tab.id.clone(), tab.title.clone()) {
-                            Ok(Some(doc)) => {
+                        match get_document_content_helper(tab.clone()) {
+                            Some(doc) => {
                                 last_open_files.push(doc);
                                 let mut tabswitcher = state.tab_switcher.write().unwrap();
                                 tabswitcher.tabs.insert(tab.id.clone(), tab.clone());
@@ -305,7 +187,7 @@ pub fn load_last_open_tabs(state: State<'_, AppState>) -> Result<Vec<DocumentDat
                     .unwrap_or_default();
 
                 let id = Uuid::new_v4().to_string();
-                get_document_content(id, title).ok().flatten()
+                get_document_content_helper(Tab { id, title })
             })
             .collect(),
         Err(e) => return Err(format!("Failed to read directory: {}", e)),

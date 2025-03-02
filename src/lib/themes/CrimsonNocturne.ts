@@ -1,4 +1,4 @@
-import type { Theme } from "../../types/theme";
+import type { Theme } from "$lib/types/theme";
 
 export const CrimsonNocturne: Theme = {
   name: "Crimson Nocturne",

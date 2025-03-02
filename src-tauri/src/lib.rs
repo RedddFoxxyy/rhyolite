@@ -39,9 +39,7 @@ pub fn run() {
         })
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            io::save_document,
             io::load_last_open_tabs,
-            io::get_document_content,
             io::get_recent_files_metadata,
             tabs::update_states,
             tabs::new_tab,

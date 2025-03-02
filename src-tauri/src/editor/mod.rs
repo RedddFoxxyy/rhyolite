@@ -3,3 +3,4 @@
 pub mod io;
 pub mod markdown_handler;
 pub mod tabs;
+pub mod themes;

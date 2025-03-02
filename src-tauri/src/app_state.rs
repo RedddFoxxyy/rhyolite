@@ -7,7 +7,7 @@ use std::{
     collections::HashMap,
     fs,
     path::PathBuf,
-    sync::{Mutex, RwLock, RwLockReadGuard, RwLockWriteGuard},
+    sync::{Mutex, RwLock},
 };
 
 use indexmap::IndexMap;
@@ -15,7 +15,10 @@ use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
 use uuid::Uuid;
 
-use crate::editor::io::{get_documents_dir, get_trove_dir};
+use crate::editor::{
+    io::{get_documents_dir, get_trove_dir},
+    themes::Theme,
+};
 
 // TODO: If you find any code in the code base, that uses
 // string "Untitled_Trove" instead of this constant, replace it with
@@ -50,6 +53,7 @@ pub struct UserData {
     pub tabs: Vec<Tab>,
     pub last_open_tab: String,
     pub recent_files: Vec<FileInfo>,
+    pub current_theme: Theme,
 }
 
 #[derive(Default, Clone)]

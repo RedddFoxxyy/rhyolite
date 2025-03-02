@@ -1,6 +1,6 @@
-import type { Theme } from "../../types/theme";
+import type { Theme } from "$lib/types/theme";
 
-export const catppuccinMochaTheme: Theme ={
+export const catppuccinMochaTheme: Theme = {
   name: "Catppuccin Mocha",
   colorscheme: "dark",
   colors: {

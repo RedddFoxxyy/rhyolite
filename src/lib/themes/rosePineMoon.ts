@@ -1,13 +1,13 @@
-import type { Theme } from "../../types/theme";
+import type { Theme } from "$lib/types/theme";
 
 export const rosePaneMoonTheme: Theme = {
   name: "Rose Pine Moon",
   colorscheme: "dark",
   colors: {
-    text: "#c4a7e7",       
-    subtext2: "#a58bc3",   
-    subtext1: "#bfa0d7",   
-    subtext0: "#b493c1", 
+    text: "#c4a7e7",
+    subtext2: "#a58bc3",
+    subtext1: "#bfa0d7",
+    subtext0: "#b493c1",
     overlay2: "#2d2b3b",
     overlay1: "#e0def4",
     overlay0: "#b8b5c9",

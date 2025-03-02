@@ -6,8 +6,8 @@ use uuid::Uuid;
 //use crate::commands::event_emitter;
 
 use crate::{
-    app_state::{AppState, CommandRegistrar, CommandRegistry, Tab},
-    editor::io::{get_trove_dir, save_document, save_user_data},
+    app_state::{AppState, CommandRegistrar, CommandRegistry, DocumentData, Tab},
+    editor::io::{commands::save_document::save_document_helper, get_trove_dir, save_user_data},
     utils::generate_available_path,
     FileInfo,
 };
@@ -147,7 +147,14 @@ pub fn new_tab(app: AppHandle) -> Result<Tab, String> {
     }
 
     save_user_data(orig_state)?;
-    let _ = save_document(new_id, title, String::new(), orig_state.to_owned());
+    save_document_helper(
+        orig_state,
+        DocumentData {
+            id: new_id,
+            title,
+            content: String::new(),
+        },
+    );
     update_tabs_state(app);
 
     Ok(new_tab)
