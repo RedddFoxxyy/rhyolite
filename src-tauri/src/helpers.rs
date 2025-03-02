@@ -29,13 +29,15 @@ impl AppStateInner {
     /// a None Value.
     ///
     /// ___Example___:
-    /// ```
-    /// let maybe_tab_switcher = state.get_tab_switcher();
-    /// if maybe_tab_switcher.is_none() {
-    ///     error!("Failed to run the parent function!!")
-    ///     return;
+    /// ```ignore
+    /// fn some_function(state:&State<'_, AppStateInner>) {
+    ///     let maybe_tab_switcher = state.get_tab_switcher();
+    ///     if maybe_tab_switcher.is_none() {
+    ///         log::error!("Failed to run the parent function!!");
+    ///         return;
+    ///     }
+    ///     let tab_switcher = maybe_tab_switcher.unwrap();
     /// }
-    /// let tab_switcher = maybe_tab_switcher.unwrap();
     /// ```
     /// > NOTE: The above exaple uses an if guard clause to handle None
     /// > type vaule for the maybe_tab_switcher. However, you can use
@@ -58,13 +60,15 @@ impl AppStateInner {
     /// a None Value.
     ///
     /// ___Example___:
-    /// ```
-    /// let maybe_tab_switcher = state.get_tab_switcher_mut();
-    /// if maybe_tab_switcher.is_none() {
-    ///     error!("Failed to run the parent function!!")
-    ///     return;
+    /// ```ignore
+    /// fn some_function(state:&State<'_, AppStateInner>) {
+    ///     let maybe_tab_switcher = state.get_tab_switcher_mut();
+    ///     if maybe_tab_switcher.is_none() {
+    ///         log::error!("Failed to run the parent function!!");
+    ///         return;
+    ///     }
+    ///     let mut tab_switcher = maybe_tab_switcher.unwrap();
     /// }
-    /// let mut tab_switcher = maybe_tab_switcher.unwrap();
     /// ```
     /// The only difference between this and `get_tab_switcher` is that, this acquires
     /// a write lock and the previous one acquires a read lock, use either of them depending
@@ -102,13 +106,15 @@ impl AppStateInner {
     /// a None Value.
     ///
     /// ___Example___:
-    /// ```
-    /// let maybe_workspace = state.get_workspace();
-    /// if maybe_workspace.is_none() {
-    ///     error!("Failed to run the parent function!!")
-    ///     return;
+    /// ```ignore
+    /// fn some_function(state:&State<'_, AppStateInner>) {
+    ///     let maybe_workspace = state.get_workspace();
+    ///     if maybe_workspace.is_none() {
+    ///         log::error!("Failed to run the parent function!!");
+    ///         return;
+    ///     }
+    ///     let workspace = maybe_workspace.unwrap();
     /// }
-    /// let workspace = maybe_workspace.unwrap();
     /// ```
     ///
     /// > NOTE: The above exaple uses an if guard clause to handle None
@@ -132,13 +138,15 @@ impl AppStateInner {
     /// a None Value.
     ///
     /// ___Example___:
-    /// ```
-    /// let maybe_workspace = state.get_workspace_mut();
-    /// if maybe_workspace.is_none() {
-    ///     error!("Failed to run the parent function!!")
-    ///     return;
+    /// ```ignore
+    /// fn some_function(state:&State<'_, AppStateInner>) {
+    ///     let maybe_workspace = state.get_workspace_mut();
+    ///     if maybe_workspace.is_none() {
+    ///         log::error!("Failed to run the parent function!!");
+    ///         return;
+    ///     }
+    ///     let mut workspace = maybe_workspace.unwrap();
     /// }
-    /// let mut workspace = maybe_workspace.unwrap();
     /// ```
     /// The only difference between this and `get_workspace` is that, this acquires
     /// a write lock and the previous one acquires a read lock, use either of them depending

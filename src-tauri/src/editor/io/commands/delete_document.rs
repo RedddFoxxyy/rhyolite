@@ -21,7 +21,7 @@ impl IOCommands {
     /// the tab before it if the above condition is not true.
     ///
     /// ___Example:(frontend)___
-    /// ```
+    /// ```ignore
     /// invoke("exec_command", { cmd: "delete_document" });
     /// ```
     /// TODO: Delete the tab that is passed as payload rather than deleting
