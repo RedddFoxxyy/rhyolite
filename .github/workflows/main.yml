@@ -2,9 +2,9 @@ name: 'publish'
 on:
   push:
     branches:
-      - master
-    paths:
-      - 'packaging/build.md'
+      - nightly
+    # paths:
+    #   - 'packaging/build.md'
 
 jobs:
   publish-tauri:
