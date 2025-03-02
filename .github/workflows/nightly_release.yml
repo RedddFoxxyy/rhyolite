@@ -83,12 +83,21 @@ jobs:
       # Step 2: Generate "What's Changed" block from commits
       - name: Generate "What's Changed" block
         id: whats_changed
+        shell: bash
         run: |
-          # Get commit messages between the last tag and HEAD
-          commits=$(git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s")
-          echo "whats_changed<<EOF" >> $GITHUB_OUTPUT
-          echo "$commits" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          # Get commit messages between the last tag and HEAD, or use all commits if no tags exist
+          if git describe --tags --abbrev=0 >/dev/null 2>&1; then
+            commits=$(git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s")
+          else
+            commits=$(git log --pretty=format:"- %s")
+          fi
+
+          # Format for GitHub Actions output in a cross-platform way
+          {
+            echo "whats_changed<<EOF"
+            echo "$commits"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       # Step 3: Publish the release with combined release body
       - uses: tauri-apps/tauri-action@v0
