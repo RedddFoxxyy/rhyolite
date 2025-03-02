@@ -67,6 +67,11 @@ jobs:
           # Set the output correctly for GitHub Actions
           echo "version=$version" >> $GITHUB_ENV
 
+      - name: Create Git tag
+        run: |
+          git tag v${{ env.version }}
+          git push origin v${{ env.version }}
+
       # Step 1: Generate auto-generated changelog (using a community Action)
       - name: Generate Changelog
         id: changelog
