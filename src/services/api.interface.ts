@@ -1,5 +1,7 @@
 import type { Tab } from "../types/tab";
 import type { Document, RecentFileInfo } from "../types/document";
+import type { Settings } from "../types/settings";
+import type { get } from "svelte/store";
 
 export interface IApiServiceProvider {
   addNewDocumentTab(): Promise<Tab>;
@@ -33,4 +35,6 @@ export interface IApiServiceProvider {
   }): Promise<void>;
 
   deleteDocument(documentId: string): Promise<void>;
+
+  get_all_settings(): Promise<Settings>;  
 }

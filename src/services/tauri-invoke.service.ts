@@ -2,6 +2,7 @@ import type { Tab } from "../types/tab";
 import { invoke } from "@tauri-apps/api/core";
 import type { Document, RecentFileInfo } from "../types/document";
 import type { IApiServiceProvider } from "./api.interface";
+import type { Settings } from "../types/settings";
 
 export class TauriInvokeServiceProvider implements IApiServiceProvider {
   async addNewDocumentTab(): Promise<Tab> {
@@ -14,6 +15,9 @@ export class TauriInvokeServiceProvider implements IApiServiceProvider {
 
   async sendCurrentOpenTab(tabId: string) {
     await invoke("send_current_open_tab", { id: tabId });
+  }
+  async get_all_settings() {
+    return await invoke<Settings>("get_all_settings");
   }
 
   async getDocumentContent(

@@ -5,6 +5,7 @@ use std::{collections::HashMap, sync::Mutex};
 use once_cell::sync::Lazy;
 use tauri::WindowEvent;
 mod editor;
+mod settings;
 
 ///DocumentData struct, datatype that stores id, title and content of the document.
 #[derive(Serialize, Deserialize, Clone)]
@@ -73,7 +74,11 @@ pub fn run() {
             editor::tabs::get_current_open_tab,
             editor::tabs::update_tab_title,
             editor::tabs::cycle_tabs,
-            editor::tabs::close_tab
+            editor::tabs::close_tab,
+            settings::setting::get_all_settings,
+            settings::setting::save_setting,
+            settings::setting::get_setting_value,
+            settings::setting::toggle_check,
             ]
         )
         .run(tauri::generate_context!())

@@ -35,7 +35,7 @@
         <RecentFilesIcon />
       </button>
     </div>
-    <div class="flex flex-col mb-[5px] py-[10px] px-[2px] gap-3">
+    <div class="flex flex-col pr-[3px] pl-[4px] pb-[4px] gap-3">
       <button
         class="flex justify-center rounded-lg items-center h-5 px-0.5 py-4 w-full cursor-pointer hover:bg-text/10 transition-all duration-200 focus:outline-none focus:ring-0"
         id="Settings_button"

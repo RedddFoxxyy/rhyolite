@@ -9,6 +9,7 @@
   import HomeHotkeys from "../components/home-hotkeys.svelte";
   import DocumentService from "../services/document.service";
   import Sidebar from "../components/sidebar.svelte";
+  import GeneralSettings from "../components/general-settings.svelte";
 
   onMount(() => {
     // TabsStore.initTabsStore();
@@ -24,5 +25,6 @@
   </div>
   <HomeHotkeys />
   <CommandPalette />
+  <GeneralSettings />
   <RecentFiles />
 </main>

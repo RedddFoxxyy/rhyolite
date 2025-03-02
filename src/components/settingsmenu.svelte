@@ -10,6 +10,8 @@
   import settingsMenuStore from "../stores/settings-menu.store";
   import ThemeStore from "../stores/theme.store";
   import type { Theme } from "../types/theme";
+  import GeneralSettingsStore from "../stores/general-settings.store";
+    import GeneralSettings from "./general-settings.svelte";
 
   let settingsVisible = $state(false);
   let showThemeOptions = $state(false);
@@ -18,7 +20,7 @@
   let originalTheme: Theme | undefined;
 
   const layout = {
-    position: { top: 150, left: 44, bottom: 15 },
+    position: { top: 150, left: 44, bottom: 7 },
     dimensions: { width: 200, height: 200 },
   };
 
@@ -26,7 +28,17 @@
     {
       label: "General Settings",
       icon: SlidersHorizontal,
-      onClick: () => console.log("Opening General Settings...")
+      onClick: () => {
+        GeneralSettingsStore.toggleVisibility(),
+        console.log(GeneralSettingsStore.isVisible()); 
+        console.log(GeneralSettingsStore.isVisible()); 
+        console.log(GeneralSettingsStore.isVisible()); 
+
+        settingsMenuStore.toggleSettingsMenu();
+        console.log("Opening General Settings..."); 
+        document.removeEventListener("click", handleCloseEvent);
+        document.removeEventListener("keydown", handleCloseEvent);
+      },
     },
     {
       label: "Theme",
