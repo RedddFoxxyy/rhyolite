@@ -17,7 +17,7 @@ use uuid::Uuid;
 
 use crate::editor::{
     io::{get_documents_dir, get_trove_dir},
-    themes::Theme,
+    settings::themes::Theme,
 };
 
 // TODO: If you find any code in the code base, that uses
@@ -101,6 +101,7 @@ pub struct FileInfo {
 pub struct FileManager {
     pub documents: Vec<Document>,
     pub recent_files: Vec<FileInfo>,
+    pub current_theme: Theme,
 }
 
 #[derive(Default)]
@@ -226,6 +227,7 @@ impl AppStateInner {
             workspace: FileManager {
                 documents: Vec::new(),
                 recent_files,
+                current_theme: Theme::default(),
             }
             .into(),
             command_registry: Mutex::new(CommandRegistry::default()),

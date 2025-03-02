@@ -2,7 +2,7 @@
 
 use crate::{
     app_state::{AppState, CommandRegistrar},
-    editor::{io::IOCommands, tabs::TabCommands},
+    editor::{io::IOCommands, settings::themes::ThemeCommands, tabs::TabCommands},
 };
 
 use tauri::{AppHandle, Emitter, Manager};
@@ -76,4 +76,5 @@ pub fn load_default_commands(app: &AppHandle) {
     // Register commands from each module
     TabCommands::register_commands(&mut command_registry);
     IOCommands::register_commands(&mut command_registry);
+    ThemeCommands::register_commands(&mut command_registry);
 }

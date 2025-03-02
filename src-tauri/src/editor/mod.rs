@@ -2,5 +2,5 @@
 
 pub mod io;
 pub mod markdown_handler;
+pub mod settings;
 pub mod tabs;
-pub mod themes;

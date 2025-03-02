@@ -10,7 +10,9 @@ use dirs;
 
 use crate::{
     app_state::{AppState, CommandRegistrar, CommandRegistry, DocumentData, Tab, UserData},
-    editor::{io::commands::get_document_content::get_document_content_helper, themes::Theme},
+    editor::{
+        io::commands::get_document_content::get_document_content_helper, settings::themes::Theme,
+    },
     FileInfo,
 };
 
