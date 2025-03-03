@@ -21,12 +21,14 @@ mod utils;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_log::Builder::new().build())
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();
             #[cfg(target_os = "macos")]
             {
                 window.set_decorations(true)?;
+                window.set_title_bar_style(tauri::TitleBarStyle::Overlay)?;
             }
             #[cfg(not(target_os = "macos"))]
             {
