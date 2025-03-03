@@ -1,5 +1,5 @@
 use crate::{
-    app_state::{AppState, DocumentData, FileInfo, Tab, DEFAULT_NOTE_TITLE, TROVE_DIR},
+    app_state::{AppState, DocumentData, Tab, DEFAULT_NOTE_TITLE, TROVE_DIR},
     editor::{
         io::{commands::save_document::save_document_helper, get_trove_dir, save_user_data},
         tabs::{cleanup_deleted_files_workaround, update_tabs_state, TabCommands},
@@ -43,19 +43,22 @@ impl TabCommands {
             tab_switcher.current_tab_id = Some(new_id.clone());
         }
 
-        {
-            let maybe_workspace = state.get_workspace_mut();
-            if maybe_workspace.is_none() {
-                log::error!("Failed to add new tab to recent_files!");
-                return;
-            }
-            let mut workspace = maybe_workspace.unwrap();
+        // NOTE: I commented this block of code as save_document_helper
+        // already handles updating the recent files with the proper
+        // document path.
+        // {
+        //     let maybe_workspace = state.get_workspace_mut();
+        //     if maybe_workspace.is_none() {
+        //         log::error!("Failed to add new tab to recent_files!");
+        //         return;
+        //     }
+        //     let mut workspace = maybe_workspace.unwrap();
 
-            workspace.recent_files.push(FileInfo {
-                id: new_id.clone(),
-                title: title.clone(),
-            });
-        }
+        //     workspace.recent_files.push(FileInfo {
+        //         id: new_id.clone(),
+        //         title: title.clone(),
+        //     });
+        // }
 
         let _ = save_user_data(state);
         let save_document_data = DocumentData {

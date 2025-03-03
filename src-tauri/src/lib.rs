@@ -23,6 +23,15 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_log::Builder::new().build())
         .setup(|app| {
+            let window = app.get_webview_window("main").unwrap();
+            #[cfg(target_os = "macos")]
+            {
+                window.set_decorations(true)?;
+            }
+            #[cfg(not(target_os = "macos"))]
+            {
+                window.set_decorations(false)?;
+            }
             app.manage(AppStateInner::load().expect("Failed to load config"));
             commands::load_default_commands(app.app_handle());
             Ok(())

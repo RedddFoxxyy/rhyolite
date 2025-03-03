@@ -143,6 +143,7 @@ pub fn new_tab(app: AppHandle) -> Result<Tab, String> {
                 id: new_id.clone(),
                 // FIXME: hardcoded name may have conflict
                 title: "Untitled".to_string(),
+                path: new_path.clone(),
             });
     }
 

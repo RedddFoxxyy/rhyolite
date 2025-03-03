@@ -95,6 +95,7 @@ pub struct Document {
 pub struct FileInfo {
     pub id: String,
     pub title: String,
+    pub path: PathBuf,
 }
 
 #[derive(Debug, Default)]
@@ -186,6 +187,7 @@ impl AppStateInner {
                             recent_files.push(FileInfo {
                                 id: id.clone(),
                                 title,
+                                path: entry.path(),
                             });
 
                             if current_tab_id.is_none() {
@@ -215,6 +217,7 @@ impl AppStateInner {
             recent_files.push(FileInfo {
                 id: id.clone(),
                 title,
+                path: file_path,
             });
             current_tab_id = Some(id);
         }

@@ -25,6 +25,11 @@ impl IOCommands {
 }
 
 pub fn save_document_helper(state: &State<'_, AppStateInner>, document_data: DocumentData) {
+    let trove_dir = get_trove_dir(TROVE_DIR);
+    let markdown_content = markdown_handler::html_to_markdown(&document_data.content);
+    let safe_filename = sanitize_filename::sanitize(format!("{}.md", document_data.title));
+    let file_path = trove_dir.join(&safe_filename);
+
     {
         let maybe_workspace = state.get_workspace_mut();
         if maybe_workspace.is_none() {
@@ -44,14 +49,10 @@ pub fn save_document_helper(state: &State<'_, AppStateInner>, document_data: Doc
             workspace.recent_files.push(FileInfo {
                 id: document_data.id.clone(),
                 title: document_data.title.clone(),
+                path: file_path.clone(),
             });
         }
     }
-
-    let trove_dir = get_trove_dir(TROVE_DIR);
-    let markdown_content = markdown_handler::html_to_markdown(&document_data.content);
-    let safe_filename = sanitize_filename::sanitize(format!("{}.md", document_data.title));
-    let file_path = trove_dir.join(&safe_filename);
 
     // Get the old title in a separate scope
     let old_title = {
