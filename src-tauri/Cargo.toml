@@ -4,7 +4,7 @@ version = "0.1.6"
 description = "A simple text editor written in Tauri, inspired by Obsidian."
 authors = ["Suyog Tandel(RedddFoxxyy)"]
 license = "Apache-2.0"
-edition = "2021"
+edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
