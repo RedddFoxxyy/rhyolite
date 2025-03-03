@@ -18,7 +18,7 @@
   let originalTheme: Theme | undefined;
 
   const layout = {
-    position: { top: 150, left: 44, bottom: 15 },
+    position: { top: 150, left: 46, bottom: 10 },
     dimensions: { width: 200, height: 200 },
   };
 
@@ -112,7 +112,7 @@
 {#if settingsVisible}
   <div
     bind:this={self}
-    class="absolute rounded-lg p-1 pt-[6px] z-50 transition-all duration-300 transform bg-base shadow-xl"
+    class="absolute rounded-lg p-1 z-50 transition-all duration-300 transform bg-base shadow-xl"
     class:translate-y-0={settingsVisible}
     class:opacity-100={settingsVisible}
     class:translate-y-5={!settingsVisible}
@@ -139,7 +139,7 @@
       <div
         role="menu"
         tabindex="0"
-        class="absolute left-full rounded-lg p-1 bottom-[58%] mt-8 ml-1 w-max bg-base shadow-xl"
+        class="absolute left-full rounded-lg p-1 bottom-[50%] mt-8 ml-1 w-max bg-base shadow-xl"
         style="width: {layout.dimensions.width}px;"
         onmouseleave={resetTheme}
       >

@@ -7,6 +7,7 @@
         "@tauri-apps/api": "2.2.0",
         "@tauri-apps/plugin-log": "^2.2.0",
         "@tauri-apps/plugin-opener": "2.2.5",
+        "@tauri-apps/plugin-os": "^2.2.0",
         "@tiptap/core": "2.11.2",
         "@tiptap/extension-blockquote": "2.11.2",
         "@tiptap/extension-bold": "2.11.2",
@@ -232,6 +233,8 @@
     "@tauri-apps/plugin-log": ["@tauri-apps/plugin-log@2.2.3", "", { "dependencies": { "@tauri-apps/api": "^2.0.0" } }, "sha512-noDkZXU0kPG1bP3qoF6om+q5TgQ65LWpsV/TnfrHyg2lEn0vE+WJWTItiIh7OUA1/xxC+hdb9ODy2bM2e+jHEw=="],
 
     "@tauri-apps/plugin-opener": ["@tauri-apps/plugin-opener@2.2.5", "", { "dependencies": { "@tauri-apps/api": "^2.0.0" } }, "sha512-hHsJ9RPWpZvZEPVFaL+d25gABMUMOf/A6ESXnvf/ii9guTukj58WXsAE/SOysXRIhej7kseRCxnOnIMpSCdUsQ=="],
+
+    "@tauri-apps/plugin-os": ["@tauri-apps/plugin-os@2.2.0", "", { "dependencies": { "@tauri-apps/api": "^2.0.0" } }, "sha512-HszbCdbisMlu5QhCNAN8YIWyz2v33abAWha6+uvV2CKX8P5VSct/y+kEe22JeyqrxCnWlQ3DRx7s49Byg7/0EA=="],
 
     "@tiptap/core": ["@tiptap/core@2.11.2", "", { "peerDependencies": { "@tiptap/pm": "^2.7.0" } }, "sha512-Z437c/sQg31yrRVgLJVkQuih+7Og5tjRx6FE/zE47QgEayqQ9yXH0LrTAbPiY6IfY1X+f2A0h3e5Y/WGD6rC3Q=="],
 
