@@ -10,11 +10,12 @@
   import tabService from "$lib/services/tab.service";
   import { type Tab } from "$lib/types/tab";
   import { invoke } from "@tauri-apps/api/core";
+  import { platform } from '@tauri-apps/plugin-os';
 
   let tabs: Tab[] = $state([]);
   let currentTab: Tab | null = $state(null);
-
   let isMaximized: boolean = $state(false);
+  let isMacOS: boolean = $state(false); // New state for OS detection
 
   const appWindow = getCurrentWindow();
 
@@ -26,18 +27,32 @@
     isMaximized = await appWindow.isMaximized();
   });
 
+ 
+  onMount(async () => {
+    // First, check the platform
+    try {
+      const current_platform = platform();
+      console.log('Platform:', current_platform);
+      isMacOS = current_platform === 'macos';
+
+    } catch (error) {
+      console.error('Error detecting platform:', error);
+    }
+  });
+
+  // Handle the event listeners in a separate onMount that returns cleanup
   onMount(() => {
     // Listen for the 'Tabs' event from the backend
-    const tabslisten = listen<Tab[]>("Tabs", (event) => {
+    const tabsPromise = listen<Tab[]>("Tabs", (event) => {
       tabs = event.payload;
     });
-    const currentTablisten = listen<Tab>("Current_Tab", (event) => {
-      // Update the Svelte store with the new counter value
+    
+    const currentTabPromise = listen<Tab>("Current_Tab", (event) => {
       currentTab = event.payload;
     });
     return () => {
-      tabslisten.then((unsub) => unsub());
-      currentTablisten.then((unsub) => unsub());
+      tabsPromise.then(unsub => unsub());
+      currentTabPromise.then(unsub => unsub());
     };
   });
 
@@ -64,10 +79,10 @@
 
 <div
   data-tauri-drag-region
-  class="flex grow-0 shrink-0 bg-base w-full basis-[40px] select-none justify-between items-center overflow-hidden"
+  class="flex grow-0 shrink-0 bg-base w-full select-none justify-between items-center overflow-hidden {isMacOS ? 'pt-6 py-2' : 'basis-[40px]'}"
 >
   <div
-    class="flex items-center h-full ml-7 px-4 flex-shrink-1 flex-grow-0 overflow-y-hidden overflow-x-auto gap-1"
+    class="flex items-center h-full ml-7 px-4 flex-shrink-1 flex-grow-0 overflow-y-hidden overflow-x-auto gap-1 {isMacOS ? 'ml-0 ' : 'ml-7'}"
     role="tablist"
     id="tablist"
     aria-label="Document tabs"
@@ -107,34 +122,36 @@
     >
   </div>
   <div class="flex-grow"></div>
-  <div class="flex flex-row items-stretch self-stretch flex-shrink-0">
-    <button
-      class="flex justify-center items-center w-12 mx-auto cursor-pointer focus-visible:bg-surface2 hover:bg-surface2"
-      id="titlebar-minimize"
-      onclick={() => appWindow.minimize()}
-      aria-label="Minimize"
-    >
-      <Minimise />
-    </button>
-    <button
-      class="flex justify-center items-center w-12 mx-auto cursor-pointer focus-visible:bg-surface2 hover:bg-surface2"
-      id="titlebar-maximize"
-      onclick={() => appWindow.toggleMaximize()}
-      aria-label="Maximise"
-    >
-      {#if isMaximized}
-        <Restore />
-      {:else}
-        <Maximise />
-      {/if}
-    </button>
-    <button
-      class="flex justify-center items-center w-12 mx-auto cursor-pointer focus-visible:bg-red-500 hover:bg-red-500"
-      id="titlebar-close"
-      onclick={() => appWindow.close()}
-      aria-label="Close"
-    >
-      <Close />
-    </button>
-  </div>
+  {#if !isMacOS}
+    <div class="flex flex-row items-stretch self-stretch flex-shrink-0">
+      <button
+        class="flex justify-center items-center w-12 mx-auto cursor-pointer focus-visible:bg-surface2 hover:bg-surface2"
+        id="titlebar-minimize"
+        onclick={() => appWindow.minimize()}
+        aria-label="Minimize"
+      >
+        <Minimise />
+      </button>
+      <button
+        class="flex justify-center items-center w-12 mx-auto cursor-pointer focus-visible:bg-surface2 hover:bg-surface2"
+        id="titlebar-maximize"
+        onclick={() => appWindow.toggleMaximize()}
+        aria-label="Maximise"
+      >
+        {#if isMaximized}
+          <Restore />
+        {:else}
+          <Maximise />
+        {/if}
+      </button>
+      <button
+        class="flex justify-center items-center w-12 mx-auto cursor-pointer focus-visible:bg-red-500 hover:bg-red-500"
+        id="titlebar-close"
+        onclick={() => appWindow.close()}
+        aria-label="Close"
+      >
+        <Close />
+      </button>
+    </div>
+  {/if}
 </div>

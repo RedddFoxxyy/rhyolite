@@ -19,7 +19,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2.0.6", features = [] }
 
 [dependencies]
-tauri = { version = "2.3.1", features = [] }
+tauri = { version = "2.3.1", features = ["macos-private-api"] }
 tauri-plugin-opener = "2.2.6"
 tauri-plugin-dialog = "2.2.0"
 serde = { version = "1.0.218", features = ["derive"] }
@@ -36,6 +36,7 @@ markdown_engine = { path = "./Crates/markdown_engine" }
 tauri-plugin-fs = "2"
 tauri-plugin-log = "2"
 log = "0.4.26"
+tauri-plugin-os = "2"
 
 
 [profile.dev]

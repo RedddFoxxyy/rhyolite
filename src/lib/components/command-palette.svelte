@@ -168,7 +168,6 @@
 </script>
 
 <!-- <svelte:window on:keydown={handleKeydown} /> -->
-
 {#if flagVisibility}
   <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
   <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -182,30 +181,30 @@
     }}
   >
     <div
-      class="fixed top-[40%] left-1/2 flex flex-col bg-crust rounded-lg p-3 z-[60] w-min-[200px] w-[50%] h-fit min-h-[100px] max-h-[400px] gap-2 -translate-x-1/2 -translate-y-1/2 overflow-hidden"
+      class="fixed top-[40%] left-1/2 flex flex-col bg-crust rounded-lg p-3 z-[60] w-min-[200px] w-[50%] h-fit min-h-[100px] max-h-[400px] -translate-x-1/2 -translate-y-1/2 overflow-hidden"
     >
-      <div class="relative basis-[42px] w-full shrink-0 mb-2 overflow-hidden">
+      <div class="relative basis-[42px] w-full shrink-0 overflow-hidden shadow-none hover:shadow-xl focus:shadow-xl transition duration-300 rounded-lg">
         <textarea
           id="commandPaletteTextarea"
-          class="w-full h-full overflow-hidden resize-none pr-8 p-2 cursor-text text-text bg-surface0 text-left box-border border-2 hover:border-subtext0 outline-none rounded transition-all duration-200 border-overlay0 focus:border-subtext0 focus:outline-none focus:ring-0"
+          class="w-full h-full overflow-hidden resize-none p-2 cursor-text text-text bg-crust text-left box-border border-2 hover:border-subtext0 rounded-lg transition-all duration-200 border-overlay0 focus:border-subtext0 focus:outline-none focus:ring-0"
           placeholder="Select a Command"
           bind:value={searchText}
           onkeydown={handleKeydown}
         ></textarea>
         <button
-          class="absolute right-2 top-1/2 -translate-y-1/2 bg-transparent text-text opacity-70 hover:opacity-100 transition-opacity duration-200"
+          class="absolute right-4 top-1/2 -translate-y-1/2 bg-transparent text-text opacity-70 hover:opacity-100 transition-opacity duration-200"
           onclick={() => CommandPaletteStore.toggleVisibility()}>✕</button
         >
       </div>
       <div
         id="command-palette-options"
-        class="flex overflow-y-auto flex-col gap-[0.5px]"
+        class="flex overflow-y-auto flex-col pt-3"
       >
-        <div class="mx-2">
+        <div>
           {#each commands as command, index}
             <button
               type="button"
-              class="flex px-4 justify-between items-center p-1 hover:bg-surface0 cursor-pointer w-full h-[34px] text-left text-text border-none shadow-none rounded transition-colors duration-200"
+              class="flex px-3 justify-between items-center hover:bg-surface0 cursor-pointer w-full h-[34px] text-left text-text border-none shadow-none rounded-lg transition-colors duration-200"
               class:bg-surface0={selectedIndex === index}
               onclick={() => {
                 command.action();
