@@ -21,7 +21,6 @@
 
   onMount(() => {
     const currentTablisten = listen<Tab>("Current_Tab", (event) => {
-      // Update the Svelte store with the new counter value
       currentTabId = event.payload.id;
     });
     return () => {
@@ -183,7 +182,9 @@
     <div
       class="fixed top-[40%] left-1/2 flex flex-col bg-crust rounded-lg p-3 z-[60] w-min-[200px] w-[50%] h-fit min-h-[100px] max-h-[400px] -translate-x-1/2 -translate-y-1/2 overflow-hidden"
     >
-      <div class="relative basis-[42px] w-full shrink-0 overflow-hidden shadow-none hover:shadow-xl focus:shadow-xl transition duration-300 rounded-lg">
+      <div
+        class="relative basis-[42px] w-full shrink-0 overflow-hidden shadow-none hover:shadow-xl focus:shadow-xl transition duration-300 rounded-lg"
+      >
         <textarea
           id="commandPaletteTextarea"
           class="w-full h-full overflow-hidden resize-none p-2 cursor-text text-text bg-crust text-left box-border border-2 hover:border-subtext0 rounded-lg transition-all duration-200 border-overlay0 focus:border-subtext0 focus:outline-none focus:ring-0"

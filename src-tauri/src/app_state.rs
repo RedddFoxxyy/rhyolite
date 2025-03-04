@@ -62,6 +62,7 @@ pub struct TabManager {
     pub current_tab_id: Option<String>,
 }
 
+#[allow(dead_code)]
 pub struct CommandItem {
     pub name: String,
     pub action: CommandAction,
@@ -84,6 +85,7 @@ pub trait CommandRegistrar {
     fn register_commands(registry: &mut CommandRegistry);
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Document {
     pub path: PathBuf,
@@ -98,6 +100,7 @@ pub struct FileInfo {
     pub path: PathBuf,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Default)]
 pub struct FileManager {
     pub documents: Vec<Document>,
@@ -156,10 +159,27 @@ impl AppStateInner {
                                 ..Default::default()
                             });
                         }
-                        Err(e) => return Err(format!("Failed to deserialize userdata: {}", e)),
+                        Err(e) => {
+                            // If deserialization fails, log the error and delete the file
+                            log::warn!("Failed to deserialize userdata: {}. Deleting the file.", e);
+
+                            // Attempt to delete the problematic userdata file
+                            if let Err(delete_err) = fs::remove_file(&userdata_path) {
+                                log::error!(
+                                    "Failed to delete corrupted userdata file: {}",
+                                    delete_err
+                                );
+                            }
+                        }
                     }
                 }
-                Err(e) => return Err(format!("Failed to read userdata file: {}", e)),
+                Err(e) => {
+                    // If reading the file fails, log the error
+                    log::warn!(
+                        "Failed to read userdata file: {}. Proceeding with default.",
+                        e
+                    );
+                }
             }
         }
 

@@ -39,7 +39,6 @@
   const handleTitleChange = (event: Event) => {
     const target = event.target as HTMLTextAreaElement;
     documentTitle = target.value;
-    // TabService.updateTabTitleById(currentTab.id, target.value);
     if (currentTab) {
       invoke("exec_command", {
         cmd: "update_tab_title",
@@ -50,7 +49,7 @@
   };
 
   let saveTimeout: number | undefined;
-  const delaySave = 500;
+  const delaySave = 200;
   const handleContentChange = (editor: Editor) => {
     documentContent = editor.getHTML();
     // console.log(documentContent) // Uncomment for debugging.
@@ -63,7 +62,7 @@
   const saveDocument = async () => {
     // Clear the previous timeout
     if (saveTimeout) clearTimeout(saveTimeout);
-    // Set a new timeout to trigger `saveAction` after 0.5 seconds
+    // Set a new timeout to trigger `saveAction` after 0.2 seconds
     saveTimeout = setTimeout(() => {
       if (currentTab) {
         DocumentService.saveDocument({
@@ -72,7 +71,7 @@
           documentContent,
         });
       }
-    }, delaySave ?? 500);
+    }, delaySave ?? 200);
   };
 </script>
 

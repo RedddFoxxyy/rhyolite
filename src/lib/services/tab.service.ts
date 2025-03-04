@@ -1,5 +1,4 @@
 import type { Tab } from "$lib/types/tab";
-import TabsStore, { type ITabsStates } from "$lib/stores/tabs.store";
 import { ApiProvider } from "./api.service";
 import docservice from "./document.service";
 import { invoke } from "@tauri-apps/api/core";

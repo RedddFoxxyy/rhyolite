@@ -7,6 +7,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 const apiProvider = new ApiProvider();
 
+// NOTE: This functioni will be soon changed or depreciated.
 const getAllDocumentTabs = async (): Promise<Tab[]> => {
   const tabs: Tab[] = await apiProvider.getAllDocumentTabs();
   invoke("exec_command", { cmd: "update_states" });
@@ -34,7 +35,7 @@ const loadRecentDocuments = (): void => {
   invoke("exec_command", { cmd: "load_last_open_tabs" });
 };
 
-const saveDocument = async ({
+const saveDocument = ({
   documentId,
   documentTitle,
   documentContent,
@@ -42,7 +43,7 @@ const saveDocument = async ({
   documentId: string;
   documentTitle: string;
   documentContent: any;
-}): Promise<void> => {
+}): void => {
   invoke("exec_command", {
     cmd: "save_document",
     payload: JSON.stringify({

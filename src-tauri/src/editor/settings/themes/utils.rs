@@ -11,6 +11,7 @@ pub struct Theme {
     colors: Colors,
 }
 
+#[allow(dead_code)]
 pub struct ThemePath {
     name: String,
     path: PathBuf,

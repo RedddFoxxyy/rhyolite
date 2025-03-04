@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
-  import TabsStore from "$lib/stores/tabs.store";
   import tabService from "$lib/services/tab.service";
   import { type Tab, TabType } from "$lib/types/tab";
   import Document from "./document.svelte";

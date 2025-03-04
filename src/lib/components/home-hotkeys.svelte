@@ -2,7 +2,6 @@
   import DocumentService from "$lib/services/document.service";
   import TabService from "$lib/services/tab.service";
   import CommandPaletteStore from "$lib/stores/command-palette.store";
-  import TabsStore from "$lib/stores/tabs.store";
   import ContentEditorStore from "$lib/stores/content-editor.store";
   import { onMount } from "svelte";
   import { listen } from "@tauri-apps/api/event";
@@ -13,7 +12,6 @@
 
   onMount(() => {
     const currentTablisten = listen<Tab>("Current_Tab", (event) => {
-      // Update the Svelte store with the new counter value
       currentTabId = event.payload.id;
     });
     return () => {

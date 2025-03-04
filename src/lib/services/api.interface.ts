@@ -18,7 +18,7 @@ export interface IApiServiceProvider {
     documentId: string;
     documentTitle: string;
     documentContent: any;
-  }): Promise<void>;
+  }): void;
 
   getLastOpenedTabs(): Promise<Document[]>;
 
