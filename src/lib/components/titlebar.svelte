@@ -76,13 +76,29 @@
     tabService.switchTab(tab);
   };
 </script>
+<style>
+
+:root {
+  background-color: rgba(
+    36,
+    39,
+    58,
+    0.6
+  ); /* Using the same color as --color-background but with opacity */
+}
+* {
+  scrollbar-width: none;
+  -ms-verflow-style: none;
+}
+
+</style>
 
 <div
   data-tauri-drag-region
-  class="flex grow-0 shrink-0 bg-base w-full select-none justify-between items-center overflow-hidden {isMacOS ? 'pt-6 py-2' : 'basis-[40px]'}"
+  class="flex grow-0 shrink-0 bg-base w-full select-none justify-between items-center overflow-hidden {isMacOS ? 'pt-6 py-2' : 'basis-[40px] py-2'}"
 >
   <div
-    class="flex items-center h-full ml-7 px-4 flex-shrink-1 flex-grow-0 overflow-y-hidden overflow-x-auto gap-1 {isMacOS ? 'ml-0 ' : 'ml-7'}"
+    class="flex items-center h-full px-6 flex-shrink-1 flex-grow-0 overflow-y-hidden overflow-x-auto gap-1 {isMacOS ? 'ml-0 ' : 'ml-7'}"
     role="tablist"
     id="tablist"
     aria-label="Document tabs"
@@ -90,7 +106,7 @@
     {#each tabs as tab}
       <div class="relative group flex items-center justify-between">
         <button
-          class={`flex justify-left items-center pl-4 pr-2 text-nowrap h-[30px] w-fit rounded-[18px] flex-shrink text-text transition-colors duration-100 hover:bg-surface1 ${currentTab?.id === tab.id ? "bg-surface0" : ""}`}
+          class={`flex justify-left items-center px-2 text-nowrap h-[30px] w-fit rounded-[18px] flex-shrink text-text transition-colors duration-100 hover:bg-surface1 ${currentTab?.id === tab.id ? "bg-surface0" : ""}`}
           class:active={currentTab?.id === tab.id}
           role="tab"
           aria-controls="editor"
