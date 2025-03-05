@@ -6,7 +6,6 @@ use crate::{
 };
 
 use tauri::{AppHandle, Emitter, Manager};
-use tokio;
 use tokio::task::spawn_blocking;
 
 /// Executes a command by name with an optional payload, running the associated action asynchronously.

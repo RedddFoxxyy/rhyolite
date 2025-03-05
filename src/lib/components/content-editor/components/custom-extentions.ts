@@ -33,12 +33,12 @@ const CustomHeader = Heading.configure({
   renderHTML({ node, HTMLAttributes }) {
     const level = node.attrs.level as 1 | 2 | 3 | 4 | 5 | 6;
     const sizes = {
-      1: "text-5xl text-text font-extrabold my-3",
-      2: "text-4xl text-text font-extrabold my-3",
-      3: "text-3xl text-text font-extrabold my-3",
-      4: "text-2xl text-text font-extrabold my-3",
-      5: "text-xl text-text font-extrabold my-3",
-      6: "text-lg text-text font-extrabold my-3",
+      1: "text-4xl text-text font-extrabold my-3",
+      2: "text-3xl text-text font-extrabold my-3",
+      3: "text-2xl text-text font-extrabold my-3",
+      4: "text-xl text-text font-extrabold my-3",
+      5: "text-lg text-text font-extrabold my-3",
+      6: "text-sm text-text font-extrabold my-3",
     };
 
     const className = `${HTMLAttributes.class || ""} ${sizes[level]}`.trim();
