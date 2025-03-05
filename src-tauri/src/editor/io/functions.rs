@@ -9,33 +9,36 @@ use uuid::Uuid;
 use dirs;
 
 use crate::{
+    FileInfo,
     app_state::{AppState, CommandRegistrar, CommandRegistry, DocumentData, Tab, UserData},
     editor::{
         io::commands::get_document_content::get_document_content_helper, settings::themes::Theme,
     },
-    FileInfo,
 };
 
 pub struct IOCommands;
 
 impl CommandRegistrar for IOCommands {
     fn register_commands(registry: &mut CommandRegistry) {
-        registry.add_command("save_document".to_string(), Box::new(Self::save_document));
+        registry.add_command(
+            "save_document".to_string(),
+            Box::new(|app, payload| Box::pin(Self::save_document(app, payload))),
+        );
         registry.add_command(
             "delete_document".to_string(),
-            Box::new(Self::delete_document),
+            Box::new(|app, payload| Box::pin(Self::delete_document(app, payload))),
         );
         registry.add_command(
             "get_document_content".to_string(),
-            Box::new(Self::get_document_content),
+            Box::new(|app, payload| Box::pin(Self::get_document_content(app, payload))),
         );
         registry.add_command(
             "load_last_open_tabs".to_string(),
-            Box::new(Self::load_last_open_tabs),
+            Box::new(|app, payload| Box::pin(Self::load_last_open_tabs(app, payload))),
         );
         registry.add_command(
             "get_recent_files_metadata".to_string(),
-            Box::new(Self::get_recent_files_metadata),
+            Box::new(|app, payload| Box::pin(Self::get_recent_files_metadata(app, payload))),
         );
     }
 }
@@ -135,33 +138,34 @@ pub fn load_last_open_tabs(state: State<'_, AppState>) -> Result<Vec<DocumentDat
         return match fs::read_to_string(&userdata_path) {
             Ok(content) => match serde_json::from_str::<UserData>(&content) {
                 Ok(user_data) => {
+                    let mut last_open_files = Vec::new();
                     // Update workspace in a separate scope
                     {
-                        let mut workspace = state.workspace.write().unwrap();
+                        let maybe_workspace = state.get_workspace_mut();
+                        let maybe_tab_switcher = state.get_tab_switcher_mut();
+                        if maybe_workspace.is_none() || maybe_tab_switcher.is_none() {
+                            return Err("Failed to load last open tabs".to_string());
+                        }
+                        let mut workspace = maybe_workspace.unwrap();
                         workspace.recent_files = user_data.recent_files.clone();
-                    }
 
-                    // Update tab switcher in a separate scope
-                    {
-                        let mut tabswitcher = state.tab_switcher.write().unwrap();
-                        tabswitcher.current_tab_id = Some(user_data.last_open_tab.clone());
+                        let mut tab_switcher = maybe_tab_switcher.unwrap();
+                        tab_switcher.current_tab_id = Some(user_data.last_open_tab.clone());
 
                         // Clear existing tabs and load from user_data
-                        let tabs = &mut tabswitcher.tabs;
+                        let tabs = &mut tab_switcher.tabs;
                         tabs.clear();
-                    }
 
-                    let mut last_open_files = Vec::new();
+                        // Process tabs and load documents
+                        for tab in user_data.tabs {
+                            match get_document_content_helper(tab.clone()) {
+                                Some(doc) => {
+                                    last_open_files.push(doc);
 
-                    // Process tabs and load documents
-                    for tab in user_data.tabs {
-                        match get_document_content_helper(tab.clone()) {
-                            Some(doc) => {
-                                last_open_files.push(doc);
-                                let mut tabswitcher = state.tab_switcher.write().unwrap();
-                                tabswitcher.tabs.insert(tab.id.clone(), tab.clone());
+                                    tab_switcher.tabs.insert(tab.id.clone(), tab.clone());
+                                }
+                                _ => continue,
                             }
-                            _ => continue,
                         }
                     }
 

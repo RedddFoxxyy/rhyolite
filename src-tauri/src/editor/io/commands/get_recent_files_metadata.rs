@@ -1,12 +1,12 @@
 use crate::{
     app_state::{AppState, UserData},
-    editor::io::{get_documents_dir, save_user_data, IOCommands},
+    editor::io::{IOCommands, get_documents_dir, save_user_data},
 };
 use std::fs;
 use tauri::{AppHandle, Emitter, Manager};
 
 impl IOCommands {
-    pub fn get_recent_files_metadata(app: AppHandle, _payload: Option<String>) {
+    pub async fn get_recent_files_metadata(app: AppHandle, _payload: Option<String>) {
         let temp_app = app.clone();
         let state = &temp_app.state::<AppState>();
         if let Err(e) = save_user_data(state) {

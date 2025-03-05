@@ -1,16 +1,16 @@
 use std::fs;
 
 use crate::{
-    app_state::{AppState, Tab, TROVE_DIR},
+    app_state::{AppState, TROVE_DIR, Tab},
     editor::{
         io::get_trove_dir,
-        tabs::{update_tabs_state, TabCommands},
+        tabs::{TabCommands, update_tabs_state},
     },
 };
 use tauri::{AppHandle, Manager};
 
 impl TabCommands {
-    pub fn update_tab_title(app: AppHandle, payload: Option<String>) {
+    pub async fn update_tab_title(app: AppHandle, payload: Option<String>) {
         log::debug!("update_tab_title init");
         let Some(payload) = payload else {
             log::warn!("Invalid call to update_tab_title");

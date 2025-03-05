@@ -1,9 +1,9 @@
 use crate::{
-    app_state::{AppState, AppStateInner, DocumentData, Tab, TROVE_DIR},
+    app_state::{AppState, AppStateInner, DocumentData, TROVE_DIR, Tab},
     editor::{
         io::{
-            commands::get_document_content::get_document_content_helper, get_trove_dir,
-            save_user_data, IOCommands,
+            IOCommands, commands::get_document_content::get_document_content_helper, get_trove_dir,
+            save_user_data,
         },
         tabs::update_tabs_state,
     },
@@ -26,7 +26,7 @@ impl IOCommands {
     /// ```
     /// TODO: Delete the tab that is passed as payload rather than deleting
     /// the current open tab.
-    pub fn delete_document(app: AppHandle, payload: Option<String>) {
+    pub async fn delete_document(app: AppHandle, payload: Option<String>) {
         log::debug!("delete_document init");
         let temp_app = app.clone();
         let state = &temp_app.state::<AppState>();

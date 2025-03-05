@@ -1,12 +1,12 @@
 use crate::{
     app_state::AppState,
-    editor::tabs::{update_tabs_state, TabCommands},
+    editor::tabs::{TabCommands, update_tabs_state},
 };
 use log::*;
 use tauri::{AppHandle, Manager};
 
 impl TabCommands {
-    pub fn cycle_tabs(app: AppHandle, _payload: Option<String>) {
+    pub async fn cycle_tabs(app: AppHandle, _payload: Option<String>) {
         debug!("Init Cycle Tabs");
         let temp_app = app.clone();
         let state = temp_app.state::<AppState>();
@@ -57,7 +57,7 @@ impl TabCommands {
         update_tabs_state(app);
     }
 
-    pub fn goto_tab_1(app: AppHandle, _payload: Option<String>) {
+    pub async fn goto_tab_1(app: AppHandle, _payload: Option<String>) {
         debug!("Init goto_tab_1");
         let temp_app = app.clone();
         let state = temp_app.state::<AppState>();
@@ -89,7 +89,7 @@ impl TabCommands {
         update_tabs_state(app);
     }
 
-    pub fn goto_last_tab(app: AppHandle, _payload: Option<String>) {
+    pub async fn goto_last_tab(app: AppHandle, _payload: Option<String>) {
         debug!("Init goto_last_tab");
         let temp_app = app.clone();
         let state = temp_app.state::<AppState>();

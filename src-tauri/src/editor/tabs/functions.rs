@@ -6,17 +6,17 @@ use uuid::Uuid;
 //use crate::commands::event_emitter;
 
 use crate::{
+    FileInfo,
     app_state::{AppState, CommandRegistrar, CommandRegistry, DocumentData, Tab},
     editor::io::{commands::save_document::save_document_helper, get_trove_dir, save_user_data},
     utils::generate_available_path,
-    FileInfo,
 };
 // use std::sync::{Arc, Mutex};
 
 pub struct TabCommands;
 
 impl TabCommands {
-    pub fn update_states(app: AppHandle, _payload: Option<String>) {
+    pub async fn update_states(app: AppHandle, _payload: Option<String>) {
         update_tabs_state(app);
     }
 }
@@ -24,18 +24,42 @@ impl TabCommands {
 impl CommandRegistrar for TabCommands {
     fn register_commands(registry: &mut CommandRegistry) {
         // Register the methods directly
-        registry.add_command("new_tab".to_string(), Box::new(Self::new_tab));
-        registry.add_command("close_tab".to_string(), Box::new(Self::close_tab));
-        registry.add_command("update_states".to_string(), Box::new(Self::update_states));
+        registry.add_command(
+            "new_tab".to_string(),
+            Box::new(|app, payload| Box::pin(Self::new_tab(app, payload))),
+        );
+        registry.add_command(
+            "close_tab".to_string(),
+            Box::new(|app, payload| Box::pin(Self::close_tab(app, payload))),
+        );
+        registry.add_command(
+            "update_states".to_string(),
+            Box::new(|app, payload| Box::pin(Self::update_states(app, payload))),
+        );
         registry.add_command(
             "update_tab_title".to_string(),
-            Box::new(Self::update_tab_title),
+            Box::new(|app, payload| Box::pin(Self::update_tab_title(app, payload))),
         );
-        registry.add_command("switch_tab".to_string(), Box::new(Self::switch_tab));
-        registry.add_command("load_tab".to_string(), Box::new(Self::load_tab));
-        registry.add_command("cycle_tabs".to_string(), Box::new(Self::cycle_tabs));
-        registry.add_command("goto_tab_1".to_string(), Box::new(Self::goto_tab_1));
-        registry.add_command("goto_last_tab".to_string(), Box::new(Self::goto_last_tab));
+        registry.add_command(
+            "switch_tab".to_string(),
+            Box::new(|app, payload| Box::pin(Self::switch_tab(app, payload))),
+        );
+        registry.add_command(
+            "load_tab".to_string(),
+            Box::new(|app, payload| Box::pin(Self::load_tab(app, payload))),
+        );
+        registry.add_command(
+            "cycle_tabs".to_string(),
+            Box::new(|app, payload| Box::pin(Self::cycle_tabs(app, payload))),
+        );
+        registry.add_command(
+            "goto_tab_1".to_string(),
+            Box::new(|app, payload| Box::pin(Self::goto_tab_1(app, payload))),
+        );
+        registry.add_command(
+            "goto_last_tab".to_string(),
+            Box::new(|app, payload| Box::pin(Self::goto_last_tab(app, payload))),
+        );
     }
 }
 
@@ -72,15 +96,23 @@ pub fn cleanup_deleted_files_workaround(
 #[tauri::command]
 pub fn send_current_open_tab(id: String, state: State<'_, AppState>) {
     log::debug!("send_current_open_tab init");
-    state.tab_switcher.write().unwrap().current_tab_id = Some(id.clone());
+    let maybe_tab_switcher = state.get_tab_switcher_mut();
+    if maybe_tab_switcher.is_none() {
+        log::error!("Failed to send current open tab!");
+        return;
+    }
+    maybe_tab_switcher.unwrap().current_tab_id = Some(id.clone());
 }
 
 #[tauri::command]
 pub fn get_current_open_tab(state: State<'_, AppState>) -> Result<String, String> {
     log::debug!("get_current_open_tab init");
-    state
-        .tab_switcher
-        .read()
+    let maybe_tab_switcher = state.get_tab_switcher();
+    if maybe_tab_switcher.is_none() {
+        log::error!("Failed to get_current_open_tab!");
+        return Err("Cannot open current Tab".to_string());
+    }
+    maybe_tab_switcher
         .unwrap()
         .current_tab_id
         .clone()
@@ -90,14 +122,12 @@ pub fn get_current_open_tab(state: State<'_, AppState>) -> Result<String, String
 #[tauri::command]
 pub fn get_tabs(state: State<'_, AppState>) -> Result<Vec<Tab>, String> {
     log::debug!("get_tabs init");
-    Ok(state
-        .tab_switcher
-        .read()
-        .unwrap()
-        .tabs
-        .values()
-        .cloned()
-        .collect())
+    let maybe_tab_switcher = state.get_tab_switcher();
+    if maybe_tab_switcher.is_none() {
+        log::error!("Failed to get Tabs!");
+        return Err("Cannot get Tabs".to_string());
+    }
+    Ok(maybe_tab_switcher.unwrap().tabs.values().cloned().collect())
 }
 
 #[tauri::command]
@@ -128,23 +158,22 @@ pub fn new_tab(app: AppHandle) -> Result<Tab, String> {
 
     // Insert into IndexMap
     {
-        let mut tab_switcher = state.tab_switcher.write().unwrap();
+        let maybe_tab_switcher = state.get_tab_switcher_mut();
+        let maybe_workspace = state.get_workspace_mut();
+        if maybe_tab_switcher.is_none() || maybe_workspace.is_none() {
+            log::error!("Failed to get Tabs!");
+            return Err("Cannot create new tab".to_string());
+        }
+        let mut tab_switcher = maybe_tab_switcher.unwrap();
         tab_switcher.tabs.insert(new_id.clone(), new_tab.clone());
         tab_switcher.current_tab_id = Some(new_id.clone());
-    }
 
-    {
-        state
-            .workspace
-            .write()
-            .unwrap()
-            .recent_files
-            .push(FileInfo {
-                id: new_id.clone(),
-                // FIXME: hardcoded name may have conflict
-                title: "Untitled".to_string(),
-                path: new_path.clone(),
-            });
+        maybe_workspace.unwrap().recent_files.push(FileInfo {
+            id: new_id.clone(),
+            // FIXME: hardcoded name may have conflict
+            title: "Untitled".to_string(),
+            path: new_path.clone(),
+        });
     }
 
     save_user_data(orig_state)?;
@@ -176,7 +205,12 @@ pub fn load_tab(
     };
 
     {
-        let mut tab_switcher = state.tab_switcher.write().unwrap();
+        let maybe_tab_switcher = state.get_tab_switcher_mut();
+        if maybe_tab_switcher.is_none() {
+            log::error!("Failed to load Tab!");
+            return Err("Cannot load Tab".to_string());
+        }
+        let mut tab_switcher = maybe_tab_switcher.unwrap();
         tab_switcher.tabs.insert(id, new_tab.clone());
     }
 
