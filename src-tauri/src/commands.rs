@@ -37,47 +37,31 @@ use tokio::task::spawn_blocking;
 // 3. Use an async mutex (e.g., tokio::sync::Mutex) instead of parking_lot::Mutex
 #[tauri::command]
 pub async fn exec_command(cmd: String, payload: Option<String>, app: AppHandle) {
-    // Log the command being executed for debugging purposes
-    log::debug!("command::exec: {}", cmd);
+    log::debug!(
+        "command::exec: {}({})",
+        cmd,
+        payload
+            .clone()
+            .map(|p| format!("\"{}\"", p.escape_default()))
+            .unwrap_or("".to_string())
+    );
 
-    // Get the app's state, which holds the command registry and other data
     let state = app.state::<AppState>();
 
-    // Scope the mutex lock to fetch the command's future without holding the lock across an await
-    let future_opt = {
-        // Try to acquire the command registry mutex; this is synchronous but short-lived
-        let mut command_registry = match state.get_command_registry() {
-            Some(registry) => registry,
-            None => {
-                log::error!("Failed to execute the command {}", cmd);
-                return;
-            }
-        };
+    let command_registry_option = state.get_command_registry();
 
-        // Look up the command in the registry and map it to its action's future
-        command_registry
-            .commands
-            .get_mut(&cmd) // Get a mutable reference to the command item, if it exists
-            .map(|command_item| {
-                let action = &mut command_item.action; // Borrow the action closure mutably
-                // Call the action with cloned app handle and payload, returning a pinned future
-                (action)(app.clone(), payload)
-            })
-        // Scope ends here, dropping the mutex guard before any async operations
-    };
-
-    // Now outside the mutex scope, handle the future if we got one
-    if let Some(future) = future_opt {
-        // Spawn the future as a separate async task to isolate its execution
-        // tokio::spawn takes a Send future and runs it concurrently on the runtime
-        let handle = tokio::spawn(future);
-
-        // Wait for the spawned task to complete; this is async and non-blocking
-        handle.await.unwrap();
-    } else {
-        // No command found in the registry, log it and exit
-        log::debug!("Unknown command: {}", cmd);
+    if command_registry_option.is_none() {
+        log::error!("Failed to execute the command {}", cmd);
+        return;
     }
+
+    let mut command_registry = command_registry_option.unwrap();
+    if let Some(command_item) = command_registry.commands.get_mut(&cmd) {
+        let action = &mut command_item.action;
+        (action)(app.clone(), payload).await;
+    } else {
+        log::debug!("Unknown command: {}", cmd);
+    };
 }
 
 pub fn load_default_commands(app: &AppHandle) {
