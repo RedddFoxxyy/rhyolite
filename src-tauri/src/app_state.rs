@@ -13,9 +13,9 @@ use std::{
 };
 
 use indexmap::IndexMap;
-use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
+use tauri::async_runtime::{Mutex, RwLock};
 use uuid::Uuid;
 
 use crate::editor::{

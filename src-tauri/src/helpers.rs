@@ -21,7 +21,7 @@ use crate::{
     AppStateInner,
     app_state::{CommandRegistry, FileManager, TabManager},
 };
-use parking_lot::{MutexGuard, RwLockReadGuard, RwLockWriteGuard};
+use tokio::sync::{MutexGuard, RwLockReadGuard, RwLockWriteGuard};
 
 impl AppStateInner {
     /// ## Gets a read lock to the Tab Switcher in the app state, and returns it.
@@ -46,8 +46,8 @@ impl AppStateInner {
     /// > tab_switcher is not directly available but instead wrapped in a read guard!
     pub fn get_tab_switcher(&self) -> Option<RwLockReadGuard<'_, TabManager>> {
         let tab_switcher = match self.tab_switcher.try_read() {
-            Some(lock) => lock,
-            None => {
+            Ok(lock) => lock,
+            Err(_) => {
                 log::error!("Cannot get a read lock on tab_switcher.");
                 return None;
             }
@@ -81,8 +81,8 @@ impl AppStateInner {
     /// > tab_switcher is not directly available but instead wrapped in a write guard!
     pub fn get_tab_switcher_mut(&self) -> Option<RwLockWriteGuard<'_, TabManager>> {
         let tab_switcher = match self.tab_switcher.try_write() {
-            Some(lock) => lock,
-            None => {
+            Ok(lock) => lock,
+            Err(_) => {
                 log::error!("Cannot get a write lock on tab_switcher.");
                 return None;
             }
@@ -92,8 +92,8 @@ impl AppStateInner {
 
     pub fn get_command_registry(&self) -> Option<MutexGuard<'_, CommandRegistry>> {
         let command_registry = match self.command_registry.try_lock() {
-            Some(lock) => lock,
-            None => {
+            Ok(lock) => lock,
+            Err(_) => {
                 log::error!("Cannot get a mutex lock on command_registry.");
                 return None;
             }
@@ -124,8 +124,8 @@ impl AppStateInner {
     /// > workspace is not directly available but instead wrapped in a read guard!
     pub fn get_workspace(&self) -> Option<RwLockReadGuard<'_, FileManager>> {
         let workspace = match self.workspace.try_read() {
-            Some(lock) => lock,
-            None => {
+            Ok(lock) => lock,
+            Err(_) => {
                 log::error!("Cannot get a read lock on workspace.");
                 return None;
             }
@@ -159,8 +159,8 @@ impl AppStateInner {
     /// > workspace is not directly available but instead wrapped in a read guard!
     pub fn get_workspace_mut(&self) -> Option<RwLockWriteGuard<'_, FileManager>> {
         let workspace = match self.workspace.try_write() {
-            Some(lock) => lock,
-            None => {
+            Ok(lock) => lock,
+            Err(_) => {
                 log::error!("Cannot get a write lock on workspace.");
                 return None;
             }
