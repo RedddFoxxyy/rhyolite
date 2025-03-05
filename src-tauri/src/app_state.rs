@@ -6,11 +6,14 @@
 use std::{
     collections::HashMap,
     fs,
+    future::Future,
     path::PathBuf,
-    sync::{Mutex, RwLock},
+    pin::Pin,
+    // sync::{Mutex, RwLock},
 };
 
 use indexmap::IndexMap;
+use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
 use uuid::Uuid;
@@ -262,4 +265,9 @@ pub type AppState = AppStateInner;
 // Todo: Implement Async for the CommandActions.
 // I am also removing the Arc and Mutex for the command actions for now since it is
 // not required. If needed we can wrap it again in arc and mutex.
-pub type CommandAction = Box<dyn FnMut(AppHandle, Option<String>) + Send + 'static>;
+pub type CommandAction = Box<
+    dyn FnMut(AppHandle, Option<String>) -> Pin<Box<dyn Future<Output = ()> + Send>>
+        + Send
+        + Sync
+        + 'static,
+>;

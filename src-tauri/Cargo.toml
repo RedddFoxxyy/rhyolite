@@ -37,6 +37,8 @@ tauri-plugin-fs = "2"
 tauri-plugin-log = "2"
 log = "0.4.26"
 tauri-plugin-os = "2"
+tokio = { version = "1", features = ["fs", "sync"] }
+parking_lot = { version = "0.12" }
 
 
 [profile.dev]

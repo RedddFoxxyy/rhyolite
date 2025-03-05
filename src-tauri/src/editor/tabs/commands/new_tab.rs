@@ -1,8 +1,8 @@
 use crate::{
-    app_state::{AppState, DocumentData, Tab, DEFAULT_NOTE_TITLE, TROVE_DIR},
+    app_state::{AppState, DEFAULT_NOTE_TITLE, DocumentData, TROVE_DIR, Tab},
     editor::{
         io::{commands::save_document::save_document_helper, get_trove_dir, save_user_data},
-        tabs::{cleanup_deleted_files_workaround, update_tabs_state, TabCommands},
+        tabs::{TabCommands, cleanup_deleted_files_workaround, update_tabs_state},
     },
     utils::generate_available_path,
 };
@@ -10,7 +10,7 @@ use tauri::{AppHandle, Manager};
 use uuid::Uuid;
 
 impl TabCommands {
-    pub fn new_tab(app: AppHandle, _payload: Option<String>) {
+    pub async fn new_tab(app: AppHandle, _payload: Option<String>) {
         log::debug!("new_tab init");
         let temp_app = app.clone();
         let state = &temp_app.state::<AppState>();

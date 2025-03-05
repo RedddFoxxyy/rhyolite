@@ -1,11 +1,11 @@
 use crate::{
     app_state::{AppState, Tab},
-    editor::tabs::{update_tabs_state, TabCommands},
+    editor::tabs::{TabCommands, update_tabs_state},
 };
 use tauri::{AppHandle, Manager};
 
 impl TabCommands {
-    pub fn load_tab(app: AppHandle, payload: Option<String>) {
+    pub async fn load_tab(app: AppHandle, payload: Option<String>) {
         log::debug!("load_tab init");
         let Some(payload) = payload else {
             log::warn!("Invalid call to load_tab");

@@ -6,13 +6,16 @@ use crate::{
 };
 
 use tauri::{AppHandle, Emitter, Manager};
+use tokio;
+use tokio::task::spawn_blocking;
 
-/// # Execute Command
-/// Executes the command with the given name(cmd) and passes the
-/// given payload to the command while executing.
+/// Executes a command by name with an optional payload, running the associated action asynchronously.
 ///
-/// This is used by tauri events on the frontend(svelte) to execute
-/// any io/tabs related logic on user input!
+/// This function is a Tauri command handler that takes a command name (`cmd`), an optional `payload`,
+/// and the Tauri `AppHandle`. It retrieves the command's action from the app's state, executes it in
+/// a separate async task, and waits for completion. The design ensures thread-safety and avoids
+/// capturing non-`Send` types (like raw pointers) across await points, making it compatible with
+/// Tauri's multi-threaded runtime.
 ///
 /// ___Example:___
 ///
@@ -33,33 +36,48 @@ use tauri::{AppHandle, Emitter, Manager};
 // 1. Improve handling of incoming payload(json).
 // 2. Add more error handling so that app does not panic!
 #[tauri::command]
-pub fn exec_command(cmd: String, payload: Option<String>, app: AppHandle) {
-    log::debug!(
-        "command::exec: {}({})",
-        cmd,
-        payload
-            .clone()
-            .map(|p| format!("\"{}\"", p.escape_default()))
-            .unwrap_or("".to_string())
-    );
+pub async fn exec_command(cmd: String, payload: Option<String>, app: AppHandle) {
+    // Log the command being executed for debugging purposes
+    log::debug!("command::exec: {}", cmd);
 
+    // Get the app's state, which holds the command registry and other data
     let state = app.state::<AppState>();
 
-    let command_registry_option = state.get_command_registry();
+    // Scope the mutex lock to fetch the command's future without holding the lock across an await
+    let future_opt = {
+        // Try to acquire the command registry mutex; this is synchronous but short-lived
+        let mut command_registry = match state.get_command_registry() {
+            Some(registry) => registry,
+            None => {
+                log::error!("Failed to execute the command {}", cmd);
+                return;
+            }
+        };
 
-    if command_registry_option.is_none() {
-        log::error!("Failed to execute the command {}", cmd);
-        return;
-    }
-
-    let mut command_registry = command_registry_option.unwrap();
-    if let Some(command_item) = command_registry.commands.get_mut(&cmd) {
-        let action = &mut command_item.action;
-        (action)(app.clone(), payload);
-    } else {
-        log::debug!("Unknown command: {}", cmd);
-        // let _ = app.emit("dummy-event", "hellllo");
+        // Look up the command in the registry and map it to its action's future
+        command_registry
+            .commands
+            .get_mut(&cmd) // Get a mutable reference to the command item, if it exists
+            .map(|command_item| {
+                let action = &mut command_item.action; // Borrow the action closure mutably
+                // Call the action with cloned app handle and payload, returning a pinned future
+                (action)(app.clone(), payload)
+            })
+        // Scope ends here, dropping the mutex guard before any async operations
     };
+
+    // Now outside the mutex scope, handle the future if we got one
+    if let Some(future) = future_opt {
+        // Spawn the future as a separate async task to isolate its execution
+        // tokio::spawn takes a Send future and runs it concurrently on the runtime
+        let handle = tokio::spawn(future);
+
+        // Wait for the spawned task to complete; this is async and non-blocking
+        handle.await.unwrap();
+    } else {
+        // No command found in the registry, log it and exit
+        log::debug!("Unknown command: {}", cmd);
+    }
 }
 
 pub fn load_default_commands(app: &AppHandle) {

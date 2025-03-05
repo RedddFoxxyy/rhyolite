@@ -1,7 +1,7 @@
 use crate::{
     app_state::{AppState, UserData},
     editor::{
-        io::{get_documents_dir, IOCommands},
+        io::{IOCommands, get_documents_dir},
         tabs::update_tabs_state,
     },
 };
@@ -9,7 +9,7 @@ use std::fs;
 use tauri::{AppHandle, Manager};
 
 impl IOCommands {
-    pub fn load_last_open_tabs(app: AppHandle, _payload: Option<String>) {
+    pub async fn load_last_open_tabs(app: AppHandle, _payload: Option<String>) {
         log::debug!("load_last_open_tabs init");
         let temp_app = app.clone();
         let state = &temp_app.state::<AppState>();

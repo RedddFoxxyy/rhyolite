@@ -1,7 +1,7 @@
 use crate::{
-    app_state::{DocumentData, Tab, TROVE_DIR},
+    app_state::{DocumentData, TROVE_DIR, Tab},
     editor::{
-        io::{get_trove_dir, IOCommands},
+        io::{IOCommands, get_trove_dir},
         markdown_handler,
     },
 };
@@ -10,7 +10,7 @@ use tauri::{AppHandle, Emitter};
 
 impl IOCommands {
     //TODO: Cleanup unused variables.
-    pub fn get_document_content(app: AppHandle, payload: Option<String>) {
+    pub async fn get_document_content(app: AppHandle, payload: Option<String>) {
         let Some(payload) = payload else {
             log::warn!("Invalid call to get_document_content");
             return;

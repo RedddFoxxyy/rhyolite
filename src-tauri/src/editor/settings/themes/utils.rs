@@ -63,15 +63,21 @@ pub struct Colors {
 pub struct ThemeCommands;
 impl CommandRegistrar for ThemeCommands {
     fn register_commands(registry: &mut CommandRegistry) {
-        registry.add_command("set_theme".to_string(), Box::new(Self::set_theme));
-        registry.add_command("set_theme".to_string(), Box::new(Self::get_loaded_themes));
+        registry.add_command(
+            "set_theme".to_string(),
+            Box::new(|app, payload| Box::pin(Self::set_theme(app, payload))),
+        );
+        registry.add_command(
+            "get_loaded_themes".to_string(),
+            Box::new(|app, payload| Box::pin(Self::get_loaded_themes(app, payload))),
+        );
     }
 }
 
 impl ThemeCommands {
     // TODO: Add condition to load an external loaded theme, that
     // is theme which is not a default theme.
-    pub fn set_theme(app: AppHandle, payload: Option<String>) {
+    pub async fn set_theme(app: AppHandle, payload: Option<String>) {
         let Some(payload) = payload else {
             log::warn!("Invalid call to switch_tab");
             return;
@@ -108,7 +114,7 @@ impl ThemeCommands {
             log::error!("Invalid payload.");
         }
     }
-    pub fn get_loaded_themes(app: AppHandle, _payload: Option<String>) {
+    pub async fn get_loaded_themes(app: AppHandle, _payload: Option<String>) {
         let default_themes = &DEFAULT_THEMES;
         let ext_themes_list = &THEMES_LIST;
         let default_theme_names_iter = default_themes.iter().map(|theme| theme.name.clone());

@@ -1,7 +1,7 @@
 use crate::{
-    app_state::{AppState, AppStateInner, DocumentData, FileInfo, DEFAULT_NOTE_TITLE, TROVE_DIR},
+    app_state::{AppState, AppStateInner, DEFAULT_NOTE_TITLE, DocumentData, FileInfo, TROVE_DIR},
     editor::{
-        io::{get_trove_dir, IOCommands},
+        io::{IOCommands, get_trove_dir},
         markdown_handler,
     },
 };
@@ -9,7 +9,7 @@ use std::fs;
 use tauri::{AppHandle, Manager, State};
 
 impl IOCommands {
-    pub fn save_document(app: AppHandle, payload: Option<String>) {
+    pub async fn save_document(app: AppHandle, payload: Option<String>) {
         let Some(payload) = payload else {
             log::warn!("Invalid call to save_document");
             return;
