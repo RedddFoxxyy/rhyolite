@@ -35,6 +35,7 @@ use tokio::task::spawn_blocking;
 //
 // 1. Improve handling of incoming payload(json).
 // 2. Add more error handling so that app does not panic!
+// 3. Use an async mutex (e.g., tokio::sync::Mutex) instead of parking_lot::Mutex
 #[tauri::command]
 pub async fn exec_command(cmd: String, payload: Option<String>, app: AppHandle) {
     // Log the command being executed for debugging purposes
