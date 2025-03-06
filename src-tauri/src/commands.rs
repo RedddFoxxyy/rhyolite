@@ -37,31 +37,26 @@ use tokio::task::spawn_blocking;
 // 3. Use an async mutex (e.g., tokio::sync::Mutex) instead of parking_lot::Mutex
 #[tauri::command]
 pub async fn exec_command(cmd: String, payload: Option<String>, app: AppHandle) {
-    log::debug!(
-        "command::exec: {}({})",
-        cmd,
-        payload
-            .clone()
-            .map(|p| format!("\"{}\"", p.escape_default()))
-            .unwrap_or("".to_string())
-    );
-
     let state = app.state::<AppState>();
+    let command_registry_option = state.get_command_registry(); // Acquires lock
 
-    let command_registry_option = state.get_command_registry();
-
-    if command_registry_option.is_none() {
-        log::error!("Failed to execute the command {}", cmd);
-        return;
-    }
-
-    let mut command_registry = command_registry_option.unwrap();
-    if let Some(command_item) = command_registry.commands.get_mut(&cmd) {
-        let action = &mut command_item.action;
-        (action)(app.clone(), payload).await;
+    // Retrieve the action and release the lock
+    let future = if let Some(mut command_registry) = command_registry_option {
+        if let Some(command_item) = command_registry.commands.get_mut(&cmd) {
+            let action = &mut command_item.action;
+            Some((action)(app.clone(), payload)) // Get the future
+        } else {
+            None
+        }
     } else {
-        log::debug!("Unknown command: {}", cmd);
+        None
     };
+
+    if let Some(future) = future {
+        future.await;
+    } else {
+        log::error!("Failed to execute the command {}", cmd);
+    }
 }
 
 pub fn load_default_commands(app: &AppHandle) {
