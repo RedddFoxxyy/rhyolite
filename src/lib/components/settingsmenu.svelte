@@ -10,12 +10,34 @@
   import settingsMenuStore from "$lib/stores/settings-menu.store";
   import ThemeStore from "$lib/stores/theme.store";
   import type { Theme } from "$lib/types/theme";
+  import { listen } from "@tauri-apps/api/event";
+  import { invoke } from "@tauri-apps/api/core";
+  import { onMount } from "svelte";
 
   let settingsVisible = $state(false);
   let showThemeOptions = $state(false);
   let self: HTMLElement | null = $state(null);
-  let themes: Theme[] = $state([]);
+  let themes: string[] = $state([]);
+  let currentTheme: Theme | null = $state(null);
   let originalTheme: Theme | undefined;
+
+  onMount(() => {
+    const currentThemelisten = listen<Theme>(
+      "update_current_theme",
+      (event) => {
+        currentTheme = event.payload;
+        originalTheme = event.payload;
+        ThemeStore.applyTheme(currentTheme);
+      },
+    );
+    const themeListlisten = listen<string[]>("themes_list", (event) => {
+      themes = event.payload;
+    });
+    return () => {
+      currentThemelisten.then((unsub) => unsub());
+      themeListlisten.then((unsub) => unsub());
+    };
+  });
 
   const layout = {
     position: { top: 150, left: 46, bottom: 10 },
@@ -58,14 +80,19 @@
 
   // Store the original theme when opening the menu
   const storeOriginalTheme = () => {
+    invoke("exec_command", { cmd: "get_loaded_themes" });
     ThemeStore.states.subscribe((v) => {
       originalTheme = v.currentTheme;
     })();
   };
 
   // Preview theme on hover
-  const previewTheme = (theme: Theme) => {
-    ThemeStore.updateCurrentThemeState(theme);
+  const previewTheme = (theme: string) => {
+    invoke("exec_command", {
+      cmd: "set_theme",
+      payload: JSON.stringify(theme),
+    });
+    // ThemeStore.updateCurrentThemeState(theme);
   };
 
   // Restore original theme when mouse leaves
@@ -76,14 +103,15 @@
   };
 
   const unsubscribe = [
-    ThemeStore.states.subscribe((v) => {
-      themes = v.themes;
-    }),
+    // ThemeStore.states.subscribe((v) => {
+    //   themes = v.themes;
+    // }),
     settingsMenuStore.subscribe((state) => {
       settingsVisible = state.settingsMenuVisible;
       if (state.settingsMenuVisible) {
         document.addEventListener("click", handleCloseEvent);
         document.addEventListener("keydown", handleCloseEvent);
+
         storeOriginalTheme(); // Store original theme when opening menu
       } else {
         document.removeEventListener("click", handleCloseEvent);
@@ -95,9 +123,13 @@
   ];
 
   // Apply theme and close menu
-  const changeTheme = (theme: Theme) => {
-    ThemeStore.updateCurrentThemeState(theme);
-    originalTheme = theme; // Update original theme to the new selection
+  const changeTheme = (theme: string) => {
+    // ThemeStore.updateCurrentThemeState(theme);
+    invoke("exec_command", {
+      cmd: "set_theme",
+      payload: JSON.stringify(theme),
+    });
+    // originalTheme = theme; // Update original theme to the new selection
     settingsMenuStore.toggleSettingsMenu();
   };
 
@@ -143,13 +175,13 @@
         style="width: {layout.dimensions.width}px;"
         onmouseleave={resetTheme}
       >
-        {#each themes as theme}
+        {#each themes as theme_name}
           <button
             class="w-full p-1 rounded-lg text-left text-text bg-transparent cursor-pointer transition-all duration-300 text-sm hover:bg-surface1 focus:bg-surface1"
-            onmouseenter={() => previewTheme(theme)}
-            onclick={() => changeTheme(theme)}
+            onmouseenter={() => previewTheme(theme_name)}
+            onclick={() => changeTheme(theme_name)}
           >
-            {theme.name}
+            {theme_name}
           </button>
         {/each}
       </div>

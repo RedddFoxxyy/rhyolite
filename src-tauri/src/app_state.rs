@@ -143,6 +143,8 @@ impl AppStateInner {
 
                             let current_tab_id = Some(user_data.last_open_tab.clone());
 
+                            let current_theme = user_data.current_theme.clone();
+
                             let tabs = user_data
                                 .tabs
                                 .iter()
@@ -155,8 +157,10 @@ impl AppStateInner {
                                     tabs,
                                 }),
                                 workspace: FileManager {
+                                    documents: Vec::new(),
                                     recent_files,
-                                    ..Default::default()
+                                    current_theme,
+                                    // ..Default::default()
                                 }
                                 .into(),
                                 ..Default::default()

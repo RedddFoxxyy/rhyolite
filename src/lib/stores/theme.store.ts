@@ -110,6 +110,7 @@ const getThemesState = (): Theme[] => {
 
 export default {
   states,
+  applyTheme,
   initThemesStore,
   resetCurrentTheme,
   updateThemesState,

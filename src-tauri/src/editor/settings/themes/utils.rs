@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
+use std::fs::*;
 use std::path::PathBuf;
 use tauri::{AppHandle, Emitter, Manager};
+use tokio::fs::read_to_string;
 
 use crate::app_state::{AppState, CommandRegistrar, CommandRegistry};
 
@@ -12,12 +14,11 @@ pub struct Theme {
 }
 
 #[allow(dead_code)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ThemePath {
     name: String,
     path: PathBuf,
 }
-pub const DEFAULT_THEMES: Vec<Theme> = Vec::new();
-pub const THEMES_LIST: Vec<ThemePath> = Vec::new();
 
 impl Theme {
     pub fn default() -> Theme {
@@ -60,6 +61,18 @@ pub struct Colors {
     mantle: String,
 }
 
+async fn find_file(dir: &PathBuf, target: &str) -> Option<PathBuf> {
+    // read_dir returns an iterator over the directory entries
+    read_dir(dir)
+        .ok()?
+        .filter_map(Result::ok)
+        .find(|entry| {
+            // file_name returns an OsString; convert it to &str to compare
+            entry.file_name().to_string_lossy() == target
+        })
+        .map(|entry| entry.path())
+}
+
 pub struct ThemeCommands;
 impl CommandRegistrar for ThemeCommands {
     fn register_commands(registry: &mut CommandRegistry) {
@@ -71,6 +84,10 @@ impl CommandRegistrar for ThemeCommands {
             "get_loaded_themes".to_string(),
             Box::new(|app, payload| Box::pin(Self::get_loaded_themes(app, payload))),
         );
+        registry.add_command(
+            "get_current_theme".to_string(),
+            Box::new(|app, payload| Box::pin(Self::get_current_theme(app, payload))),
+        );
     }
 }
 
@@ -78,49 +95,98 @@ impl ThemeCommands {
     // TODO: Add condition to load an external loaded theme, that
     // is theme which is not a default theme.
     pub async fn set_theme(app: AppHandle, payload: Option<String>) {
+        log::info!("init set_theme");
         let Some(payload) = payload else {
             log::warn!("Invalid call to switch_tab");
             return;
         };
 
         if let Ok(theme_name) = serde_json::from_str::<String>(&payload) {
-            let default_theme = &DEFAULT_THEMES;
-            let maybe_theme = default_theme
-                .iter()
-                .find(|theme| theme.name == theme_name.clone());
-
-            if maybe_theme.is_none() {
-                log::error!("The given them {} was not found!!", theme_name);
-                return;
+            let resource_dir = app.path().resource_dir().unwrap();
+            let themes_dir = resource_dir.join("themes");
+            let theme_file_name = format!("{}.json", theme_name);
+            let theme_file_name_str = theme_file_name.as_str();
+            let theme_exists = find_file(&themes_dir, theme_file_name_str).await;
+            if theme_exists.is_none() {
+                log::error!("{} theme does not exists or is not installed!", &theme_name);
             }
-
-            let new_theme = maybe_theme.unwrap();
+            let theme_file_content = read_to_string(theme_exists.unwrap()).await.unwrap();
+            let theme_result = serde_json::from_str::<Theme>(theme_file_content.as_str());
+            if theme_result.is_err() {
+                log::error!("Failed to deserialize the theme content from theme file.");
+            }
+            let theme = theme_result.unwrap();
 
             let app_ref = app.clone();
             let state = app_ref.state::<AppState>();
 
             let mut workspace = state.workspace.write().await;
 
-            workspace.current_theme = new_theme.clone();
+            workspace.current_theme = theme.clone();
 
-            let _ = app.emit("update_current_theme", new_theme.clone());
+            let _ = app.emit("update_current_theme", theme);
         } else {
             log::error!("Invalid payload.");
         }
     }
+
     pub async fn get_loaded_themes(app: AppHandle, _payload: Option<String>) {
-        let default_themes = &DEFAULT_THEMES;
-        let ext_themes_list = &THEMES_LIST;
-        let default_theme_names_iter = default_themes.iter().map(|theme| theme.name.clone());
-        let default_theme_names: Vec<String> = default_theme_names_iter.collect();
-        let loaded_theme_names_iter = ext_themes_list.iter().map(|theme| theme.name.clone());
-        let loaded_theme_names: Vec<String> = loaded_theme_names_iter.collect();
+        log::info!("Init get_loaded_themes");
 
-        let final_theme_list: Vec<String> = default_theme_names
-            .into_iter()
-            .chain(loaded_theme_names)
-            .collect();
+        let resource_dir = app.path().resource_dir().unwrap();
+        let themes_dir = resource_dir.join("themes");
+        let mut themes_list: Vec<String> = Vec::new();
+        if let Ok(entries) = read_dir(&themes_dir) {
+            for entry in entries.filter_map(|e| e.ok()) {
+                if let Some(extension) = entry.path().extension() {
+                    if extension == "json" {
+                        if let Some(stem) = entry.path().file_stem().and_then(|s| s.to_str()) {
+                            themes_list.push(stem.to_string());
+                        }
+                    }
+                }
+            }
+            // println!("{:#?}", themes_list);
+            let _ = app.emit("themes_list", themes_list);
+        } else {
+            log::error!("Failed to get the resource dir.");
+        }
+    }
 
-        let _ = app.emit("themes_list", final_theme_list);
+    pub async fn get_current_theme(app: AppHandle, _payload: Option<String>) {
+        log::info!("init get_current_theme");
+
+        let app_ref = app.clone();
+        let state = app_ref.state::<AppState>();
+
+        let workspace = state.workspace.read().await;
+        let current_theme = workspace.current_theme.clone();
+        let _ = app.emit("update_current_theme", current_theme);
     }
 }
+
+// pub async fn set_theme_helper(app: AppHandle, theme_name: String) {
+//     let resource_dir = app.path().resource_dir().unwrap();
+//     let themes_dir = resource_dir.join("themes");
+//     let theme_file_name = format!("{}.json", theme_name);
+//     let theme_file_name_str = theme_file_name.as_str();
+//     let theme_exists = find_file(&themes_dir, theme_file_name_str).await;
+//     if theme_exists.is_none() {
+//         log::error!("{} theme does not exists or is not installed!", &theme_name);
+//     }
+//     let theme_file_content = read_to_string(theme_exists.unwrap()).await.unwrap();
+//     let theme_result = serde_json::from_str::<Theme>(theme_file_content.as_str());
+//     if theme_result.is_err() {
+//         log::error!("Failed to deserialize the theme content from theme file.");
+//     }
+//     let theme = theme_result.unwrap();
+
+//     let app_ref = app.clone();
+//     let state = app_ref.state::<AppState>();
+
+//     let mut workspace = state.workspace.write().await;
+
+//     workspace.current_theme = theme.clone();
+
+//     let _ = app.emit("update_current_theme", theme);
+// }

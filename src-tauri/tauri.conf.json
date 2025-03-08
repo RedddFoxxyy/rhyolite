@@ -51,6 +51,9 @@
       "webviewInstallMode": {
         "type": "embedBootstrapper"
       }
+    },
+    "resources": {
+      "src/default_themes/": "themes"
     }
   }
 }

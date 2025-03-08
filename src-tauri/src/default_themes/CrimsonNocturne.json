@@ -1,0 +1,19 @@
+{
+  "name": "Crimson Nocturne",
+  "colorscheme": "dark",
+  "colors": {
+    "text": "#FADCD5",
+    "subtext2": "#FADCD5",
+    "subtext1": "#765D67",
+    "subtext0": "#6D3C52",
+    "overlay2": "#765D67",
+    "overlay1": "#6D3C52",
+    "overlay0": "#4B2138",
+    "surface2": "#765D67",
+    "surface1": "#6D3C52",
+    "surface0": "#6D3C52",
+    "base": "#4B2138",
+    "crust": "#1B0C1A",
+    "mantle": "#2D222F"
+  }
+}
