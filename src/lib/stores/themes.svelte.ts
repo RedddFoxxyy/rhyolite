@@ -2,12 +2,17 @@ import type { Theme } from "$lib/types/theme";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { onMount } from "svelte";
-import themeStore from "./theme.store";
+import settingsMenuStore from "$lib/stores/settings-menu.store";
 
 class ThemesStore {
-  #themes_list: string[] = $state([]);
+  themes_list: string[] = $state([]);
   #current_theme: Theme | null = $state(null);
   #original_theme: Theme | null = $state(null);
+  #original_theme_name: string | null = $state(null);
+
+  load_themes() {
+    invoke("exec_command", { cmd: "get_loaded_themes" });
+  }
 
   save_original_theme() {
     if (this.#current_theme) {
@@ -15,7 +20,9 @@ class ThemesStore {
     }
   }
 
-  async initThemesStore() {}
+  async initThemesStore() {
+    invoke("exec_command", { cmd: "get_current_theme" });
+  }
 
   set_current_theme(theme: Theme) {
     this.#current_theme = theme;
@@ -23,25 +30,57 @@ class ThemesStore {
   }
 
   update_themes_list(themes_list: string[]) {
-    this.#themes_list = themes_list;
+    this.themes_list = themes_list;
+  }
+
+  changeTheme(theme: string) {
+    // invoke("exec_command", {
+    //   cmd: "set_theme",
+    //   payload: JSON.stringify(theme),
+    // });
+    this.#original_theme = this.#current_theme;
+    settingsMenuStore.toggleSettingsMenu();
+  }
+
+  previewTheme(theme: string) {
+    this.#original_theme = this.#current_theme;
+    invoke("exec_command", {
+      cmd: "set_theme",
+      payload: JSON.stringify(theme),
+    });
+  }
+
+  // TODO: We need to also update the reset of theme
+  // on the back end, I was thinking of some function called
+  // reset theme that can be invoked on backend to reset the
+  // theme on backend too.
+  resetTheme() {
+    if (this.#original_theme) {
+      this.#current_theme = this.#original_theme;
+      this.set_current_theme(this.#original_theme);
+      invoke("exec_command", {
+        cmd: "reset_theme",
+        payload: JSON.stringify(this.#original_theme),
+      });
+    }
   }
 }
 
-const themes_store = new ThemesStore();
+export const themes_store = new ThemesStore();
 
-onMount(() => {
-  const currentThemelisten = listen<Theme>("update_current_theme", (event) => {
-    themes_store.set_current_theme(event.payload);
-    // originalTheme = event.payload;
-  });
-  const themeListlisten = listen<string[]>("themes_list", (event) => {
-    themes_store.update_themes_list(event.payload);
-  });
-  return () => {
-    currentThemelisten.then((unsub) => unsub());
-    themeListlisten.then((unsub) => unsub());
-  };
-});
+// onMount(() => {
+//   const currentThemelisten = listen<Theme>("update_current_theme", (event) => {
+//     themes_store.set_current_theme(event.payload);
+//     // originalTheme = event.payload;
+//   });
+//   const themeListlisten = listen<string[]>("themes_list", (event) => {
+//     themes_store.update_themes_list(event.payload);
+//   });
+//   return () => {
+//     currentThemelisten.then((unsub) => unsub());
+//     themeListlisten.then((unsub) => unsub());
+//   };
+// });
 
 const colorToRgb = (color: string) => {
   let match = /^#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})$/i.exec(color);

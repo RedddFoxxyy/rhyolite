@@ -88,6 +88,10 @@ impl CommandRegistrar for ThemeCommands {
             "get_current_theme".to_string(),
             Box::new(|app, payload| Box::pin(Self::get_current_theme(app, payload))),
         );
+        registry.add_command(
+            "reset_theme".to_string(),
+            Box::new(|app, payload| Box::pin(Self::reset_theme(app, payload))),
+        );
     }
 }
 
@@ -106,6 +110,7 @@ impl ThemeCommands {
             let themes_dir = resource_dir.join("themes");
             let theme_file_name = format!("{}.json", theme_name);
             let theme_file_name_str = theme_file_name.as_str();
+            log::info!("Setting theme to {}", theme_file_name);
             let theme_exists = find_file(&themes_dir, theme_file_name_str).await;
             if theme_exists.is_none() {
                 log::error!("{} theme does not exists or is not installed!", &theme_name);
@@ -162,6 +167,24 @@ impl ThemeCommands {
         let workspace = state.workspace.read().await;
         let current_theme = workspace.current_theme.clone();
         let _ = app.emit("update_current_theme", current_theme);
+    }
+
+    pub async fn reset_theme(app: AppHandle, payload: Option<String>) {
+        log::info!("init reset_theme");
+        let Some(payload) = payload else {
+            log::warn!("Invalid call to switch_tab");
+            return;
+        };
+
+        if let Ok(theme) = serde_json::from_str::<Theme>(&payload) {
+            let app_ref = app.clone();
+            let state = app_ref.state::<AppState>();
+
+            let mut workspace = state.workspace.write().await;
+            workspace.current_theme = theme;
+        } else {
+            log::error!("Failed to reset theme as deseriaization of data failed.");
+        }
     }
 }
 

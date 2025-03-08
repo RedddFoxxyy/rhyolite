@@ -10,11 +10,13 @@
   import DocumentService from "$lib/services/document.service";
   import Sidebar from "$lib/components/sidebar.svelte";
   import { invoke } from "@tauri-apps/api/core";
+  import { themes_store } from "$lib/stores/themes.svelte";
 
   onMount(() => {
     // TabsStore.initTabsStore();
     DocumentService.loadRecentDocuments();
     invoke("exec_command", { cmd: "load_last_open_tabs" });
+    themes_store.initThemesStore();
   });
 </script>
 

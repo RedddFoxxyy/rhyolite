@@ -35,8 +35,14 @@ pub fn run() {
                 window.set_decorations(false)?;
             }
             app.manage(AppStateInner::load().expect("Failed to load config"));
+
             tauri::async_runtime::block_on(async {
                 commands::load_default_commands(app.app_handle()).await;
+                editor::settings::themes::ThemeCommands::get_current_theme(
+                    app.app_handle().clone(),
+                    None,
+                )
+                .await;
             });
             Ok(())
         })
