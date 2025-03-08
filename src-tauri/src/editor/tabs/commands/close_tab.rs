@@ -29,12 +29,7 @@ impl TabCommands {
         // Close the tab and switch to the previous tab in a seperate scope
         // to avoid deadlocks!
         {
-            let maybe_tab_switcher = state.get_tab_switcher_mut();
-            if maybe_tab_switcher.is_none() {
-                log::error!("Failed to close tab!");
-                return;
-            }
-            let mut tab_switcher = maybe_tab_switcher.unwrap();
+            let mut tab_switcher = state.tab_switcher.write().await;
             let tabs = &tab_switcher.tabs;
 
             // Do not close the only remaining tab. This will be removed in future..
@@ -63,6 +58,6 @@ impl TabCommands {
         }
 
         // Call event emitter after releasing the lock
-        update_tabs_state(app);
+        update_tabs_state(app).await;
     }
 }

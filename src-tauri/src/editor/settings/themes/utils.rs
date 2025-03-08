@@ -99,13 +99,7 @@ impl ThemeCommands {
             let app_ref = app.clone();
             let state = app_ref.state::<AppState>();
 
-            let maybe_workspace = state.get_workspace_mut();
-            if maybe_workspace.is_none() {
-                log::error!("Failed to change theme!!");
-                return;
-            }
-
-            let mut workspace = maybe_workspace.unwrap();
+            let mut workspace = state.workspace.write().await;
 
             workspace.current_theme = new_theme.clone();
 

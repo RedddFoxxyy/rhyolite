@@ -14,14 +14,7 @@ impl TabCommands {
         // Runs in a different scope to avoid deadlock due to tab_switcher,
         // tab_switcher is dropped, once out of scope!
         {
-            let maybe_tab_switcher = state.get_tab_switcher_mut();
-
-            if maybe_tab_switcher.is_none() {
-                error!("Failed to switch tabs!");
-                return;
-            }
-
-            let mut tab_switcher = maybe_tab_switcher.unwrap();
+            let mut tab_switcher = state.tab_switcher.write().await;
 
             let current_tab_id = tab_switcher.current_tab_id.clone();
 
@@ -54,7 +47,7 @@ impl TabCommands {
             }
         }
 
-        update_tabs_state(app);
+        update_tabs_state(app).await;
     }
 
     pub async fn goto_tab_1(app: AppHandle, _payload: Option<String>) {
@@ -65,14 +58,7 @@ impl TabCommands {
         // Runs in a different scope to avoid deadlock due to tab_switcher,
         // tab_switcher is dropped, once out of scope!
         {
-            let maybe_tab_switcher = state.get_tab_switcher_mut();
-
-            if maybe_tab_switcher.is_none() {
-                error!("Failed to switch tabs!");
-                return;
-            }
-
-            let mut tab_switcher = maybe_tab_switcher.unwrap();
+            let mut tab_switcher = state.tab_switcher.write().await;
 
             if tab_switcher.tabs.is_empty() {
                 info!("No tab open in the workspace.");
@@ -86,7 +72,7 @@ impl TabCommands {
             }
         }
 
-        update_tabs_state(app);
+        update_tabs_state(app).await;
     }
 
     pub async fn goto_last_tab(app: AppHandle, _payload: Option<String>) {
@@ -97,14 +83,7 @@ impl TabCommands {
         // Runs in a different scope to avoid deadlock due to tab_switcher,
         // tab_switcher is dropped, once out of scope!
         {
-            let maybe_tab_switcher = state.get_tab_switcher_mut();
-
-            if maybe_tab_switcher.is_none() {
-                error!("Failed to switch tabs!");
-                return;
-            }
-
-            let mut tab_switcher = maybe_tab_switcher.unwrap();
+            let mut tab_switcher = state.tab_switcher.write().await;
 
             if tab_switcher.tabs.is_empty() {
                 info!("No tab open in the workspace.");
@@ -126,6 +105,6 @@ impl TabCommands {
             }
         }
 
-        update_tabs_state(app);
+        update_tabs_state(app).await;
     }
 }

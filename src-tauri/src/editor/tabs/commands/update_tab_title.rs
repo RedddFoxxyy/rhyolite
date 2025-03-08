@@ -21,12 +21,7 @@ impl TabCommands {
             let temp_app = app.clone();
             let state = temp_app.state::<AppState>();
 
-            let maybe_tab_switcher = state.get_tab_switcher_mut();
-            if maybe_tab_switcher.is_none() {
-                log::error!("Failed to update tab title!");
-                return;
-            }
-            let mut tab_switcher = maybe_tab_switcher.unwrap();
+            let mut tab_switcher = state.tab_switcher.write().await;
             let tabs = &mut tab_switcher.tabs;
             let new_title = payload_object.title;
             let id = payload_object.id;
@@ -64,6 +59,6 @@ impl TabCommands {
             }
         }
 
-        update_tabs_state(app);
+        update_tabs_state(app).await;
     }
 }
