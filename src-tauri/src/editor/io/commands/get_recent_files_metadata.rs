@@ -9,7 +9,7 @@ impl IOCommands {
     pub async fn get_recent_files_metadata(app: AppHandle, _payload: Option<String>) {
         let temp_app = app.clone();
         let state = &temp_app.state::<AppState>();
-        if let Err(e) = save_user_data(state) {
+        if let Err(e) = save_user_data(state).await {
             log::error!("Warning: Failed to save user data: {}", e);
         }
         let appdata_dir = get_documents_dir().join("appdata");

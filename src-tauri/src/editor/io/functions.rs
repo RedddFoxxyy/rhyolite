@@ -11,9 +11,7 @@ use dirs;
 use crate::{
     FileInfo,
     app_state::{AppState, CommandRegistrar, CommandRegistry, DocumentData, Tab, UserData},
-    editor::{
-        io::commands::get_document_content::get_document_content_helper, settings::themes::Theme,
-    },
+    editor::io::commands::get_document_content::get_document_content_helper,
 };
 
 pub struct IOCommands;
@@ -82,11 +80,11 @@ pub fn get_trove_dir(trove_name: &str) -> PathBuf {
 }
 
 /// Runs when the app is closing and saves the user data.
-pub fn on_app_close(window: &Window) {
+pub async fn on_app_close(window: &Window) {
     log::debug!("on_app_close init");
     let state = window.state::<AppState>();
 
-    if let Err(err_saving) = save_user_data(&state) {
+    if let Err(err_saving) = save_user_data(&state).await {
         log::error!(
             "Failed to save the workspace before closing: {}",
             err_saving
@@ -95,24 +93,16 @@ pub fn on_app_close(window: &Window) {
 }
 
 /// This function saves the user data to the userdata.json file.
-pub fn save_user_data(state: &State<'_, AppState>) -> Result<(), String> {
+pub async fn save_user_data(state: &State<'_, AppState>) -> Result<(), String> {
     let user_data = {
-        let maybe_tab_switcher = state.get_tab_switcher();
-        let maybe_workspace = state.get_workspace();
-
-        if maybe_tab_switcher.is_none() || maybe_workspace.is_none() {
-            log::error!("Failed to save user data!");
-            return Err("Failed to save user data!".to_string());
-        }
-
-        let tab_switcher = maybe_tab_switcher.unwrap();
-        let workspace = maybe_workspace.unwrap();
+        let tab_switcher = state.tab_switcher.read().await;
+        let workspace = state.workspace.write().await;
 
         UserData {
             tabs: tab_switcher.tabs.values().cloned().collect(),
             last_open_tab: tab_switcher.current_tab_id.clone().unwrap(),
             recent_files: workspace.recent_files.clone(),
-            current_theme: Theme::default(),
+            current_theme: workspace.current_theme.clone(),
         }
     };
 
@@ -129,7 +119,7 @@ pub fn save_user_data(state: &State<'_, AppState>) -> Result<(), String> {
 
 /// This function loads the tabs active/opened in the last app section.
 #[tauri::command]
-pub fn load_last_open_tabs(state: State<'_, AppState>) -> Result<Vec<DocumentData>, String> {
+pub async fn load_last_open_tabs(state: State<'_, AppState>) -> Result<Vec<DocumentData>, String> {
     log::debug!("load_last_open_tabs init");
     let appdata_dir = get_documents_dir().join("appdata");
     let userdata_path = appdata_dir.join("userdata.json");
@@ -141,15 +131,10 @@ pub fn load_last_open_tabs(state: State<'_, AppState>) -> Result<Vec<DocumentDat
                     let mut last_open_files = Vec::new();
                     // Update workspace in a separate scope
                     {
-                        let maybe_workspace = state.get_workspace_mut();
-                        let maybe_tab_switcher = state.get_tab_switcher_mut();
-                        if maybe_workspace.is_none() || maybe_tab_switcher.is_none() {
-                            return Err("Failed to load last open tabs".to_string());
-                        }
-                        let mut workspace = maybe_workspace.unwrap();
+                        let mut tab_switcher = state.tab_switcher.write().await;
+                        let mut workspace = state.workspace.write().await;
                         workspace.recent_files = user_data.recent_files.clone();
 
-                        let mut tab_switcher = maybe_tab_switcher.unwrap();
                         tab_switcher.current_tab_id = Some(user_data.last_open_tab.clone());
 
                         // Clear existing tabs and load from user_data
@@ -204,8 +189,10 @@ pub fn load_last_open_tabs(state: State<'_, AppState>) -> Result<Vec<DocumentDat
 
 /// This function returns the metadata of the recent files.
 #[tauri::command]
-pub fn get_recent_files_metadata(state: State<'_, AppState>) -> Result<Vec<FileInfo>, String> {
-    if let Err(e) = save_user_data(&state) {
+pub async fn get_recent_files_metadata(
+    state: State<'_, AppState>,
+) -> Result<Vec<FileInfo>, String> {
+    if let Err(e) = save_user_data(&state).await {
         eprintln!("Warning: Failed to save user data: {}", e);
     }
     let appdata_dir = get_documents_dir().join("appdata");

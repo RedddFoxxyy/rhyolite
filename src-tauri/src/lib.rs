@@ -35,13 +35,24 @@ pub fn run() {
                 window.set_decorations(false)?;
             }
             app.manage(AppStateInner::load().expect("Failed to load config"));
-            commands::load_default_commands(app.app_handle());
+
+            tauri::async_runtime::block_on(async {
+                commands::load_default_commands(app.app_handle()).await;
+                editor::settings::themes::ThemeCommands::get_current_theme(
+                    app.app_handle().clone(),
+                    None,
+                )
+                .await;
+            });
             Ok(())
         })
         .on_window_event(|window, event| {
             if let WindowEvent::CloseRequested { .. } = event {
                 // Call the function to save UserData when the app is closing
-                io::on_app_close(window);
+                // Run the async operation synchronously
+                tauri::async_runtime::block_on(async {
+                    io::on_app_close(window).await;
+                });
 
                 // Prevent the window from closing immediately
                 #[cfg(not(target_os = "android"))]
@@ -53,10 +64,8 @@ pub fn run() {
             io::load_last_open_tabs,
             io::get_recent_files_metadata,
             tabs::update_states,
-            tabs::new_tab,
             tabs::load_tab,
             tabs::get_tabs,
-            tabs::send_current_open_tab,
             tabs::get_current_open_tab,
             commands::exec_command
         ])

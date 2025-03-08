@@ -19,25 +19,19 @@ impl IOCommands {
         let state = &temp_app.state::<AppState>();
 
         if let Ok(document_data) = serde_json::from_str::<DocumentData>(&payload) {
-            save_document_helper(state, document_data);
+            save_document_helper(state, document_data).await;
         }
     }
 }
 
-pub fn save_document_helper(state: &State<'_, AppStateInner>, document_data: DocumentData) {
+pub async fn save_document_helper(state: &State<'_, AppStateInner>, document_data: DocumentData) {
     let trove_dir = get_trove_dir(TROVE_DIR);
     let markdown_content = markdown_handler::html_to_markdown(&document_data.content);
     let safe_filename = sanitize_filename::sanitize(format!("{}.md", document_data.title));
     let file_path = trove_dir.join(&safe_filename);
 
     {
-        let maybe_workspace = state.get_workspace_mut();
-        if maybe_workspace.is_none() {
-            log::error!("Failed to save document!");
-            return;
-        }
-
-        let mut workspace = maybe_workspace.unwrap();
+        let mut workspace = state.workspace.write().await;
 
         if let Some(doc) = workspace
             .recent_files
@@ -56,13 +50,9 @@ pub fn save_document_helper(state: &State<'_, AppStateInner>, document_data: Doc
 
     // Get the old title in a separate scope
     let old_title = {
-        let maybe_tab_switcher = state.get_tab_switcher();
-        if maybe_tab_switcher.is_none() {
-            log::error!("Failed to save document!");
-            return;
-        }
-        maybe_tab_switcher
-            .unwrap()
+        let tab_switcher = state.tab_switcher.write().await;
+
+        tab_switcher
             .tabs
             .get(&document_data.id)
             .map(|tab| tab.title.clone())

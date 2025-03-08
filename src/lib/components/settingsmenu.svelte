@@ -8,14 +8,32 @@
   } from "lucide-svelte";
   import { onDestroy } from "svelte";
   import settingsMenuStore from "$lib/stores/settings-menu.store";
-  import ThemeStore from "$lib/stores/theme.store";
+  import { themes_store } from "$lib/stores/themes.svelte";
   import type { Theme } from "$lib/types/theme";
+  import { listen } from "@tauri-apps/api/event";
+  import { invoke } from "@tauri-apps/api/core";
+  import { onMount } from "svelte";
 
   let settingsVisible = $state(false);
   let showThemeOptions = $state(false);
   let self: HTMLElement | null = $state(null);
-  let themes: Theme[] = $state([]);
-  let originalTheme: Theme | undefined;
+
+  onMount(() => {
+    const currentThemelisten = listen<Theme>(
+      "update_current_theme",
+      (event) => {
+        themes_store.set_current_theme(event.payload);
+        // originalTheme = event.payload;
+      },
+    );
+    const themeListlisten = listen<string[]>("themes_list", (event) => {
+      themes_store.update_themes_list(event.payload);
+    });
+    return () => {
+      currentThemelisten.then((unsub) => unsub());
+      themeListlisten.then((unsub) => unsub());
+    };
+  });
 
   const layout = {
     position: { top: 150, left: 46, bottom: 10 },
@@ -56,56 +74,27 @@
     }
   };
 
-  // Store the original theme when opening the menu
-  const storeOriginalTheme = () => {
-    ThemeStore.states.subscribe((v) => {
-      originalTheme = v.currentTheme;
-    })();
-  };
-
-  // Preview theme on hover
-  const previewTheme = (theme: Theme) => {
-    ThemeStore.updateCurrentThemeState(theme);
-  };
-
-  // Restore original theme when mouse leaves
-  const resetTheme = () => {
-    if (originalTheme) {
-      ThemeStore.updateCurrentThemeState(originalTheme);
-    }
-  };
-
   const unsubscribe = [
-    ThemeStore.states.subscribe((v) => {
-      themes = v.themes;
-    }),
     settingsMenuStore.subscribe((state) => {
       settingsVisible = state.settingsMenuVisible;
       if (state.settingsMenuVisible) {
         document.addEventListener("click", handleCloseEvent);
         document.addEventListener("keydown", handleCloseEvent);
-        storeOriginalTheme(); // Store original theme when opening menu
+        themes_store.load_themes();
       } else {
         document.removeEventListener("click", handleCloseEvent);
         document.removeEventListener("keydown", handleCloseEvent);
         showThemeOptions = false;
-        resetTheme(); // Reset to original theme when closing without selecting
+        themes_store.resetTheme(); // Reset to original theme when closing without selecting
       }
     }),
   ];
-
-  // Apply theme and close menu
-  const changeTheme = (theme: Theme) => {
-    ThemeStore.updateCurrentThemeState(theme);
-    originalTheme = theme; // Update original theme to the new selection
-    settingsMenuStore.toggleSettingsMenu();
-  };
 
   onDestroy(() => {
     unsubscribe.forEach((unsub) => unsub());
     document.removeEventListener("click", handleCloseEvent);
     document.removeEventListener("keydown", handleCloseEvent);
-    resetTheme(); // Ensure theme is reset if component is destroyed while previewing
+    themes_store.resetTheme(); // Ensure theme is reset if component is destroyed while previewing
   });
 </script>
 
@@ -141,15 +130,15 @@
         tabindex="0"
         class="absolute left-full rounded-lg p-1 bottom-[50%] mt-8 ml-1 w-max bg-base shadow-xl"
         style="width: {layout.dimensions.width}px;"
-        onmouseleave={resetTheme}
+        onmouseleave={themes_store.resetTheme}
       >
-        {#each themes as theme}
+        {#each themes_store.themes_list as theme_name}
           <button
             class="w-full p-1 rounded-lg text-left text-text bg-transparent cursor-pointer transition-all duration-300 text-sm hover:bg-surface1 focus:bg-surface1"
-            onmouseenter={() => previewTheme(theme)}
-            onclick={() => changeTheme(theme)}
+            onmouseenter={() => themes_store.previewTheme(theme_name)}
+            onclick={() => themes_store.changeTheme(theme_name)}
           >
-            {theme.name}
+            {theme_name}
           </button>
         {/each}
       </div>

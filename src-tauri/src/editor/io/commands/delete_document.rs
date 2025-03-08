@@ -44,10 +44,10 @@ impl IOCommands {
 
         let delete_tab_id = serde_json::from_str::<String>(&payload).unwrap();
 
-        let next_tab_data = delete_document_helper(state, delete_tab_id);
+        let next_tab_data = delete_document_helper(state, delete_tab_id).await;
 
-        update_tabs_state(app.clone());
-        let _ = save_user_data(orig_state);
+        update_tabs_state(app.clone()).await;
+        let _ = save_user_data(orig_state).await;
 
         // TODO: Handle panic cases here when using unwrap.
         // update: for now I handled this by using an if let pattern
@@ -59,14 +59,12 @@ impl IOCommands {
 }
 
 // TODO: This function can be names betteer!
-fn delete_document_helper(
+async fn delete_document_helper(
     state: &State<'_, AppStateInner>,
     delete_tab_id: String,
 ) -> Option<DocumentData> {
     let (next_tab, delete_tab_title): (Tab, String) = {
-        let maybe_tab_switcher = state.get_tab_switcher_mut();
-        maybe_tab_switcher.as_ref()?;
-        let mut tab_switcher = maybe_tab_switcher.unwrap();
+        let mut tab_switcher = state.tab_switcher.write().await;
 
         let delete_tab_title = tab_switcher
             .tabs
@@ -107,12 +105,9 @@ fn delete_document_helper(
     // Remove the file in current_tab from the Recent Files in
     // a seperate scope to avoid deadlock.
     {
-        let maybe_workspace = state.get_workspace_mut();
-        maybe_workspace.as_ref()?;
-        maybe_workspace
-            .unwrap()
-            .recent_files
-            .retain(|doc| doc.id != delete_tab_id);
+        let mut workspace = state.workspace.write().await;
+
+        workspace.recent_files.retain(|doc| doc.id != delete_tab_id);
     }
 
     // Handle file operations

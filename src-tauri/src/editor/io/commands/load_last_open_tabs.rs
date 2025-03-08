@@ -23,16 +23,10 @@ impl IOCommands {
                     Ok(user_data) => {
                         // Update workspace in a separate scope
                         {
-                            let maybe_tab_switcher = state.get_tab_switcher_mut();
-                            let maybe_workspace = state.get_workspace_mut();
+                            let mut tab_switcher = state.tab_switcher.write().await;
+                            let mut workspace = state.workspace.write().await;
 
-                            if maybe_workspace.is_none() || maybe_tab_switcher.is_none() {
-                                return;
-                            }
-
-                            let mut tab_switcher = maybe_tab_switcher.unwrap();
-
-                            maybe_workspace.unwrap().recent_files = user_data.recent_files.clone();
+                            workspace.recent_files = user_data.recent_files.clone();
 
                             tab_switcher.current_tab_id = Some(user_data.last_open_tab.clone());
 
@@ -50,6 +44,6 @@ impl IOCommands {
                 Err(e) => log::debug!("{}", format!("Failed to read userdata file: {}", e)),
             }
         }
-        update_tabs_state(app.clone());
+        update_tabs_state(app.clone()).await;
     }
 }

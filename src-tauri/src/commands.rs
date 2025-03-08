@@ -38,18 +38,16 @@ use tokio::task::spawn_blocking;
 #[tauri::command]
 pub async fn exec_command(cmd: String, payload: Option<String>, app: AppHandle) {
     let state = app.state::<AppState>();
-    let command_registry_option = state.get_command_registry(); // Acquires lock
+    let mut command_registry = state.command_registry.lock().await;
 
     // Retrieve the action and release the lock
-    let future = if let Some(mut command_registry) = command_registry_option {
+    let future = {
         if let Some(command_item) = command_registry.commands.get_mut(&cmd) {
             let action = &mut command_item.action;
             Some((action)(app.clone(), payload)) // Get the future
         } else {
             None
         }
-    } else {
-        None
     };
 
     if let Some(future) = future {
@@ -59,16 +57,14 @@ pub async fn exec_command(cmd: String, payload: Option<String>, app: AppHandle) 
     }
 }
 
-pub fn load_default_commands(app: &AppHandle) {
+pub async fn load_default_commands(app: &AppHandle) {
     let app_state = app.state::<AppState>();
 
-    let command_registry_option = app_state.get_command_registry();
-    if command_registry_option.is_none() {
-        log::error!("Failed to load the default commands!");
-        return;
-    }
-
-    let mut command_registry = command_registry_option.unwrap();
+    let mut command_registry = app_state.command_registry.lock().await;
+    // if command_registry_option.is_none() {
+    //     log::error!("Failed to load the default commands!");
+    //     return;
+    // }
 
     // Register commands from each module
     TabCommands::register_commands(&mut command_registry);
