@@ -16,7 +16,11 @@
     // TabsStore.initTabsStore();
     DocumentService.loadRecentDocuments();
     invoke("exec_command", { cmd: "load_last_open_tabs" });
-    themes_store.initThemesStore();
+    if (document.readyState === "complete") {
+      themes_store.initThemesStore();
+    } else {
+      window.addEventListener("load", themes_store.initThemesStore);
+    }
   });
 </script>
 

@@ -68,20 +68,6 @@ class ThemesStore {
 
 export const themes_store = new ThemesStore();
 
-// onMount(() => {
-//   const currentThemelisten = listen<Theme>("update_current_theme", (event) => {
-//     themes_store.set_current_theme(event.payload);
-//     // originalTheme = event.payload;
-//   });
-//   const themeListlisten = listen<string[]>("themes_list", (event) => {
-//     themes_store.update_themes_list(event.payload);
-//   });
-//   return () => {
-//     currentThemelisten.then((unsub) => unsub());
-//     themeListlisten.then((unsub) => unsub());
-//   };
-// });
-
 const colorToRgb = (color: string) => {
   let match = /^#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})$/i.exec(color);
   if (match) {

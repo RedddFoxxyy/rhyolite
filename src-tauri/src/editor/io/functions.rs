@@ -104,7 +104,7 @@ pub async fn save_user_data(state: &State<'_, AppState>) -> Result<(), String> {
             tabs: tab_switcher.tabs.values().cloned().collect(),
             last_open_tab: tab_switcher.current_tab_id.clone().unwrap(),
             recent_files: workspace.recent_files.clone(),
-            current_theme: Theme::default(),
+            current_theme: workspace.current_theme.clone(),
         }
     };
 
