@@ -1,8 +1,8 @@
 <script lang="ts">
   import DocumentService from "$lib/services/document.service";
   import TabService from "$lib/services/tab.service";
-  import CommandPaletteStore from "$lib/stores/command-palette.store";
-  import ContentEditorStore from "$lib/stores/content-editor.store";
+  import { commandPaletteStore } from "$lib/stores/commandPalette.svelte";
+  import { contentEditorStore } from "$lib/stores/contentEditor.svelte";
   import { onMount } from "svelte";
   import { listen } from "@tauri-apps/api/event";
   import type { Tab } from "$lib/types/tab";
@@ -47,7 +47,7 @@
     }
     if (event.ctrlKey && event.key === "t") {
       event.preventDefault();
-      ContentEditorStore.toggleToolbarVisibility();
+      contentEditorStore.toggleToolbarVisibility();
     }
     if (
       (event.ctrlKey && event.key === "Tab") ||
@@ -70,7 +70,7 @@
     }
     if (event.ctrlKey && event.key === "p") {
       event.preventDefault();
-      CommandPaletteStore.toggleVisibility();
+      commandPaletteStore.toggleVisibility();
     }
   };
 </script>

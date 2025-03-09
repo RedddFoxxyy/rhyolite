@@ -1,5 +1,4 @@
 import type { Tab } from "$lib/types/tab";
-import tabsStore from "$lib/stores/tabs.store";
 import { ApiProvider } from "$lib/services/api.service";
 import TabService from "$lib/services/tab.service";
 import type { Document } from "$lib/types/document";
@@ -8,10 +7,10 @@ import { invoke } from "@tauri-apps/api/core";
 const apiProvider = new ApiProvider();
 
 // NOTE: This functioni will be soon changed or depreciated.
-const getAllDocumentTabs = async (): Promise<Tab[]> => {
+const getAllDocumentTabs = async (): Promise<void> => {
   const tabs: Tab[] = await apiProvider.getAllDocumentTabs();
   invoke("exec_command", { cmd: "update_states" });
-  return tabsStore.updateTabsState(tabs);
+  // return tabsStore.updateTabsState(tabs);
 };
 
 export const addNewDocumentTab = (): void => {

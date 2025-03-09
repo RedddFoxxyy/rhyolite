@@ -7,14 +7,13 @@
     Info,
   } from "lucide-svelte";
   import { onDestroy } from "svelte";
-  import settingsMenuStore from "$lib/stores/settings-menu.store";
+  import { settingsMenuStore } from "$lib/stores/settingsMenu.svelte";
   import { themes_store } from "$lib/stores/themes.svelte";
   import type { Theme, ThemeListItem } from "$lib/types/theme";
   import { listen } from "@tauri-apps/api/event";
   import { invoke } from "@tauri-apps/api/core";
   import { onMount } from "svelte";
 
-  let settingsVisible = $state(false);
   let showThemeOptions = $state(false);
   let self: HTMLElement | null = $state(null);
 
@@ -70,42 +69,38 @@
       (e instanceof KeyboardEvent && e.key === "Escape")
     ) {
       e.stopPropagation();
-      settingsMenuStore.toggleSettingsMenu();
+      settingsMenuStore.toggleVisibility();
     }
   };
 
-  const unsubscribe = [
-    settingsMenuStore.subscribe((state) => {
-      settingsVisible = state.settingsMenuVisible;
-      if (state.settingsMenuVisible) {
-        document.addEventListener("click", handleCloseEvent);
-        document.addEventListener("keydown", handleCloseEvent);
-        themes_store.load_themes();
-      } else {
-        document.removeEventListener("click", handleCloseEvent);
-        document.removeEventListener("keydown", handleCloseEvent);
-        showThemeOptions = false;
-        themes_store.resetTheme(); // Reset to original theme when closing without selecting
-      }
-    }),
-  ];
+  $effect(() => {
+    if (settingsMenuStore.isVisible()) {
+      document.addEventListener("click", handleCloseEvent);
+      document.addEventListener("keydown", handleCloseEvent);
+      themes_store.load_themes();
+    } else {
+      document.removeEventListener("click", handleCloseEvent);
+      document.removeEventListener("keydown", handleCloseEvent);
+      showThemeOptions = false;
+      themes_store.resetTheme(); // Reset to original theme when closing without selecting
+    }
+  });
 
   onDestroy(() => {
-    unsubscribe.forEach((unsub) => unsub());
     document.removeEventListener("click", handleCloseEvent);
     document.removeEventListener("keydown", handleCloseEvent);
     themes_store.resetTheme(); // Ensure theme is reset if component is destroyed while previewing
   });
 </script>
 
-{#if settingsVisible}
+{#if settingsMenuStore.isVisible()}
   <div
     bind:this={self}
     class="absolute rounded-lg p-1 z-50 transition-all duration-300 transform bg-base shadow-xl"
-    class:translate-y-0={settingsVisible}
-    class:opacity-100={settingsVisible}
-    class:translate-y-5={!settingsVisible}
-    class:opacity-0={!settingsVisible}
+    class:translate-y-0={settingsMenuStore.isVisible()}
+    class:opacity-100={settingsMenuStore.isVisible()}
+    class:translate-y-5={!settingsMenuStore.isVisible()}
+    class:opacity-0={!settingsMenuStore.isVisible()}
     style="bottom: {layout.position.bottom}px; left: {layout.position
       .left}px; width: {layout.dimensions.width}px;"
   >

@@ -2,7 +2,7 @@ import type { Theme, ThemeListItem } from "$lib/types/theme";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { onMount } from "svelte";
-import settingsMenuStore from "$lib/stores/settings-menu.store";
+import { settingsMenuStore } from "$lib/stores/settingsMenu.svelte";
 
 class ThemesStore {
   themes_list: ThemeListItem[] = $state([]);
@@ -39,7 +39,7 @@ class ThemesStore {
     //   payload: JSON.stringify(theme),
     // });
     this.#original_theme = this.#current_theme;
-    settingsMenuStore.toggleSettingsMenu();
+    settingsMenuStore.toggleVisibility();
   }
 
   previewTheme(theme: string) {
