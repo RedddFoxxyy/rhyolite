@@ -1,11 +1,11 @@
-import type { Theme } from "$lib/types/theme";
+import type { Theme, ThemeListItem } from "$lib/types/theme";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { onMount } from "svelte";
 import settingsMenuStore from "$lib/stores/settings-menu.store";
 
 class ThemesStore {
-  themes_list: string[] = $state([]);
+  themes_list: ThemeListItem[] = $state([]);
   #current_theme: Theme | null = $state(null);
   #original_theme: Theme | null = $state(null);
   #original_theme_name: string | null = $state(null);
@@ -29,7 +29,7 @@ class ThemesStore {
     applyTheme(theme);
   }
 
-  update_themes_list(themes_list: string[]) {
+  update_themes_list(themes_list: ThemeListItem[]) {
     this.themes_list = themes_list;
   }
 
@@ -92,6 +92,6 @@ const applyTheme = (theme: Theme) => {
   Object.entries(theme.colors).forEach(([name, value]) => {
     root.style.setProperty(`--color-${name}`, colorToRgb(value).join(" "));
   });
-  root.style.setProperty(`--theme-name`, theme.name);
-  root.style.setProperty(`--theme-colorscheme`, theme.colorscheme);
+  root.style.setProperty(`--theme-name`, theme.info.name);
+  root.style.setProperty(`--theme-colorscheme`, theme.info.colorscheme);
 };

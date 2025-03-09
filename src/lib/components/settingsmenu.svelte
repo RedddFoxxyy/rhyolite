@@ -9,7 +9,7 @@
   import { onDestroy } from "svelte";
   import settingsMenuStore from "$lib/stores/settings-menu.store";
   import { themes_store } from "$lib/stores/themes.svelte";
-  import type { Theme } from "$lib/types/theme";
+  import type { Theme, ThemeListItem } from "$lib/types/theme";
   import { listen } from "@tauri-apps/api/event";
   import { invoke } from "@tauri-apps/api/core";
   import { onMount } from "svelte";
@@ -26,7 +26,7 @@
         // originalTheme = event.payload;
       },
     );
-    const themeListlisten = listen<string[]>("themes_list", (event) => {
+    const themeListlisten = listen<ThemeListItem[]>("themes_list", (event) => {
       themes_store.update_themes_list(event.payload);
     });
     return () => {
@@ -132,13 +132,14 @@
         style="width: {layout.dimensions.width}px;"
         onmouseleave={themes_store.resetTheme}
       >
-        {#each themes_store.themes_list as theme_name}
+        {#each themes_store.themes_list as theme_list_item}
           <button
             class="w-full p-1 rounded-lg text-left text-text bg-transparent cursor-pointer transition-all duration-300 text-sm hover:bg-surface1 focus:bg-surface1"
-            onmouseenter={() => themes_store.previewTheme(theme_name)}
-            onclick={() => themes_store.changeTheme(theme_name)}
+            onmouseenter={() =>
+              themes_store.previewTheme(theme_list_item.filename)}
+            onclick={() => themes_store.changeTheme(theme_list_item.filename)}
           >
-            {theme_name}
+            {theme_list_item.name}
           </button>
         {/each}
       </div>
