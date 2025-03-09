@@ -107,7 +107,7 @@
         ListItem,
         TaskItem.configure({
           HTMLAttributes: {
-            class: "flex gap-2 leading-none", // Added leading-none and changed to items-start
+            class: "flex flex-row gap-2 leading-non", // Added leading-none and changed to items-start
           },
           nested: true,
         }),

@@ -1,0 +1,23 @@
+[info]
+name = "Tokyo Night Dark"
+author = "RedddFoxxyy (aka Suyog Tandel) (https://github.com/RedddFoxxyy)"
+themetype = "Basic"
+colorscheme = "Dark"
+
+[colors]
+text       = "#D5D6DB"
+subtext2   = "#D0D1D6"
+subtext1   = "#CBCCD1"
+subtext0   = "#BABED4"
+overlay2   = "#A9B1D6"
+overlay1   = "#9197B7"
+overlay0   = "#787C99"
+surface2   = "#5E6482"
+surface1   = "#444B6A"
+surface0   = "#2F3549"
+base       = "#252838"
+crust      = "#1A1B26"
+mantle     = "#16161E"
+accent     = "#2AC3DE"
+highlight  = "#F7768E"
+border     = "#BB9AF7"

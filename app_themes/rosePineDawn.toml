@@ -20,12 +20,12 @@
 
 [info]
 name = "Rose Pine Dawn"
-author = "Rhyolite Team"
+author = "Shravya Kudlu"
 themetype = "Basic"
 colorscheme = "Light"
 
 [colors]
-text = "#ea9d34"
+text = "#575279"
 subtext2 = "#e0b94b"
 subtext1 = "#d59a42"
 subtext0 = "#c9944f"

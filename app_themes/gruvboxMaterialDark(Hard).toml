@@ -1,0 +1,23 @@
+[info]
+name = "Gruvbox Material Dark(Hard)"
+author = "RedddFoxxyy (aka Suyog Tandel) (https://github.com/RedddFoxxyy)"
+themetype = "Basic"
+colorscheme = "Dark"
+
+[colors]
+text       = "#fbf1c7"
+subtext2   = "#f3e6bd"
+subtext1   = "#ebdbb2"
+subtext0   = "#e4d1aa"
+overlay2   = "#ddc7a1"
+overlay1   = "#cdbb9a"
+overlay0   = "#bdae93"
+surface2   = "#8c8070"
+surface1   = "#5a524c"
+surface0   = "#504945"
+base       = "#3d3936"
+crust      = "#2a2827"
+mantle     = "#202020"
+accent     = "#ea6962"
+highlight  = "#e78a4e"
+border     = "#7daea3"
