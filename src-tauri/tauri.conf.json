@@ -53,7 +53,7 @@
       }
     },
     "resources": {
-      "src/default_themes/": "themes"
+      "../app_themes/": "themes"
     }
   }
 }
