@@ -1,5 +1,5 @@
 <script lang="ts">
-  import "$lib/styles/styles.css";
+  // import "$lib/styles/styles.css";
 
   import { onMount } from "svelte";
   import CommandPalette from "$lib/components/command-palette.svelte";

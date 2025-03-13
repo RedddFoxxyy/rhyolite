@@ -90,7 +90,7 @@
     {#each tabs as tab}
       <div class="relative group flex items-center justify-between">
         <button
-          class={`flex justify-left items-center pl-4 pr-2 text-nowrap h-[30px] w-fit rounded-[18px] flex-shrink text-text transition-colors duration-100 hover:bg-surface1 ${currentTab?.id === tab.id ? "bg-surface0" : ""}`}
+          class={`flex justify-left items-center pl-4 pr-2 text-nowrap h-[30px] w-fit rounded-[18px] shrink text-text transition-colors duration-100 hover:bg-surface1 ${currentTab?.id === tab.id ? "bg-surface0" : ""}`}
           class:active={currentTab?.id === tab.id}
           role="tab"
           aria-controls="editor"
@@ -116,14 +116,14 @@
     {/each}
     <button
       type="button"
-      class="flex justify-center items-center px-4 text-nowrap h-[30px] w-[30px] aspect-square rounded-[18px] flex-shrink text-text hover:bg-surface1"
+      class="flex justify-center items-center px-4 text-nowrap h-[30px] w-[30px] aspect-square rounded-[18px] shrink text-text hover:bg-surface1"
       id="new-tab-btn"
       onclick={addNewDocumentTab}>+</button
     >
   </div>
   <div class="flex-grow"></div>
   {#if !isMacOS}
-    <div class="flex flex-row items-stretch self-stretch flex-shrink-0">
+    <div class="flex flex-row items-stretch self-stretch shrink-0">
       <button
         class="flex justify-center items-center w-12 mx-auto cursor-pointer focus-visible:bg-surface2 hover:bg-surface2"
         id="titlebar-minimize"

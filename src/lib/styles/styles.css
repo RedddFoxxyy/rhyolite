@@ -1,6 +1,0 @@
-@import "./addons/tailwind-addon.css";
-@import "commandPalette.css";
-
-.custom-btn-toolbar {
-  @apply rounded cursor-pointer p-1.5 text-text hover:text-subtext2 bg-surface0/50 hover:bg-surface0 focus:bg-surface0;
-}
