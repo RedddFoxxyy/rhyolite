@@ -107,11 +107,11 @@
         ListItem,
         TaskItem.configure({
           HTMLAttributes: {
-            class: "flex flex-row gap-2 leading-non", // Added leading-none and changed to items-start
+            class:
+              "flex flex-row gap-2 leading-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 ",
           },
           nested: true,
         }),
-
         TaskList.configure({
           HTMLAttributes: {
             class: "not-prose pl-2",
