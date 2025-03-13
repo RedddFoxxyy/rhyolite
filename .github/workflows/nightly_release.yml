@@ -1,0 +1,131 @@
+name: "publish-nightly"
+on:
+  push:
+    branches:
+      - nightly
+    # paths:
+    #   - 'packaging/build.md'
+
+jobs:
+  publish-tauri:
+    permissions:
+      contents: write # Ensure this is present
+      issues: write # Optional but recommended
+      pull-requests: write # Optional but recommended
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "macos-latest" # for Arm based macs (M1 and above)
+            args: "--target aarch64-apple-darwin"
+          - platform: "macos-latest" # for Intel based macs
+            args: "--target x86_64-apple-darwin"
+          - platform: "ubuntu-22.04"
+            args: ""
+          - platform: "ubuntu-24.04-arm" # New ARM64 Linux runner
+            args: "--target aarch64-unknown-linux-gnu"
+          - platform: "windows-latest" # Windows x64
+            args: "--target x86_64-pc-windows-msvc"
+          - platform: "windows-latest" # Windows x86 (32-bit)
+            args: "--target i686-pc-windows-msvc"
+          - platform: "windows-latest" # Windows ARM64
+            args: "--target aarch64-pc-windows-msvc"
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: >
+            ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' ||
+            matrix.platform == 'windows-latest' && 'x86_64-pc-windows-msvc,i686-pc-windows-msvc,aarch64-pc-windows-msvc' || '' }}
+
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04' || matrix.platform == 'ubuntu-24.04-arm'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: install dependencies (ubuntu-arm64 only)
+        if: matrix.platform == 'ubuntu-24.04-arm'
+        run: |
+          sudo apt-get install xdg-utils
+
+      - name: install frontend dependencies
+        run: npm install
+
+      - name: Extract version from Cargo.toml
+        id: get_version
+        shell: bash
+        run: |
+          # Define the path to your Cargo.toml file
+          cargo_file="src-tauri/Cargo.toml"
+          # Extract ONLY the version number using a more precise regex
+          version=$(grep -m 1 '^version' "$cargo_file" | sed -E 's/.*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
+          # Output for debugging
+          echo "Version found: $version"
+          # Set the output correctly for GitHub Actions
+          echo "version=$version" >> $GITHUB_ENV
+
+      - name: Create Git tag
+        run: |
+          git tag v${{ env.version }}
+          git push origin v${{ env.version }}
+
+      # Step 1: Generate auto-generated changelog (using a community Action)
+      - name: Generate Changelog
+        id: changelog
+        uses: requarks/changelog-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: v${{ env.version }}
+
+      # Step 2: Generate "What's Changed" block from commits
+      - name: Generate "What's Changed" block
+        id: whats_changed
+        shell: bash
+        run: |
+          # Get commit messages between the last tag and HEAD, or use all commits if no tags exist
+          if git describe --tags --abbrev=0 >/dev/null 2>&1; then
+            commits=$(git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s")
+          else
+            commits=$(git log --pretty=format:"- %s")
+          fi
+
+          # Format for GitHub Actions output in a cross-platform way
+          {
+            echo "whats_changed<<EOF"
+            echo "$commits"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      # Step 3: Publish the release with combined release body
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v__VERSION__
+          releaseName: "Rhyolite(v__VERSION__) NIGHTLY"
+          releaseBody: |
+            # Rhyolite app(v__VERSION__) nightly release.
+
+            ## Caution:
+            - This is a nightly release and thus has a lot of bugs.
+            - Only nightly builds follow a rolling release pattern.
+
+            ## What's Changed:
+            ${{ steps.whats_changed.outputs.whats_changed }}
+
+            ## Auto-generated Changelog:
+            ${{ steps.changelog.outputs.changes }}
+
+          releaseDraft: false
+          prerelease: true
+          args: ${{ matrix.args }}

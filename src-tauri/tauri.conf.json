@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Rhyolite",
-  "version": "0.1.5",
+  "version": "0.1.8",
   "identifier": "com.rhyolite.dev",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -10,13 +10,13 @@
     "frontendDist": "../build"
   },
   "app": {
+    "macOSPrivateApi": true,
     "windows": [
       {
         "title": "Rhyolite",
-        "width": 1200,
+        "width": 1280,
         "height": 700,
-        "resizable": true,
-        "decorations": false
+        "resizable": true
       }
     ],
     "security": {
@@ -28,6 +28,7 @@
     "targets": "all",
     "icon": [
       "icons/icon.png",
+      "icons/icon.svg",
       "icons/icon.ico",
       "icons/icon.icns",
       "icons/Square44x44Logo.png",
@@ -50,6 +51,9 @@
       "webviewInstallMode": {
         "type": "embedBootstrapper"
       }
+    },
+    "resources": {
+      "../app_themes/": "themes"
     }
   }
 }

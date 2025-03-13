@@ -1,0 +1,23 @@
+[info]
+name = "Gruvbox Material Light(Hard)"
+author = "RedddFoxxyy (aka Suyog Tandel) (https://github.com/RedddFoxxyy)"
+themetype = "Basic"
+colorscheme = "Light"
+
+[colors]
+text       = "#282828"
+subtext2   = "#32302f"
+subtext1   = "#3c3836"
+subtext0   = "#514036"
+overlay2   = "#654735"
+overlay1   = "#866e5d"
+overlay0   = "#a89984"
+surface2   = "#b9a98f"
+surface1   = "#c9b99a"
+surface0   = "#e0cfa9"
+base       = "#eedcb8"
+crust      = "#fbf1c7"
+mantle     = "#f9f5d7"
+accent     = "#c14a4a"
+highlight  = "#c35e0a"
+border     = "#45707a"

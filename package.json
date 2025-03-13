@@ -1,10 +1,10 @@
 {
   "name": "rhyolite",
-  "version": "0.1.5",
+  "version": "0.1.8",
   "description": "A simple text editor written in Tauri, inspired by Obsidian.",
   "type": "module",
   "author": {
-    "name": "Rhyolite Team"
+    "name": "Suyog Tandel(RedddFoxxyy)"
   },
   "scripts": {
     "dev": "vite dev",
@@ -17,7 +17,9 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@tauri-apps/api": "2.2.0",
+    "@tauri-apps/plugin-log": "^2.2.0",
     "@tauri-apps/plugin-opener": "2.2.5",
+    "@tauri-apps/plugin-os": "^2.2.0",
     "@tiptap/core": "2.11.2",
     "@tiptap/extension-blockquote": "2.11.2",
     "@tiptap/extension-bold": "2.11.2",
