@@ -2,7 +2,7 @@
 name = "markdown_engine"
 version = "0.1.1"
 edition = "2024"
-license = "Apache-2.0"
+license = "GPL-3.0"
 authors = ["Suyog Tandel(RedddFoxxyy)"]
 description = "Library to convert HTML to custom-markdown for Rhyolite."
 
