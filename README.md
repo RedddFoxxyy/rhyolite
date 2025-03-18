@@ -138,7 +138,9 @@ npm run tauri build --verbose
 
 ## Licensing
 
-> NOTE: We’re making an important update to Rhyolite’s open-source license. All past app releases and their source code will remain under Apache 2.0, but future development will be licensed under GPLv3.
+> NOTE: We’re making an important update to Rhyolite’s open-source license. All past app releases 
+and their source code till commit `900aea8` will remain under Apache 2.0, but future development 
+will be licensed under GPLv3.
 
 ```
 Copyright (C) 2025  RedddFoxxyy(Suyog Tandel)
