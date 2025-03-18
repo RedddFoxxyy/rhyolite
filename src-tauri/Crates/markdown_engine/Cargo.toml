@@ -8,7 +8,7 @@ description = "Library to convert HTML to custom-markdown for Rhyolite."
 
 [dependencies]
 regex = "1.11.1"
-html5ever = "0.29.2"
+html5ever = "0.29.0"
 markup5ever_rcdom = "0.5.0-unofficial"
 
 [profile.dev]
