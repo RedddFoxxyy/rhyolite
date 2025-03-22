@@ -1,10 +1,10 @@
 export interface Document {
-  id: string;
-  title: string;
-  content: string | any;
+	id: string;
+	title: string;
+	content: string | any;
 }
 
 export interface RecentFileInfo {
-  id: string;
-  title: string;
+	id: string;
+	title: string;
 }

@@ -1,8 +1,7 @@
 @import "highlight.js/styles/github.css";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.js";
 
 html {
   scroll-behavior: smooth;
@@ -76,4 +75,3 @@ body {
   overscroll-behavior: none;
   -ms-scroll-chaining: none;
 }
-
