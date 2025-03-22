@@ -143,7 +143,7 @@
       editorProps: {
         attributes: {
           class:
-            "format text-text text-base focus:outline-none format-blue max-w-none leading-1",
+            "format text-text text-base focus:outline-none format-blue max-w-none",
         },
       },
       // onTransaction: ({ editor }) => {

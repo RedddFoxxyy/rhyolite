@@ -3,37 +3,37 @@ export type ThemeType = "Basic" | "Advance";
 export type ColorScheme = "Light" | "Dark";
 
 export interface ThemeInfo {
-  name: string;
-  author: string;
-  themetype: ThemeType;
-  colorscheme: ColorScheme;
+	name: string;
+	author: string;
+	themetype: ThemeType;
+	colorscheme: ColorScheme;
 }
 
 export interface Colors {
-  text: string;
-  subtext2: string;
-  subtext1: string;
-  subtext0: string;
-  overlay2: string;
-  overlay1: string;
-  overlay0: string;
-  surface2: string;
-  surface1: string;
-  surface0: string;
-  base: string;
-  crust: string;
-  mantle: string;
-  accent: string;
-  highlight: string;
-  border: string;
+	text: string;
+	subtext2: string;
+	subtext1: string;
+	subtext0: string;
+	overlay2: string;
+	overlay1: string;
+	overlay0: string;
+	surface2: string;
+	surface1: string;
+	surface0: string;
+	base: string;
+	crust: string;
+	mantle: string;
+	accent: string;
+	highlight: string;
+	border: string;
 }
 
 export interface Theme {
-  info: ThemeInfo;
-  colors: Colors;
+	info: ThemeInfo;
+	colors: Colors;
 }
 
 export interface ThemeListItem {
-  filename: string; // File stem (e.g., "dark")
-  name: string; // Display name from TOML (e.g., "My Dark Theme")
+	filename: string; // File stem (e.g., "dark")
+	name: string; // Display name from TOML (e.g., "My Dark Theme")
 }
