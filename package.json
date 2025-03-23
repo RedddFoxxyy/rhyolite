@@ -14,7 +14,7 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
 		"tauri": "tauri"
 	},
-	"license": "Apache-2.0",
+	"license": "GPL-3.0",
 	"dependencies": {
 		"@tauri-apps/api": "2.4.0",
 		"@tauri-apps/plugin-log": "2.3.1",
@@ -67,7 +67,7 @@
 		"@sveltejs/vite-plugin-svelte": "5.0.3",
 		"@tailwindcss/cli": "4.0.15",
 		"@tailwindcss/postcss": "4.0.15",
-		"@tailwindcss/typography": "^0.5.15",
+		"@tailwindcss/typography": "^0.5.16",
 		"@tailwindcss/vite": "4.0.15",
 		"@tauri-apps/cli": "2.4.0",
 		"flowbite": "3.1.2",

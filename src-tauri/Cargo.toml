@@ -2,7 +2,7 @@
 name = "Rhyolite"
 version = "0.1.8"
 description = "A simple text editor written in Tauri, inspired by Obsidian."
-authors = ["Suyog Tandel(RedddFoxxyy)"]
+authors = ["Suyog Tandel(RedddFoxxyy)", "Rhyolite Team"]
 license = "GPL-3.0"
 edition = "2024"
 
@@ -21,7 +21,7 @@ tauri-build = { version = "2.1.0", features = [] }
 [dependencies]
 tauri = { version = "2.4.0", features = ["macos-private-api"] }
 tauri-plugin-opener = "2.2.6"
-tauri-plugin-dialog = "2.2.0"
+#tauri-plugin-dialog = "2.2.0"
 tauri-plugin = "2.1.0"
 serde = { version = "1.0.219", features = ["derive"] }
 toml = "0.8.20"
@@ -29,11 +29,11 @@ serde_json = "1.0.140"
 dirs = "6.0.0"
 sanitize-filename = "0.6.0"
 pulldown-cmark = "0.13.0"
-uuid = { version = "1.15.1", features = ["v4"] }
+uuid = { version = "1.16.0", features = ["v4"] }
 indexmap = "2.8.0"
 regex = "1.11.1"
 markdown_engine = { path = "./Crates/markdown_engine" }
-tauri-plugin-fs = "2.2.0"
+#tauri-plugin-fs = "2.2.0"
 tauri-plugin-log = "2.3.1"
 # TODO: Q: Should we do logging on release build of the app or
 # not?
@@ -45,6 +45,7 @@ tokio = { version = "1.44.1", features = ["fs", "sync"] }
 
 [profile.dev]
 incremental = true # Compile your binary in smaller steps.
+codegen-units = 256
 
 [profile.release]
 codegen-units = 1 # Allows LLVM to perform better optimization.

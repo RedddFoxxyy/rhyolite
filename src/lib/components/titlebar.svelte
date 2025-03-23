@@ -9,7 +9,6 @@
 	import { addNewDocumentTab } from "$lib/services/document.service";
 	import tabService from "$lib/services/tab.service";
 	import { type Tab } from "$lib/types/tab";
-	import { invoke } from "@tauri-apps/api/core";
 	import { platform } from "@tauri-apps/plugin-os";
 
 	let tabs: Tab[] = $state([]);
@@ -92,7 +91,7 @@
 		{#each tabs as tab}
 			<div class="relative group flex items-center justify-between">
 				<button
-					class={`flex justify-left items-center pl-4 pr-2 text-nowrap h-[30px] w-fit rounded-[18px] shrink text-text transition-colors duration-100 hover:bg-surface1 ${currentTab?.id === tab.id ? "bg-surface0" : ""}`}
+					class={`flex justify-left items-center pl-4 pr-2 text-nowrap h-[30px] w-fit rounded-[18px] shrink text-text transition-all duration-150 hover:bg-surface1 ${currentTab?.id === tab.id ? "bg-surface0" : ""}`}
 					class:active={currentTab?.id === tab.id}
 					role="tab"
 					aria-controls="editor"
@@ -104,7 +103,7 @@
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
 					<!-- svelte-ignore a11y_no_static_element_interactions -->
 					<div
-						class="text-text bg-transparent ml-2 p-1 rounded-[18px] h-[20px] w-[20px] flex justify-center items-center opacity-0 transition-opacity duration-100 hover:bg-surface2 hover:text-subtext1 hover:opacity-80"
+						class="text-text bg-transparent ml-2 p-1 rounded-[18px] h-[20px] w-[20px] flex justify-center items-center opacity-0 transition-all duration-150 hover:bg-surface2 hover:text-subtext1 hover:opacity-80"
 						class:opacity-100={currentTab?.id === tab.id}
 						onclick={(e) => {
 							e.stopPropagation();
@@ -118,7 +117,7 @@
 		{/each}
 		<button
 			type="button"
-			class="flex justify-center items-center px-4 text-nowrap h-[30px] w-[30px] aspect-square rounded-[18px] shrink text-text hover:bg-surface1"
+			class="flex justify-center items-center px-4 text-nowrap h-[30px] w-[30px] aspect-square rounded-[18px] shrink text-text transition-all duration-150 hover:bg-surface1"
 			id="new-tab-btn"
 			onclick={addNewDocumentTab}>+</button
 		>
