@@ -5,7 +5,6 @@
 	import { themes_store } from "$lib/stores/themes.svelte";
 	import type { Theme, ThemeListItem } from "$lib/types/theme";
 	import { listen } from "@tauri-apps/api/event";
-	import { invoke } from "@tauri-apps/api/core";
 	import { onMount } from "svelte";
 
 	let showThemeOptions = $state(false);

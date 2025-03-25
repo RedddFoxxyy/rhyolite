@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { commandPaletteStore } from "$lib/stores/commandPalette.svelte";
-	import DocumentService, { runDummyCommand } from "$lib/services/document.service";
+	import DocumentService from "$lib/services/document.service";
 	import TabService from "$lib/services/tab.service";
-	import { onDestroy, onMount } from "svelte";
+	import { onMount } from "svelte";
 	import { contentEditorStore } from "$lib/stores/contentEditor.svelte";
 	import { listen } from "@tauri-apps/api/event";
 	import type { Tab } from "$lib/types/tab";
@@ -77,14 +77,15 @@
 				commandPaletteStore.toggleVisibility();
 			}
 		},
-		{
-			name: "Toggle ToolBar",
-			shortcut: "Ctrl + T",
-			action: () => {
-				contentEditorStore.toggleToolbarVisibility();
-				commandPaletteStore.toggleVisibility();
-			}
-		}
+		// TODO: Add this command after toolbar has been implemented.
+		// {
+		// 	name: "Toggle ToolBar",
+		// 	shortcut: "Ctrl + T",
+		// 	action: () => {
+		// 		contentEditorStore.toggleToolbarVisibility();
+		// 		commandPaletteStore.toggleVisibility();
+		// 	}
+		// }
 	];
 
 	function handleKeydown(event: KeyboardEvent) {
@@ -157,7 +158,7 @@
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div
-		class="fixed top-0 left-0 w-full h-full bg-black/60 z-20"
+		class="fixed top-0 left-0 w-full h-full bg-black/50 z-20"
 		tabindex="-1"
 		aria-modal="true"
 		role="dialog"

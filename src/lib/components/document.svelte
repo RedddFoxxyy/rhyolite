@@ -2,7 +2,6 @@
 	import { onMount } from "svelte";
 	import { Editor } from "svelte-tiptap";
 	import DocumentService from "$lib/services/document.service";
-	import TabService from "$lib/services/tab.service";
 	import type { Tab } from "$lib/types/tab";
 	import ContentEditor from "./content-editor/content-editor.svelte";
 	import { listen } from "@tauri-apps/api/event";
@@ -16,23 +15,19 @@
 	let initialized: boolean = $state(false);
 	onMount(() => {
 		initialized = true;
-		// const docContentlisten = listen<any>("current_editor_content", (event) => {
-		//   documentContent = event.payload;
-		// });
 		const currentTablisten = listen<Tab>("Current_Tab", (event) => {
 			currentTab = event.payload;
 			documentTitle = currentTab.title;
-			invoke("exec_command", {
-				cmd: "get_document_content",
-				payload: JSON.stringify({
-					id: currentTab.id,
-					title: currentTab.title
-				})
-			});
+			// invoke("exec_command", {
+			// 	cmd: "get_document_content",
+			// 	payload: JSON.stringify({
+			// 		id: currentTab.id,
+			// 		title: currentTab.title
+			// 	})
+			// });
 		});
 		return () => {
 			currentTablisten.then((unsub) => unsub());
-			// docContentlisten.then((unsub) => unsub());
 		};
 	});
 

@@ -1,9 +1,5 @@
 import type { Tab } from "$lib/types/tab";
-import { ApiProvider } from "./api.service";
-import docservice from "./document.service";
 import { invoke } from "@tauri-apps/api/core";
-
-const apiProvider = new ApiProvider();
 
 // TODO: Let the backend exec loading of document too!
 const switchTab = (tab: Tab) => {
@@ -12,10 +8,6 @@ const switchTab = (tab: Tab) => {
 		cmd: "switch_tab",
 		payload: JSON.stringify({ tabId: tab.id })
 	});
-	// invoke("exec_command", {
-	//   cmd: "get_document_content",
-	//   payload: JSON.stringify({ id: tab.id, title: tab.title }),
-	// });
 };
 
 const closeTab = (tabId?: string) => {

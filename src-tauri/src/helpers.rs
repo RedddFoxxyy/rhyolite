@@ -18,8 +18,8 @@
 
 // use std::sync::{MutexGuard, RwLockReadGuard, RwLockWriteGuard};
 use crate::{
-    AppStateInner,
-    // app_state::{CommandRegistry, FileManager, TabManager},
+	AppStateInner,
+	// app_state::{CommandRegistry, FileManager, TabManager},
 };
 // use tokio::sync::{MutexGuard, RwLockReadGuard, RwLockWriteGuard};
 

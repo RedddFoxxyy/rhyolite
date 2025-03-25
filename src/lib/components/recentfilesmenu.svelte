@@ -1,12 +1,10 @@
 <script lang="ts">
 	import { recentFilesStore } from "$lib/stores/recentFiles.svelte";
-	import { onMount, getContext } from "svelte";
-	// import Close from "$lib/static/close.svg";
-	import { onDestroy } from "svelte";
+	import { onMount } from "svelte";
 	import { ApiProvider } from "$lib/services/api.service";
-	import type { Document, RecentFileInfo } from "$lib/types/document";
+	import type { RecentFileInfo } from "$lib/types/document";
 	import { listen } from "@tauri-apps/api/event";
-	import { invoke } from "@tauri-apps/api/core";
+	import { loadDocument } from "$lib/services/document.service";
 
 	let files: RecentFileInfo[] = $state([]);
 	let selectedIndex: number = $state(-1);
@@ -34,10 +32,7 @@
 
 	function openFile(file: RecentFileInfo) {
 		try {
-			invoke("exec_command", {
-				cmd: "load_tab",
-				payload: JSON.stringify({ id: file.id, title: file.title })
-			});
+			loadDocument(file);
 			toggleFilesMenu();
 		} catch (error) {
 			console.error("Failed to open file:", error);
@@ -96,7 +91,7 @@
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div
-		class="fixed top-0 left-0 w-full h-full bg-black/60 z-20"
+		class="fixed top-0 left-0 w-full h-full bg-black/50 z-20"
 		tabindex="-1"
 		aria-modal="true"
 		role="dialog"
