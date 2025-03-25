@@ -38,7 +38,7 @@ tauri-plugin-log = "2.3.1"
 # TODO: Q: Should we do logging on release build of the app or
 # not?
 # i.e. , features = ["release_max_level_off"]
-log = { version = "0.4.26"}
+log = { version = "0.4.27"}
 tauri-plugin-os = "2.2.1"
 tokio = { version = "1.44.1", features = ["fs", "sync"] }
 

@@ -1,21 +1,17 @@
 <script lang="ts">
-	// import "$lib/styles/styles.css";
-
 	import { onMount } from "svelte";
 	import CommandPalette from "$lib/components/command-palette.svelte";
 	import RecentFiles from "$lib/components/recentfilesmenu.svelte";
-	import Workspace from "$lib/components/workspace.svelte";
+	import Document from "$lib/components/document.svelte";
 	import TitleBar from "$lib/components/titlebar.svelte";
 	import HomeHotkeys from "$lib/components/home-hotkeys.svelte";
 	import DocumentService from "$lib/services/document.service";
 	import Sidebar from "$lib/components/sidebar.svelte";
-	import { invoke } from "@tauri-apps/api/core";
 	import { themes_store } from "$lib/stores/themes.svelte";
 
 	onMount(() => {
 		// TabsStore.initTabsStore();
-		DocumentService.loadRecentDocuments();
-		invoke("exec_command", { cmd: "load_last_open_tabs" });
+		DocumentService.initFrontendState();
 		if (document.readyState === "complete") {
 			themes_store.initThemesStore();
 		} else {
@@ -28,7 +24,14 @@
 	<TitleBar />
 	<div class="flex items-stretch grow overflow-hidden">
 		<Sidebar />
-		<Workspace />
+		<div class="flex grow justify-center mt-[30px] px-10 overflow-auto">
+			<!-- TODO: Q: How to switch between tabs? -->
+			<!-- 1: Have all tabs as separate DOM Elements, set display:none on inactive tabs -->
+			<!--    Pro: possibly retained DOM states. Con: Too large DOM-->
+			<!-- 2: Have only active tab in DOM -->
+			<!--    Pro: possibly retained DOM states. Con: Too large DOM-->
+			<Document />
+		</div>
 	</div>
 	<HomeHotkeys />
 	<CommandPalette />

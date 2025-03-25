@@ -1,27 +1,7 @@
-import type { Tab } from "$lib/types/tab";
 import { invoke } from "@tauri-apps/api/core";
-import type { Document, RecentFileInfo } from "$lib/types/document";
 import type { IApiServiceProvider } from "./api.interface";
 
 export class TauriInvokeServiceProvider implements IApiServiceProvider {
-	async addNewDocumentTab(): Promise<Tab> {
-		return await invoke<Tab>("new_tab");
-	}
-
-	async getAllDocumentTabs(): Promise<Tab[]> {
-		return await invoke<Tab[]>("get_tabs");
-	}
-
-	async sendCurrentOpenTab(tabId: string) {
-		await invoke("send_current_open_tab", { id: tabId });
-	}
-
-	async getDocumentContent(tabId: string, tabTitle: string): Promise<Document | null> {
-		return await invoke<Document | null>("get_document_content", {
-			id: tabId,
-			title: tabTitle
-		});
-	}
 
 	async saveDocument({
 		documentId,
@@ -43,20 +23,8 @@ export class TauriInvokeServiceProvider implements IApiServiceProvider {
 		});
 	}
 
-	async getLastOpenedTabs(): Promise<Document[]> {
-		return await invoke<Document[]>("load_last_open_tabs");
-	}
-
 	getRecentlyOpenedFiles() {
 		invoke("exec_command", { cmd: "get_recent_files_metadata" });
-		//return await invoke<RecentFileInfo[]>("get_recent_files_metadata");
-	}
-
-	loadTab({ documentId, documentTitle }: { documentId: string; documentTitle: string }): void {
-		invoke("exec_command", {
-			cmd: "load_tab",
-			payload: JSON.stringify({ id: documentId, title: documentTitle })
-		});
 	}
 
 	async CloseCurrentTab(documentId: string) {

@@ -1,17 +1,21 @@
+import type { RecentFileInfo } from "$lib/types/document";
 import type { Tab } from "$lib/types/tab";
-import { ApiProvider } from "$lib/services/api.service";
-import TabService from "$lib/services/tab.service";
-import type { Document } from "$lib/types/document";
 import { invoke } from "@tauri-apps/api/core";
 
-const apiProvider = new ApiProvider();
-
 // NOTE: This functioni will be soon changed or depreciated.
-const getAllDocumentTabs = async (): Promise<void> => {
-	const tabs: Tab[] = await apiProvider.getAllDocumentTabs();
-	invoke("exec_command", { cmd: "update_states" });
-	// return tabsStore.updateTabsState(tabs);
+const getAllDocumentTabs = (): void => {
+	invoke("exec_command", { cmd: "update_states" });;
 };
+
+const getDocumentContent = (Tab: Tab): void => {
+	invoke("exec_command", {
+		cmd: "get_document_content",
+		payload: JSON.stringify({
+			id: Tab.id,
+			title: Tab.title
+		})
+	});
+}
 
 export const addNewDocumentTab = (): void => {
 	try {
@@ -22,16 +26,14 @@ export const addNewDocumentTab = (): void => {
 };
 
 const deleteDocumentTab = (id: string): void => {
-	// invoke("exec_command", { cmd: "delete_document" });
-
 	invoke("exec_command", {
 		cmd: "delete_document",
 		payload: JSON.stringify(id)
 	});
 };
 
-const loadRecentDocuments = (): void => {
-	invoke("exec_command", { cmd: "load_last_open_tabs" });
+const initFrontendState = (): void => {
+	invoke("exec_command", { cmd: "init_frontend_state" });
 };
 
 const saveDocument = ({
@@ -53,31 +55,19 @@ const saveDocument = ({
 	});
 };
 
-const loadDocument = async (
-	documentId: string,
-	documentTitle: string
-): Promise<Document | null> => {
-	try {
-		const doc = await apiProvider.getDocumentContent(documentId, documentTitle);
-		if (!doc) return null;
-
-		invoke("exec_command", { cmd: "update_states" });
-		return doc;
-	} catch (error) {
-		console.error("Failed to load document:", error);
-		return null;
-	}
-};
-
-export const runDummyCommand = async (payload: Record<string, any>) => {
-	invoke("exec_command", payload);
-};
+export const loadDocument = (file: RecentFileInfo): void => {
+	invoke("exec_command", {
+		cmd: "load_tab",
+		payload: JSON.stringify({ id: file.id, title: file.title })
+	});
+}
 
 export default {
 	getAllDocumentTabs,
+	getDocumentContent,
 	addNewDocumentTab,
 	deleteDocumentTab,
-	loadRecentDocuments,
+	initFrontendState,
 	saveDocument,
 	loadDocument
 };
