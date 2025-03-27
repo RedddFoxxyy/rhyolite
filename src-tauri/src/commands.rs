@@ -6,7 +6,6 @@ use crate::{
 };
 
 use tauri::{AppHandle, Emitter, Manager};
-use tokio::task::spawn_blocking;
 
 /// Executes a command by name with an optional payload, running the associated action asynchronously.
 ///
@@ -61,10 +60,6 @@ pub async fn load_default_commands(app: &AppHandle) {
 	let app_state = app.state::<AppState>();
 
 	let mut command_registry = app_state.command_registry.lock().await;
-	// if command_registry_option.is_none() {
-	//     log::error!("Failed to load the default commands!");
-	//     return;
-	// }
 
 	// Register commands from each module
 	TabCommands::register_commands(&mut command_registry);

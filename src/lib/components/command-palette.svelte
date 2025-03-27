@@ -3,7 +3,6 @@
 	import DocumentService from "$lib/services/document.service";
 	import TabService from "$lib/services/tab.service";
 	import { onMount } from "svelte";
-	import { contentEditorStore } from "$lib/stores/contentEditor.svelte";
 	import { listen } from "@tauri-apps/api/event";
 	import type { Tab } from "$lib/types/tab";
 
@@ -148,7 +147,7 @@
 
 	$effect(() => {
 		if (commandPaletteStore.isVisible()) {
-			(document.querySelector("#commandPaletteTextarea") as HTMLTextAreaElement).focus();
+			(document.querySelector("#commandPaletteTextArea") as HTMLTextAreaElement).focus();
 		}
 	});
 </script>
@@ -173,7 +172,7 @@
 				class="relative basis-[42px] w-full shrink-0 overflow-hidden shadow-none hover:shadow-xl focus:shadow-xl transition duration-300 rounded-lg"
 			>
 				<textarea
-					id="commandPaletteTextarea"
+					id="commandPaletteTextArea"
 					class="w-full h-full overflow-hidden resize-none p-2 cursor-text text-text bg-crust text-left box-border border-2 hover:border-subtext0 rounded-lg transition-all duration-200 border-overlay0 focus:border-subtext0 focus:outline-none focus:ring-0"
 					placeholder="Select a Command"
 					bind:value={searchText}

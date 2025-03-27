@@ -24,6 +24,18 @@ use crate::editor::{
 };
 
 // TODO: If you find any code in the code base, that uses
+// string "Rhyolite" instead of this constant, replace it with
+// this constant!
+/// Name of the Default Note Title used by the app!
+pub const APP_DATA_DIR: &str = "Rhyolite";
+
+// TODO: If you find any code in the code base, that uses
+// string "appdata" instead of this constant, replace it with
+// this constant!
+/// Name of the Default Note Title used by the app!
+pub const USER_DATA_DIR: &str = "appdata";
+
+// TODO: If you find any code in the code base, that uses
 // string "Untitled_Trove" instead of this constant, replace it with
 // this constant!
 /// Name of the Default Trove used by the app!

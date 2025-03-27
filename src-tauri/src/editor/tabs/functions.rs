@@ -80,17 +80,6 @@ pub async fn cleanup_deleted_files_workaround(
 }
 
 #[tauri::command]
-pub async fn get_current_open_tab(state: State<'_, AppState>) -> Result<String, String> {
-	log::debug!("get_current_open_tab init");
-	let tab_switcher = state.tab_switcher.read().await;
-
-	tab_switcher
-		.current_tab_id
-		.clone()
-		.ok_or("Tab doesn't exist".to_string())
-}
-
-#[tauri::command]
 pub async fn get_tabs(state: State<'_, AppState>) -> Result<Vec<Tab>, String> {
 	log::debug!("get_tabs init");
 	let tab_switcher = state.tab_switcher.read().await;

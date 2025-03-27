@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { listen } from "@tauri-apps/api/event";
-	import { invoke } from "@tauri-apps/api/core";
 	import type { ChainedCommands } from "@tiptap/core";
 	import { Extension } from "@tiptap/core";
 	import Bold from "@tiptap/extension-bold";
@@ -156,7 +155,7 @@
 		setupEditor();
 		const docContentlisten = listen<any>("current_editor_content", (event) => {
 			let documentContent = event.payload;
-			console.log("Setting editor content from event");
+			// console.log("Setting editor content from event");
 			$editor.commands.clearContent();
 			$editor.commands.setContent(documentContent);
 

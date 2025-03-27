@@ -4,31 +4,31 @@
 @config "../tailwind.config.js";
 
 html {
-  scroll-behavior: smooth;
+	scroll-behavior: smooth;
 }
 
 :root {
-  --color-text: 255 255 255;
-  --color-subtext2: 241 242 243;
-  --color-subtext1: 216 219 222;
-  --color-subtext0: 194 198 203;
-  --color-overlay2: 172 178 184;
-  --color-overlay1: 150 157 165;
-  --color-overlay0: 128 137 146;
-  --color-surface2: 108 117 125;
-  --color-surface1: 89 97 103;
-  --color-surface0: 70 76 81;
-  --color-base: 51 55 59;
-  --color-crust: 32 35 37;
-  --color-mantle: 13 14 15;
-  --scrollbar-thumb-color: var(--color-base);
-  --scrollbar-track-color: var(--color-surface2);
+	--color-text: 255 255 255;
+	--color-subtext2: 241 242 243;
+	--color-subtext1: 216 219 222;
+	--color-subtext0: 194 198 203;
+	--color-overlay2: 172 178 184;
+	--color-overlay1: 150 157 165;
+	--color-overlay0: 128 137 146;
+	--color-surface2: 108 117 125;
+	--color-surface1: 89 97 103;
+	--color-surface0: 70 76 81;
+	--color-base: 51 55 59;
+	--color-crust: 32 35 37;
+	--color-mantle: 13 14 15;
+	--scrollbar-thumb-color: var(--color-base);
+	--scrollbar-track-color: var(--color-surface2);
 }
 
 * {
-  font-family: "JetBrains Mono", serif;
-  overscroll-behavior: none;
-  -ms-scroll-chaining: none;
+	font-family: "JetBrains Mono", serif;
+	overscroll-behavior: none;
+	-ms-scroll-chaining: none;
 }
 
 /* prettier-ignore */
@@ -64,14 +64,13 @@ html {
 /* Firefox */
 /* NOTE: without @supports, it breaks webkit scrollbars */
 @supports (scrollbar-color: auto) {
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(var(--scrollbar-thumb-color))
-      rgba(var(--scrollbar-track-color));
-  }
+	scrollbar-* {
+		scrollbar-width: thin;
+		scrollbar-color: rgba(var(--scrollbar-thumb-color)) rgba(var(--scrollbar-track-color));
+	}
 }
 
 body {
-  overscroll-behavior: none;
-  -ms-scroll-chaining: none;
+	overscroll-behavior: none;
+	-ms-scroll-chaining: none;
 }

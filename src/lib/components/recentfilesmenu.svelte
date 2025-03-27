@@ -1,16 +1,13 @@
 <script lang="ts">
 	import { recentFilesStore } from "$lib/stores/recentFiles.svelte";
 	import { onMount } from "svelte";
-	import { ApiProvider } from "$lib/services/api.service";
 	import type { RecentFileInfo } from "$lib/types/document";
 	import { listen } from "@tauri-apps/api/event";
-	import { loadDocument } from "$lib/services/document.service";
+	import DocumentService from "$lib/services/document.service";
 
 	let files: RecentFileInfo[] = $state([]);
 	let selectedIndex: number = $state(-1);
 	let searchText: string = $state("");
-
-	const apiProvider = new ApiProvider();
 
 	onMount(() => {
 		// Listen for the 'recent_files_metadata' event from the backend
@@ -24,7 +21,7 @@
 
 	function loadFiles() {
 		try {
-			apiProvider.getRecentlyOpenedFiles();
+			DocumentService.getRecentlyOpenedFiles();
 		} catch (error) {
 			console.error("Failed to load files:", error);
 		}
@@ -32,7 +29,7 @@
 
 	function openFile(file: RecentFileInfo) {
 		try {
-			loadDocument(file);
+			DocumentService.loadDocument(file);
 			toggleFilesMenu();
 		} catch (error) {
 			console.error("Failed to open file:", error);
@@ -81,7 +78,7 @@
 
 	$effect(() => {
 		if (recentFilesStore.isVisible()) {
-			(document.querySelector("#commandPaletteTextarea") as HTMLTextAreaElement).focus();
+			(document.querySelector("#recentFilesTextArea") as HTMLTextAreaElement).focus();
 		}
 	});
 </script>
@@ -106,7 +103,7 @@
 				class="relative basis-[42px] w-full shrink-0 overflow-hidden shadow-none hover:shadow-xl focus:shadow-xl transition duration-300 rounded-lg"
 			>
 				<textarea
-					id="recentFilesTextarea"
+					id="recentFilesTextArea"
 					class="w-full h-full overflow-hidden resize-none p-2 cursor-text text-text bg-crust text-left box-border border-2 hover:border-subtext0 rounded-lg transition-all duration-200 border-overlay0 focus:border-subtext0 focus:outline-none focus:ring-0"
 					placeholder="Search Recent Files"
 					bind:value={searchText}

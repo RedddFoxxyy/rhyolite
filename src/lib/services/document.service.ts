@@ -4,7 +4,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 // NOTE: This functioni will be soon changed or depreciated.
 const getAllDocumentTabs = (): void => {
-	invoke("exec_command", { cmd: "update_states" });;
+	invoke("exec_command", { cmd: "update_states" });
 };
 
 const getDocumentContent = (Tab: Tab): void => {
@@ -15,7 +15,7 @@ const getDocumentContent = (Tab: Tab): void => {
 			title: Tab.title
 		})
 	});
-}
+};
 
 export const addNewDocumentTab = (): void => {
 	try {
@@ -36,15 +36,14 @@ const initFrontendState = (): void => {
 	invoke("exec_command", { cmd: "init_frontend_state" });
 };
 
-const saveDocument = ({
-	documentId,
-	documentTitle,
-	documentContent
-}: {
-	documentId: string;
-	documentTitle: string;
-	documentContent: any;
-}): void => {
+function updateTabTitle(id: string, title: string) {
+	invoke("exec_command", {
+		cmd: "update_tab_title",
+		payload: JSON.stringify({ id: id, title: title })
+	});
+}
+
+function saveDocument(documentId: string, documentTitle: string, documentContent: any) {
 	invoke("exec_command", {
 		cmd: "save_document",
 		payload: JSON.stringify({
@@ -53,13 +52,17 @@ const saveDocument = ({
 			content: documentContent || ""
 		})
 	});
-};
+}
 
 export const loadDocument = (file: RecentFileInfo): void => {
 	invoke("exec_command", {
 		cmd: "load_tab",
 		payload: JSON.stringify({ id: file.id, title: file.title })
 	});
+};
+
+export function getRecentlyOpenedFiles() {
+	invoke("exec_command", { cmd: "get_recent_files_metadata" });
 }
 
 export default {
@@ -68,6 +71,8 @@ export default {
 	addNewDocumentTab,
 	deleteDocumentTab,
 	initFrontendState,
+	updateTabTitle,
 	saveDocument,
-	loadDocument
+	loadDocument,
+	getRecentlyOpenedFiles
 };

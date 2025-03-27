@@ -5,7 +5,6 @@
 	import type { Tab } from "$lib/types/tab";
 	import ContentEditor from "./content-editor/content-editor.svelte";
 	import { listen } from "@tauri-apps/api/event";
-	import { invoke } from "@tauri-apps/api/core";
 
 	let currentTab: Tab | null = $state(null);
 	let documentTitle: string = $state("");
@@ -18,13 +17,6 @@
 		const currentTablisten = listen<Tab>("Current_Tab", (event) => {
 			currentTab = event.payload;
 			documentTitle = currentTab.title;
-			// invoke("exec_command", {
-			// 	cmd: "get_document_content",
-			// 	payload: JSON.stringify({
-			// 		id: currentTab.id,
-			// 		title: currentTab.title
-			// 	})
-			// });
 		});
 		return () => {
 			currentTablisten.then((unsub) => unsub());
@@ -35,10 +27,7 @@
 		const target = event.target as HTMLTextAreaElement;
 		documentTitle = target.value;
 		if (currentTab) {
-			invoke("exec_command", {
-				cmd: "update_tab_title",
-				payload: JSON.stringify({ id: currentTab.id, title: target.value })
-			});
+			DocumentService.updateTabTitle(currentTab.id, target.value);
 			saveDocument();
 		}
 	};
@@ -60,11 +49,11 @@
 		// Set a new timeout to trigger `saveAction` after 0.2 seconds
 		saveTimeout = setTimeout(() => {
 			if (currentTab) {
-				DocumentService.saveDocument({
-					documentId: currentTab.id,
+				DocumentService.saveDocument(
+					currentTab.id,
 					documentTitle,
 					documentContent
-				});
+				);
 			}
 		}, delaySave ?? 200);
 	};

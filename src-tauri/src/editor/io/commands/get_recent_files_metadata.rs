@@ -1,6 +1,6 @@
 use crate::{
-	app_state::{AppState, UserData},
-	editor::io::{IOCommands, get_documents_dir, save_user_data},
+	app_state::{AppState, UserData, USER_DATA_DIR},
+	editor::io::{get_documents_dir, save_user_data, IOCommands},
 };
 use std::fs;
 use tauri::{AppHandle, Emitter, Manager};
@@ -12,7 +12,7 @@ impl IOCommands {
 		if let Err(e) = save_user_data(state).await {
 			log::error!("Warning: Failed to save user data: {}", e);
 		}
-		let appdata_dir = get_documents_dir().join("appdata");
+		let appdata_dir = get_documents_dir().join(USER_DATA_DIR);
 		let userdata_path = appdata_dir.join("userdata.json");
 
 		let metadata = if userdata_path.exists() {

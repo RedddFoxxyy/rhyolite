@@ -9,9 +9,7 @@ use uuid::Uuid;
 use dirs;
 
 use crate::{
-	FileInfo,
-	app_state::{AppState, CommandRegistrar, CommandRegistry, MarkdownFileData, Tab, UserData},
-	editor::io::commands::get_document_content::get_document_content_helper,
+	app_state::{AppState, CommandRegistrar, CommandRegistry, MarkdownFileData, Tab, UserData, APP_DATA_DIR, TROVE_DIR, USER_DATA_DIR}, editor::io::commands::get_document_content::get_document_content_helper, FileInfo
 };
 
 pub struct IOCommands;
@@ -57,7 +55,7 @@ pub fn get_documents_dir() -> PathBuf {
 		// Original desktop behavior
 		let mut path = dirs::document_dir().expect("Could not find Documents directory");
 		// TODO: Use a const for this name.
-		path.push("Rhyolite");
+		path.push(APP_DATA_DIR);
 		// Create the directory if it doesn't exist
 		fs::create_dir_all(&path).expect("Could not create Rhyolite directory");
 		path
@@ -106,7 +104,7 @@ pub async fn save_user_data(state: &State<'_, AppState>) -> Result<(), String> {
 		}
 	};
 
-	let appdata_dir = get_documents_dir().join("appdata");
+	let appdata_dir = get_documents_dir().join(USER_DATA_DIR);
 	fs::create_dir_all(&appdata_dir).expect("Could not create appdata directory");
 	let userdata_path = appdata_dir.join("userdata.json");
 
@@ -123,7 +121,7 @@ pub async fn load_last_open_tabs(
 	state: State<'_, AppState>,
 ) -> Result<Vec<MarkdownFileData>, String> {
 	log::debug!("load_last_open_tabs init");
-	let appdata_dir = get_documents_dir().join("appdata");
+	let appdata_dir = get_documents_dir().join(USER_DATA_DIR);
 	let userdata_path = appdata_dir.join("userdata.json");
 
 	if userdata_path.exists() {
@@ -165,7 +163,7 @@ pub async fn load_last_open_tabs(
 	}
 
 	// If userdata.json doesn't exist, load all markdown files from the trove directory
-	let trove_dir = get_trove_dir("Untitled_Trove");
+	let trove_dir = get_trove_dir(TROVE_DIR);
 
 	let files = match fs::read_dir(&trove_dir) {
 		Ok(entries) => entries
@@ -197,7 +195,7 @@ pub async fn get_recent_files_metadata(
 	if let Err(e) = save_user_data(&state).await {
 		eprintln!("Warning: Failed to save user data: {}", e);
 	}
-	let appdata_dir = get_documents_dir().join("appdata");
+	let appdata_dir = get_documents_dir().join(USER_DATA_DIR);
 	let userdata_path = appdata_dir.join("userdata.json");
 
 	// Check if userdata.json exists

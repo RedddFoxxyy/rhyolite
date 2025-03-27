@@ -66,7 +66,6 @@ pub fn run() {
 			tabs::update_states,
 			tabs::load_tab,
 			tabs::get_tabs,
-			tabs::get_current_open_tab,
 			commands::exec_command
 		])
 		.run(tauri::generate_context!())
