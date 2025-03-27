@@ -4,7 +4,6 @@
 	import RecentFiles from "$lib/components/recentfilesmenu.svelte";
 	import Document from "$lib/components/document.svelte";
 	import TitleBar from "$lib/components/titlebar.svelte";
-	import HomeHotkeys from "$lib/components/home-hotkeys.svelte";
 	import DocumentService from "$lib/tauri-cmd/document";
 	import Sidebar from "$lib/components/sidebar.svelte";
 	import { themes_store } from "$lib/stores/themes.svelte";
@@ -33,7 +32,6 @@
 			<Document />
 		</div>
 	</div>
-	<HomeHotkeys />
 	<CommandPalette />
 	<RecentFiles />
 </main>

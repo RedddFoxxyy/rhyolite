@@ -53,7 +53,7 @@
 		}
 	];
 
-	const handleCloseEvent = (e: MouseEvent | KeyboardEvent) => {
+	function handleCloseEvent(e: MouseEvent | KeyboardEvent) {
 		if (
 			(e instanceof MouseEvent && !self?.contains(e.target as Node)) ||
 			(e instanceof KeyboardEvent && e.key === "Escape")
@@ -61,7 +61,7 @@
 			e.stopPropagation();
 			settingsMenuStore.toggleVisibility();
 		}
-	};
+	}
 
 	$effect(() => {
 		if (settingsMenuStore.isVisible()) {

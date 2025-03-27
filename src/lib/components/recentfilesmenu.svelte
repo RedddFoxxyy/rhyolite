@@ -70,21 +70,17 @@
 	}
 
 	$effect(() => {
-		if (!recentFilesStore.isVisible()) {
+		if (recentFilesStore.isVisible()) {
+			loadFiles();
+			(document.querySelector("#recentFilesTextArea") as HTMLTextAreaElement).focus();
+		} else {
 			selectedIndex = -1;
 			searchText = "";
-		}
-	});
-
-	$effect(() => {
-		if (recentFilesStore.isVisible()) {
-			(document.querySelector("#recentFilesTextArea") as HTMLTextAreaElement).focus();
 		}
 	});
 </script>
 
 {#if recentFilesStore.isVisible()}
-	{loadFiles()}
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div

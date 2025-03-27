@@ -18,10 +18,6 @@
 
 	const appWindow = getCurrentWindow();
 
-	const onTabClose = async (tabId: string) => {
-		tabCmds.closeTab(tabId);
-	};
-
 	appWindow.listen("tauri://resize", async () => {
 		isMaximized = await appWindow.isMaximized();
 	});
@@ -68,10 +64,6 @@
 				});
 		}
 	});
-
-	const onOpenTab = (tab: Tab) => {
-		tabCmds.switchTab(tab);
-	};
 </script>
 
 <div
@@ -95,7 +87,7 @@
 					class:active={currentTab?.id === tab.id}
 					role="tab"
 					aria-controls="editor"
-					onclick={() => onOpenTab(tab)}
+					onclick={() => tabCmds.switchTab(tab)}
 				>
 					{tab.title.length > 20
 						? tab.title.slice(0, 20) + "..."
@@ -107,7 +99,7 @@
 						class:opacity-100={currentTab?.id === tab.id}
 						onclick={(e) => {
 							e.stopPropagation();
-							onTabClose(tab.id);
+							tabCmds.closeTab(tab.id);
 						}}
 					>
 						<Close />
