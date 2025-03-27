@@ -90,7 +90,8 @@
 	function handleKeydown(event: KeyboardEvent) {
 		if (!commandPaletteStore.isVisible()) return;
 		console.log(event.key, event.shiftKey, event);
-		if (event.key === "ArrowDown" || (event.code === "Tab" && !event.shiftKey)) {
+
+		function nextEntry() {
 			event.preventDefault();
 			if (selectedIndex === -1) {
 				selectedIndex = 0;
@@ -98,7 +99,8 @@
 				selectedIndex = (selectedIndex + 1) % commands.length;
 			}
 		}
-		if (event.key === "ArrowUp" || (event.code === "Tab" && event.shiftKey)) {
+
+		function prevEntry() {
 			event.preventDefault();
 			if (selectedIndex === -1) {
 				selectedIndex = commands.length - 1;
@@ -106,17 +108,36 @@
 				selectedIndex = (selectedIndex - 1 + commands.length) % commands.length;
 			}
 		}
-		if (event.key === "Enter") {
-			event.preventDefault();
-			if (selectedIndex >= 0 && selectedIndex < commands.length) {
-				commands[selectedIndex].action();
-			}
+
+		switch (event.key) {
+			case "ArrowDown":
+				nextEntry();
+				break;
+
+			case "Tab":
+				nextEntry();
+				break;
+
+			case "ArrowUp":
+				prevEntry();
+				break;
+
+			case "Enter":
+				if (selectedIndex >= 0 && selectedIndex < commands.length) {
+					commands[selectedIndex].action();
+				}
+				break;
+
+			case "Escape":
+				commandPaletteStore.toggleVisibility();
+				break;
 		}
-		if (event.key === "Escape") {
-			event.preventDefault();
-			commandPaletteStore.toggleVisibility();
+
+		if (event.code === "Tab" && event.shiftKey) {
+			prevEntry();
 		}
 	}
+
 	$effect(() => {
 		if (selectedIndex !== -1)
 			document
@@ -137,17 +158,12 @@
 		}
 	}
 
-	// Reset selected index when command palette is closed
-	$effect(() => {
-		if (!commandPaletteStore.isVisible()) {
-			selectedIndex = -1;
-			searchText = "";
-		}
-	});
-
 	$effect(() => {
 		if (commandPaletteStore.isVisible()) {
 			(document.querySelector("#commandPaletteTextArea") as HTMLTextAreaElement).focus();
+		} else {
+			selectedIndex = -1;
+			searchText = "";
 		}
 	});
 </script>

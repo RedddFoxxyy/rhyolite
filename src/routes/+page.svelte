@@ -6,15 +6,15 @@
 	import TitleBar from "$lib/components/titlebar.svelte";
 	import DocumentService from "$lib/tauri-cmd/document";
 	import Sidebar from "$lib/components/sidebar.svelte";
-	import { themes_store } from "$lib/stores/themes.svelte";
+	import { themesStore } from "$lib/stores/themes.svelte";
 
 	onMount(() => {
 		// TabsStore.initTabsStore();
 		DocumentService.initFrontendState();
 		if (document.readyState === "complete") {
-			themes_store.initThemesStore();
+			themesStore.initThemesStore();
 		} else {
-			window.addEventListener("load", themes_store.initThemesStore);
+			window.addEventListener("load", themesStore.initThemesStore);
 		}
 	});
 </script>

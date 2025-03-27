@@ -41,11 +41,12 @@
 	let editor = $state() as Readable<Editor>;
 	const lowlight = createLowlight(all);
 
-	interface ContentEditorProps {
+	type ContentEditorProps = {
 		content: any;
 		onchange: (content: Editor) => void;
 		class: string;
-	}
+	};
+
 	const { content, onchange, class: classProp = "" }: ContentEditorProps = $props();
 
 	const setupEditor = () => {

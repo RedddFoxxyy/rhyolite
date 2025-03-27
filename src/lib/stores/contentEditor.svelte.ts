@@ -1,13 +1,13 @@
 class ContentEditorStore {
-	#flagToolbarVisibility: boolean = $state(false);
+	#isVisible: boolean = $state(false);
 
 	isVisible(): boolean {
-		return this.#flagToolbarVisibility;
+		return this.#isVisible;
 	}
 
 	toggleToolbarVisibility(): boolean {
-		this.#flagToolbarVisibility = !this.#flagToolbarVisibility;
-		return this.#flagToolbarVisibility;
+		this.#isVisible = !this.#isVisible;
+		return this.#isVisible;
 	}
 }
 
