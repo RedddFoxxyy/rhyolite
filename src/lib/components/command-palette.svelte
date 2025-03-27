@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { commandPaletteStore } from "$lib/stores/commandPalette.svelte";
-	import DocumentService from "$lib/services/document.service";
-	import TabService from "$lib/services/tab.service";
+	import DocumentService from "$lib/tauri-cmd/document";
+	import TabService from "$lib/tauri-cmd/tab";
 	import { onMount } from "svelte";
 	import { listen } from "@tauri-apps/api/event";
 	import type { Tab } from "$lib/types/tab";
@@ -75,7 +75,7 @@
 				TabService.gotoLastTab();
 				commandPaletteStore.toggleVisibility();
 			}
-		},
+		}
 		// TODO: Add this command after toolbar has been implemented.
 		// {
 		// 	name: "Toggle ToolBar",

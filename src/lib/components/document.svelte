@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { Editor } from "svelte-tiptap";
-	import DocumentService from "$lib/services/document.service";
+	import documentCmds from "$lib/tauri-cmd/document";
 	import type { Tab } from "$lib/types/tab";
 	import ContentEditor from "./content-editor/content-editor.svelte";
 	import { listen } from "@tauri-apps/api/event";
@@ -27,7 +27,7 @@
 		const target = event.target as HTMLTextAreaElement;
 		documentTitle = target.value;
 		if (currentTab) {
-			DocumentService.updateTabTitle(currentTab.id, target.value);
+			documentCmds.updateTabTitle(currentTab.id, target.value);
 			saveDocument();
 		}
 	};
@@ -49,11 +49,7 @@
 		// Set a new timeout to trigger `saveAction` after 0.2 seconds
 		saveTimeout = setTimeout(() => {
 			if (currentTab) {
-				DocumentService.saveDocument(
-					currentTab.id,
-					documentTitle,
-					documentContent
-				);
+				documentCmds.saveDocument(currentTab.id, documentTitle, documentContent);
 			}
 		}, delaySave ?? 200);
 	};

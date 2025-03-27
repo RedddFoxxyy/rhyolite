@@ -3,7 +3,7 @@
 	import { onMount } from "svelte";
 	import type { RecentFileInfo } from "$lib/types/document";
 	import { listen } from "@tauri-apps/api/event";
-	import DocumentService from "$lib/services/document.service";
+	import documentCmds from "$lib/tauri-cmd/document";
 
 	let files: RecentFileInfo[] = $state([]);
 	let selectedIndex: number = $state(-1);
@@ -21,7 +21,7 @@
 
 	function loadFiles() {
 		try {
-			DocumentService.getRecentlyOpenedFiles();
+			documentCmds.getRecentlyOpenedFiles();
 		} catch (error) {
 			console.error("Failed to load files:", error);
 		}
@@ -29,7 +29,7 @@
 
 	function openFile(file: RecentFileInfo) {
 		try {
-			DocumentService.loadDocument(file);
+			documentCmds.loadDocument(file);
 			toggleFilesMenu();
 		} catch (error) {
 			console.error("Failed to open file:", error);

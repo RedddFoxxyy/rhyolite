@@ -6,8 +6,8 @@
 	import { listen } from "@tauri-apps/api/event";
 	import { getCurrentWindow } from "@tauri-apps/api/window";
 	import { onMount } from "svelte";
-	import { addNewDocumentTab } from "$lib/services/document.service";
-	import tabService from "$lib/services/tab.service";
+	import { addNewDocumentTab } from "$lib/tauri-cmd/document";
+	import tabCmds from "$lib/tauri-cmd/tab";
 	import { type Tab } from "$lib/types/tab";
 	import { platform } from "@tauri-apps/plugin-os";
 
@@ -19,7 +19,7 @@
 	const appWindow = getCurrentWindow();
 
 	const onTabClose = async (tabId: string) => {
-		tabService.closeTab(tabId);
+		tabCmds.closeTab(tabId);
 	};
 
 	appWindow.listen("tauri://resize", async () => {
@@ -70,7 +70,7 @@
 	});
 
 	const onOpenTab = (tab: Tab) => {
-		tabService.switchTab(tab);
+		tabCmds.switchTab(tab);
 	};
 </script>
 

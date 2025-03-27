@@ -1,6 +1,6 @@
 <script lang="ts">
-	import DocumentService from "$lib/services/document.service";
-	import TabService from "$lib/services/tab.service";
+	import documentCmds from "$lib/tauri-cmd/document";
+	import tabCmds from "$lib/tauri-cmd/tab";
 	import { commandPaletteStore } from "$lib/stores/commandPalette.svelte";
 	import { contentEditorStore } from "$lib/stores/contentEditor.svelte";
 	import { onMount } from "svelte";
@@ -31,19 +31,19 @@
 		if (event.ctrlKey && event.key === "d") {
 			event.preventDefault();
 			if (currentTabId) {
-				DocumentService.deleteDocumentTab(currentTabId);
+				documentCmds.deleteDocumentTab(currentTabId);
 			}
 		}
 		if (event.ctrlKey && event.key === "c") {
 			event.preventDefault();
 			// const currentTabId = TabsStore.getCurrentTabState()?.id;
 			if (currentTabId) {
-				TabService.closeTab(currentTabId);
+				tabCmds.closeTab(currentTabId);
 			}
 		}
 		if (event.ctrlKey && event.key === "n") {
 			event.preventDefault();
-			DocumentService.addNewDocumentTab();
+			documentCmds.addNewDocumentTab();
 		}
 		if (event.ctrlKey && event.key === "t") {
 			event.preventDefault();
@@ -51,19 +51,19 @@
 		}
 		if ((event.ctrlKey && event.key === "Tab") || (event.ctrlKey && event.key === "PageDown")) {
 			event.preventDefault();
-			TabService.cycleTabs();
+			tabCmds.cycleTabs();
 		}
 		if (event.ctrlKey && event.altKey && event.key === "c") {
 			event.preventDefault();
-			TabService.closeTab();
+			tabCmds.closeTab();
 		}
 		if (event.ctrlKey && event.key === "1") {
 			event.preventDefault();
-			TabService.gotoTab1();
+			tabCmds.gotoTab1();
 		}
 		if (event.ctrlKey && event.key === "9") {
 			event.preventDefault();
-			TabService.gotoLastTab();
+			tabCmds.gotoLastTab();
 		}
 		if (event.ctrlKey && event.key === "p") {
 			event.preventDefault();

@@ -5,7 +5,7 @@
 	import Document from "$lib/components/document.svelte";
 	import TitleBar from "$lib/components/titlebar.svelte";
 	import HomeHotkeys from "$lib/components/home-hotkeys.svelte";
-	import DocumentService from "$lib/services/document.service";
+	import DocumentService from "$lib/tauri-cmd/document";
 	import Sidebar from "$lib/components/sidebar.svelte";
 	import { themes_store } from "$lib/stores/themes.svelte";
 

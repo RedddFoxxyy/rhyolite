@@ -3,11 +3,11 @@ import type { Tab } from "$lib/types/tab";
 import { invoke } from "@tauri-apps/api/core";
 
 // NOTE: This functioni will be soon changed or depreciated.
-const getAllDocumentTabs = (): void => {
+function getAllDocumentTabs() {
 	invoke("exec_command", { cmd: "update_states" });
-};
+}
 
-const getDocumentContent = (Tab: Tab): void => {
+function getDocumentContent(Tab: Tab) {
 	invoke("exec_command", {
 		cmd: "get_document_content",
 		payload: JSON.stringify({
@@ -15,26 +15,26 @@ const getDocumentContent = (Tab: Tab): void => {
 			title: Tab.title
 		})
 	});
-};
+}
 
-export const addNewDocumentTab = (): void => {
+export function addNewDocumentTab() {
 	try {
 		invoke("exec_command", { cmd: "new_tab" });
 	} catch (error) {
 		console.error("Failed to create new document:", error);
 	}
-};
+}
 
-const deleteDocumentTab = (id: string): void => {
+function deleteDocumentTab(id: string) {
 	invoke("exec_command", {
 		cmd: "delete_document",
 		payload: JSON.stringify(id)
 	});
-};
+}
 
-const initFrontendState = (): void => {
+function initFrontendState() {
 	invoke("exec_command", { cmd: "init_frontend_state" });
-};
+}
 
 function updateTabTitle(id: string, title: string) {
 	invoke("exec_command", {
@@ -54,12 +54,12 @@ function saveDocument(documentId: string, documentTitle: string, documentContent
 	});
 }
 
-export const loadDocument = (file: RecentFileInfo): void => {
+export function loadDocument(file: RecentFileInfo) {
 	invoke("exec_command", {
 		cmd: "load_tab",
 		payload: JSON.stringify({ id: file.id, title: file.title })
 	});
-};
+}
 
 export function getRecentlyOpenedFiles() {
 	invoke("exec_command", { cmd: "get_recent_files_metadata" });
