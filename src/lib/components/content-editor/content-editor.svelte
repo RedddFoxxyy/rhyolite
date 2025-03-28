@@ -29,7 +29,7 @@
 	import { ChevronDownOutline, ChevronUpOutline } from "flowbite-svelte-icons";
 	import { all, createLowlight } from "lowlight";
 	import { contentEditorStore } from "$lib/stores/contentEditor.svelte";
-	import documentservice from "$lib/services/document.service";
+	import documentCmds from "$lib/tauri-cmd/document";
 	// import ToolbarButton from "./components/toolbar-button.svelte";
 	import {
 		CustomHeader,
@@ -41,11 +41,12 @@
 	let editor = $state() as Readable<Editor>;
 	const lowlight = createLowlight(all);
 
-	interface ContentEditorProps {
+	type ContentEditorProps = {
 		content: any;
 		onchange: (content: Editor) => void;
 		class: string;
-	}
+	};
+
 	const { content, onchange, class: classProp = "" }: ContentEditorProps = $props();
 
 	const setupEditor = () => {

@@ -3,18 +3,21 @@ import { invoke } from "@tauri-apps/api/core";
 import { settingsMenuStore } from "$lib/stores/settingsMenu.svelte";
 
 class ThemesStore {
-	themes_list: ThemeListItem[] = $state([]);
-	#current_theme: Theme | null = $state(null);
-	#original_theme: Theme | null = $state(null);
-	#original_theme_name: string | null = $state(null);
+	themesList: ThemeListItem[] = $state([]);
 
-	load_themes() {
+	#currentTheme: Theme | null = $state(null);
+	// originalTheme cannot be made private through the # prefix because otherwise javascript
+	// will emit an error since the value is accessed through the rust side
+	private originalTheme: Theme | null = $state(null);
+	#originalThemeName: string | null = $state(null);
+
+	loadThemes() {
 		invoke("exec_command", { cmd: "get_loaded_themes" });
 	}
 
-	save_original_theme() {
-		if (this.#current_theme) {
-			this.#original_theme = this.#current_theme;
+	saveOriginalTheme() {
+		if (this.#currentTheme) {
+			this.originalTheme = this.#currentTheme;
 		}
 	}
 
@@ -22,13 +25,13 @@ class ThemesStore {
 		invoke("exec_command", { cmd: "get_current_theme" });
 	}
 
-	set_current_theme(theme: Theme) {
-		this.#current_theme = theme;
+	setCurrentTheme(theme: Theme) {
+		this.#currentTheme = theme;
 		applyTheme(theme);
 	}
 
-	update_themes_list(themes_list: ThemeListItem[]) {
-		this.themes_list = themes_list;
+	updateThemesList(themesList: ThemeListItem[]) {
+		this.themesList = themesList;
 	}
 
 	changeTheme(theme: string) {
@@ -36,12 +39,12 @@ class ThemesStore {
 		//   cmd: "set_theme",
 		//   payload: JSON.stringify(theme),
 		// });
-		this.#original_theme = this.#current_theme;
+		this.originalTheme = this.#currentTheme;
 		settingsMenuStore.toggleVisibility();
 	}
 
 	previewTheme(theme: string) {
-		this.#original_theme = this.#current_theme;
+		this.originalTheme = this.#currentTheme;
 		invoke("exec_command", {
 			cmd: "set_theme",
 			payload: JSON.stringify(theme)
@@ -53,20 +56,20 @@ class ThemesStore {
 	// reset theme that can be invoked on backend to reset the
 	// theme on backend too.
 	resetTheme() {
-		if (this.#original_theme) {
-			this.#current_theme = this.#original_theme;
-			this.set_current_theme(this.#original_theme);
+		if (this.originalTheme) {
+			this.#currentTheme = this.originalTheme;
+			this.setCurrentTheme(this.originalTheme);
 			invoke("exec_command", {
 				cmd: "reset_theme",
-				payload: JSON.stringify(this.#original_theme)
+				payload: JSON.stringify(this.originalTheme)
 			});
 		}
 	}
 }
 
-export const themes_store = new ThemesStore();
+export const themesStore = new ThemesStore();
 
-const colorToRgb = (color: string) => {
+function colorToRgb(color: string) {
 	let match = /^#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})$/i.exec(color);
 	if (match) {
 		return match.slice(1).map((hex) => parseInt(hex, 16));
@@ -80,13 +83,13 @@ const colorToRgb = (color: string) => {
 		return match.slice(1).map((num) => parseInt(num));
 	}
 	throw new Error(`Unsupported color: "${color}"`);
-};
+}
 
-const applyTheme = (theme: Theme) => {
+function applyTheme(theme: Theme) {
 	const root: HTMLHtmlElement = document.querySelector(":root")!;
 	Object.entries(theme.colors).forEach(([name, value]) => {
 		root.style.setProperty(`--color-${name}`, colorToRgb(value).join(" "));
 	});
 	root.style.setProperty(`--theme-name`, theme.info.name);
 	root.style.setProperty(`--theme-colorscheme`, theme.info.colorscheme);
-};
+}

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { Editor } from "svelte-tiptap";
-	import DocumentService from "$lib/services/document.service";
+	import documentCmds from "$lib/tauri-cmd/document";
 	import type { Tab } from "$lib/types/tab";
 	import ContentEditor from "./content-editor/content-editor.svelte";
 	import { listen } from "@tauri-apps/api/event";
@@ -12,6 +12,7 @@
 	let wordCount: number = $state(0);
 	let charCount: number = $state(0);
 	let initialized: boolean = $state(false);
+
 	onMount(() => {
 		initialized = true;
 		const currentTablisten = listen<Tab>("Current_Tab", (event) => {
@@ -23,40 +24,37 @@
 		};
 	});
 
-	const handleTitleChange = (event: Event) => {
+	function handleTitleChange(event: Event) {
 		const target = event.target as HTMLTextAreaElement;
 		documentTitle = target.value;
 		if (currentTab) {
-			DocumentService.updateTabTitle(currentTab.id, target.value);
+			documentCmds.updateTabTitle(currentTab.id, target.value);
 			saveDocument();
 		}
-	};
+	}
 
 	let saveTimeout: number | undefined;
 	const delaySave = 200;
-	const handleContentChange = (editor: Editor) => {
+
+	function handleContentChange(editor: Editor) {
 		documentContent = editor.getHTML();
 		// console.log(documentContent) // Uncomment for debugging.
 		// Update word and character counts
 		wordCount = editor.storage.characterCount.words();
 		charCount = editor.storage.characterCount.characters();
 		saveDocument();
-	};
+	}
 
-	const saveDocument = async () => {
+	async function saveDocument() {
 		// Clear the previous timeout
 		if (saveTimeout) clearTimeout(saveTimeout);
 		// Set a new timeout to trigger `saveAction` after 0.2 seconds
 		saveTimeout = setTimeout(() => {
 			if (currentTab) {
-				DocumentService.saveDocument(
-					currentTab.id,
-					documentTitle,
-					documentContent
-				);
+				documentCmds.saveDocument(currentTab.id, documentTitle, documentContent);
 			}
 		}, delaySave ?? 200);
-	};
+	}
 </script>
 
 <!-- TODO: Decide whether not open tabs should be hidden or removed from DOM -->
@@ -69,6 +67,7 @@
 			oninput={handleTitleChange}
 		></textarea>
 	</div>
+
 	{#if initialized}
 		<ContentEditor
 			class="overflow-auto mb-20 p-2 min-h-96 w-[80%] min-w-[400px] mx-auto"
@@ -76,6 +75,7 @@
 			onchange={handleContentChange}
 		/>
 	{/if}
+
 	<div
 		class="fixed flex flex-row gap-[20px] text-nowrap self-end bottom-[10px] right-[10px] bg-base px-[10px] py-[5px] rounded-[18px] z-10 text-text text-[0.85em] select-none"
 	>

@@ -1,13 +1,13 @@
 class RecentFilesStore {
-	#flagFilesMenuVisibility: boolean = $state(false);
+	#isVisible: boolean = $state(false);
 
 	isVisible(): boolean {
-		return this.#flagFilesMenuVisibility;
+		return this.#isVisible;
 	}
 
 	toggleVisibility(): boolean {
-		this.#flagFilesMenuVisibility = !this.#flagFilesMenuVisibility;
-		return this.#flagFilesMenuVisibility;
+		this.#isVisible = !this.#isVisible;
+		return this.#isVisible;
 	}
 }
 

@@ -4,18 +4,17 @@
 	import RecentFiles from "$lib/components/recentfilesmenu.svelte";
 	import Document from "$lib/components/document.svelte";
 	import TitleBar from "$lib/components/titlebar.svelte";
-	import HomeHotkeys from "$lib/components/home-hotkeys.svelte";
-	import DocumentService from "$lib/services/document.service";
+	import DocumentService from "$lib/tauri-cmd/document";
 	import Sidebar from "$lib/components/sidebar.svelte";
-	import { themes_store } from "$lib/stores/themes.svelte";
+	import { themesStore } from "$lib/stores/themes.svelte";
 
 	onMount(() => {
 		// TabsStore.initTabsStore();
 		DocumentService.initFrontendState();
 		if (document.readyState === "complete") {
-			themes_store.initThemesStore();
+			themesStore.initThemesStore();
 		} else {
-			window.addEventListener("load", themes_store.initThemesStore);
+			window.addEventListener("load", themesStore.initThemesStore);
 		}
 	});
 </script>
@@ -33,7 +32,6 @@
 			<Document />
 		</div>
 	</div>
-	<HomeHotkeys />
 	<CommandPalette />
 	<RecentFiles />
 </main>

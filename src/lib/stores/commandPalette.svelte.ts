@@ -1,13 +1,13 @@
 class CommandPaletteStore {
-	#flagCommandPaletteVisibility: boolean = $state(false);
+	#isVisible: boolean = $state(false);
 
 	isVisible(): boolean {
-		return this.#flagCommandPaletteVisibility;
+		return this.#isVisible;
 	}
 
 	toggleVisibility(): boolean {
-		this.#flagCommandPaletteVisibility = !this.#flagCommandPaletteVisibility;
-		return this.#flagCommandPaletteVisibility;
+		this.#isVisible = !this.#isVisible;
+		return this.#isVisible;
 	}
 }
 

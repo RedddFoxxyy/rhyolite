@@ -9,7 +9,7 @@ export interface ThemeInfo {
 	colorscheme: ColorScheme;
 }
 
-export interface Colors {
+export type Colors = {
 	text: string;
 	subtext2: string;
 	subtext1: string;
@@ -26,12 +26,12 @@ export interface Colors {
 	accent: string;
 	highlight: string;
 	border: string;
-}
+};
 
-export interface Theme {
+export type Theme = {
 	info: ThemeInfo;
 	colors: Colors;
-}
+};
 
 export interface ThemeListItem {
 	filename: string; // File stem (e.g., "dark")

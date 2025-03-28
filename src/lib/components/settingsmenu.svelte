@@ -2,7 +2,7 @@
 	import { ChevronRight, SlidersHorizontal, Palette, Keyboard, Info } from "lucide-svelte";
 	import { onDestroy } from "svelte";
 	import { settingsMenuStore } from "$lib/stores/settingsMenu.svelte";
-	import { themes_store } from "$lib/stores/themes.svelte";
+	import { themesStore as themesStore } from "$lib/stores/themes.svelte";
 	import type { Theme, ThemeListItem } from "$lib/types/theme";
 	import { listen } from "@tauri-apps/api/event";
 	import { onMount } from "svelte";
@@ -12,11 +12,11 @@
 
 	onMount(() => {
 		const currentThemelisten = listen<Theme>("update_current_theme", (event) => {
-			themes_store.set_current_theme(event.payload);
+			themesStore.setCurrentTheme(event.payload);
 			// originalTheme = event.payload;
 		});
 		const themeListlisten = listen<ThemeListItem[]>("themes_list", (event) => {
-			themes_store.update_themes_list(event.payload);
+			themesStore.updateThemesList(event.payload);
 		});
 		return () => {
 			currentThemelisten.then((unsub) => unsub());
@@ -53,7 +53,7 @@
 		}
 	];
 
-	const handleCloseEvent = (e: MouseEvent | KeyboardEvent) => {
+	function handleCloseEvent(e: MouseEvent | KeyboardEvent) {
 		if (
 			(e instanceof MouseEvent && !self?.contains(e.target as Node)) ||
 			(e instanceof KeyboardEvent && e.key === "Escape")
@@ -61,25 +61,25 @@
 			e.stopPropagation();
 			settingsMenuStore.toggleVisibility();
 		}
-	};
+	}
 
 	$effect(() => {
 		if (settingsMenuStore.isVisible()) {
 			document.addEventListener("click", handleCloseEvent);
 			document.addEventListener("keydown", handleCloseEvent);
-			themes_store.load_themes();
+			themesStore.loadThemes();
 		} else {
 			document.removeEventListener("click", handleCloseEvent);
 			document.removeEventListener("keydown", handleCloseEvent);
 			showThemeOptions = false;
-			themes_store.resetTheme(); // Reset to original theme when closing without selecting
+			themesStore.resetTheme(); // Reset to original theme when closing without selecting
 		}
 	});
 
 	onDestroy(() => {
 		document.removeEventListener("click", handleCloseEvent);
 		document.removeEventListener("keydown", handleCloseEvent);
-		themes_store.resetTheme(); // Ensure theme is reset if component is destroyed while previewing
+		themesStore.resetTheme(); // Ensure theme is reset if component is destroyed while previewing
 	});
 </script>
 
@@ -115,15 +115,15 @@
 				tabindex="0"
 				class="absolute left-full rounded-lg p-1 bottom-[50%] mt-8 ml-1 w-max bg-base shadow-xl"
 				style="width: {layout.dimensions.width}px;"
-				onmouseleave={themes_store.resetTheme}
+				onmouseleave={themesStore.resetTheme}
 			>
-				{#each themes_store.themes_list as theme_list_item}
+				{#each themesStore.themesList as themeListItem}
 					<button
 						class="w-full p-1 rounded-lg text-left text-text bg-transparent cursor-pointer transition-all duration-300 text-sm hover:bg-surface1 focus:bg-surface1"
-						onmouseenter={() => themes_store.previewTheme(theme_list_item.filename)}
-						onclick={() => themes_store.changeTheme(theme_list_item.filename)}
+						onmouseenter={() => themesStore.previewTheme(themeListItem.filename)}
+						onclick={() => themesStore.changeTheme(themeListItem.filename)}
 					>
-						{theme_list_item.name}
+						{themeListItem.name}
 					</button>
 				{/each}
 			</div>
