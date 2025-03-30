@@ -13,7 +13,6 @@ impl IOCommands {
 		let temp_app = app.clone();
 		let state = &temp_app.state::<AppState>();
 
-		update_tabs_state(app.clone()).await;
 		let tab_switcher = state.tab_switcher.read().await;
 		let current_tab_id = tab_switcher.current_tab_id.clone();
 		if current_tab_id.is_none() {
@@ -21,6 +20,7 @@ impl IOCommands {
 			return;
 		}
 		let current_tab_data = tab_switcher.tabs.get(&current_tab_id.unwrap()).cloned();
-		send_document_content(current_tab_data, app);
+		update_tabs_state(app.clone()).await;
+		send_document_content(current_tab_data, app).await;
 	}
 }

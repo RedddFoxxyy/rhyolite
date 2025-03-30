@@ -1,13 +1,13 @@
 use crate::{
 	app_state::{
-		AppState, AppStateInner, DEFAULT_NOTE_TITLE, FileInfo, MarkdownFileData, TROVE_DIR,
+		AppState, AppStateInner, FileData, MarkdownFileData, TabDocument, DEFAULT_NOTE_TITLE, TROVE_DIR
 	},
 	editor::{
-		io::{IOCommands, get_trove_dir},
+		io::{get_trove_dir, IOCommands},
 		markdown_handler,
 	},
 };
-use std::fs;
+use std::{fs, sync::Arc};
 use tauri::{AppHandle, Manager, State};
 
 impl IOCommands {
@@ -35,25 +35,8 @@ pub async fn save_document_helper(
 	let safe_filename = sanitize_filename::sanitize(format!("{}.md", document_data.title));
 	let file_path = trove_dir.join(&safe_filename);
 
-	{
-		let mut workspace = state.workspace.write().await;
 
-		if let Some(doc) = workspace
-			.recent_files
-			.iter_mut()
-			.find(|doc| doc.id == document_data.id)
-		{
-			doc.title = document_data.title.clone();
-		} else {
-			workspace.recent_files.push(FileInfo {
-				id: document_data.id.clone(),
-				title: document_data.title.clone(),
-				path: file_path.clone(),
-			});
-		}
-	}
-
-	// Get the old title in a separate scope
+	// Get the old title (Assuming the title of the document has been changed.)
 	let old_title = {
 		let tab_switcher = state.tab_switcher.write().await;
 
@@ -63,14 +46,45 @@ pub async fn save_document_helper(
 			.map(|tab| tab.title.clone())
 			.unwrap_or_else(|| String::from(DEFAULT_NOTE_TITLE))
 	};
+	
+	let mut workspace = state.workspace.write().await;
+	
+	// Update the recent files.
+	if let Some(doc) = workspace
+		.recent_files
+		.iter_mut()
+		.find(|doc| doc.id == document_data.id)
+	{
+		doc.title = document_data.title.clone();
+	} else {
+		workspace.recent_files.push(FileData {
+			id: document_data.id.clone(),
+			title: document_data.title.clone(),
+			path: file_path.clone(),
+		});
+	}
+	
+	// Create the new TabDocument( tab contents ), which will be replaced by old TabDocument.
+	let new_doc = Arc::new(TabDocument {
+		title: document_data.title,
+		contents: document_data.content
+	});
+	workspace.documents.insert(document_data.id, new_doc.clone());
+	
+	drop(workspace);
 
+	// Get the file path to check if there was a change in title or not.
 	let old_path = trove_dir.join(sanitize_filename::sanitize(format!("{}.md", old_title)));
 
 	// if the title has changed, delete the old file
 	if old_path != file_path && old_path.exists() {
-		let _ = fs::remove_file(old_path).map_err(|e| format!("Failed to delete old file: {}", e));
+		let delete_file_error = fs::remove_file(old_path).map_err(|e| format!("Failed to delete old file: {}", e));
+		if delete_file_error.is_err() {
+			log::error!("{}", delete_file_error.unwrap_err());
+		}
 	}
 
+	// Now write the new file.
 	let _ = if let Err(e) = fs::write(&file_path, markdown_content) {
 		Err(format!("Failed to write file: {}", e))
 	} else {

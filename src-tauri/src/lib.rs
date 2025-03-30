@@ -8,7 +8,7 @@
 
 use crate::editor::io;
 use crate::editor::tabs;
-use app_state::{AppStateInner, FileInfo};
+use app_state::{AppStateInner, FileData};
 use tauri::{Manager, WindowEvent};
 
 mod app_state;
@@ -34,7 +34,7 @@ pub fn run() {
 			{
 				window.set_decorations(false)?;
 			}
-			app.manage(AppStateInner::load().expect("Failed to load config"));
+			app.manage(AppStateInner::init_appstate().expect("Failed to load config"));
 
 			tauri::async_runtime::block_on(async {
 				commands::load_default_commands(app.app_handle()).await;

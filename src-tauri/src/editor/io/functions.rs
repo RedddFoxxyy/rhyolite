@@ -9,7 +9,12 @@ use uuid::Uuid;
 use dirs;
 
 use crate::{
-	app_state::{AppState, CommandRegistrar, CommandRegistry, MarkdownFileData, Tab, UserData, APP_DATA_DIR, TROVE_DIR, USER_DATA_DIR}, editor::io::commands::get_document_content::get_document_content_helper, FileInfo
+	FileData,
+	app_state::{
+		APP_DATA_DIR, AppState, CommandRegistrar, CommandRegistry, MarkdownFileData, TROVE_DIR,
+		Tab, USER_DATA_DIR, UserData,
+	},
+	editor::io::commands::get_document_content::fetch_document_from_disk,
 };
 
 pub struct IOCommands;
@@ -143,7 +148,7 @@ pub async fn load_last_open_tabs(
 
 						// Process tabs and load documents
 						for tab in user_data.active_tabs {
-							match get_document_content_helper(tab.clone()) {
+							match fetch_document_from_disk(tab.clone()) {
 								Some(doc) => {
 									last_open_files.push(doc);
 
@@ -178,7 +183,7 @@ pub async fn load_last_open_tabs(
 					.unwrap_or_default();
 
 				let id = Uuid::new_v4().to_string();
-				get_document_content_helper(Tab { id, title })
+				fetch_document_from_disk(Tab { id, title })
 			})
 			.collect(),
 		Err(e) => return Err(format!("Failed to read directory: {}", e)),
@@ -191,7 +196,7 @@ pub async fn load_last_open_tabs(
 #[tauri::command]
 pub async fn get_recent_files_metadata(
 	state: State<'_, AppState>,
-) -> Result<Vec<FileInfo>, String> {
+) -> Result<Vec<FileData>, String> {
 	if let Err(e) = save_user_data(&state).await {
 		eprintln!("Warning: Failed to save user data: {}", e);
 	}

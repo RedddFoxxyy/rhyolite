@@ -26,7 +26,7 @@ impl TabCommands {
 				}
 
 				let current_tab_data = tab_switcher.tabs.get(tab_id).cloned();
-				send_document_content(current_tab_data, app.clone());
+				send_document_content(current_tab_data, app.clone()).await;
 			}
 		}
 		update_tabs_state(app).await;

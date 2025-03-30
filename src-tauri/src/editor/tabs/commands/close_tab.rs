@@ -30,6 +30,7 @@ impl TabCommands {
 		let state = temp_app.state::<AppState>();
 
 		let mut tab_switcher = state.tab_switcher.write().await;
+		let mut workspace = state.workspace.write().await;
 		let tabs = &tab_switcher.tabs;
 
 		// Do not close the only remaining tab. This will be removed in future..
@@ -54,10 +55,14 @@ impl TabCommands {
 
 		tab_switcher.current_tab_id = Some(next_tab.id.clone());
 
+		// Remove the file in closing_tab from the documents cache.
+		workspace.documents.retain(|id, _| id != tab_id);
+
 		drop(tab_switcher); // drop the write lock to avoid deadlock
+		drop(workspace); // drop the write lock to avoid deadlock
 
 		// Call event emitter after releasing the lock
 		update_tabs_state(app.clone()).await;
-		send_document_content(Some(next_tab), app);
+		send_document_content(Some(next_tab), app).await;
 	}
 }

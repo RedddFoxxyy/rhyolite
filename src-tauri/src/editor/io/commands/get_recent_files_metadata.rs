@@ -1,6 +1,6 @@
 use crate::{
-	app_state::{AppState, UserData, USER_DATA_DIR},
-	editor::io::{get_documents_dir, save_user_data, IOCommands},
+	app_state::{AppState, USER_DATA_DIR, UserData},
+	editor::io::{IOCommands, get_documents_dir, save_user_data},
 };
 use std::fs;
 use tauri::{AppHandle, Emitter, Manager};

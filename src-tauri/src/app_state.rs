@@ -3,6 +3,7 @@
 //!
 //! All the required global statics are declared in this module.
 
+use std::sync::Arc;
 use std::{
 	collections::HashMap,
 	fs,
@@ -18,6 +19,7 @@ use tauri::AppHandle;
 use tauri::async_runtime::{Mutex, RwLock};
 use uuid::Uuid;
 
+use crate::editor::io::commands::get_document_content::fetch_document_from_disk;
 use crate::editor::{
 	io::{get_documents_dir, get_trove_dir},
 	settings::themes::Theme,
@@ -49,7 +51,7 @@ pub const DEFAULT_NOTE_TITLE: &str = "Untitled";
 
 /// Not to be confused with Document struct, this struct denotes a markdown file.
 /// It stores the id( a unique document identifier ), title and path of the markdown file.
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MarkdownFileData {
 	pub id: String,
 	pub title: String,
@@ -58,22 +60,22 @@ pub struct MarkdownFileData {
 
 /// Denotes a tab in the editor.
 /// Has a unique identifier and a title(where title is the title of the Markdown File).
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Tab {
 	pub id: String,    // Unique identifier for the tab
 	pub title: String, // Title of the tab
 }
 
 ///Userdata Struct, used to store the userdata, like last open tab and all the open tabs.
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct UserData {
 	pub active_tabs: Vec<Tab>, // Stores the list of last active tabs before the editor was closed
 	pub last_open_tab: String, // Stores the tab id of the last open tab
-	pub recent_files: Vec<FileInfo>, // Stores the list of recently created files
+	pub recent_files: Vec<FileData>, // Stores the list of recently created files
 	pub current_theme: Theme,  // Stores the current theme color palette
 }
 
-#[derive(Default, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct TabManager {
 	pub tabs: IndexMap<String, Tab>,
 	pub current_tab_id: Option<String>,
@@ -112,13 +114,12 @@ pub trait CommandRegistrar {
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct TabDocument {
-	pub path: PathBuf,
 	pub title: String,
 	pub contents: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct FileInfo {
+pub struct FileData {
 	pub id: String,
 	pub title: String,
 	pub path: PathBuf,
@@ -127,9 +128,9 @@ pub struct FileInfo {
 #[allow(dead_code)]
 #[derive(Debug, Default)]
 pub struct FileManager {
-	pub documents: HashMap<String, TabDocument>, // Will be used to store open documents in the editor (tabid, tabdocument)
-	pub recent_files: Vec<FileInfo>,             // Stores the lift of recently created files
-	pub current_theme: Theme,                    // Stores the current theme color palette
+	pub documents: HashMap<String, Arc<TabDocument>>, // Will be used to store open documents in the editor (tabid, tabdocument)
+	pub recent_files: Vec<FileData>,             // Stores the list of recently created files
+	pub current_theme: Theme,                    // Stores the current theme
 }
 
 #[derive(Default)]
@@ -142,71 +143,80 @@ pub struct AppStateInner {
 }
 
 impl AppStateInner {
-	pub fn load() -> Result<Self, String> {
-		// Get the path of the userdata.json file
-		log::debug!("load_last_open_tabs init");
-		let appdata_dir = get_documents_dir().join("appdata");
-		let userdata_path = appdata_dir.join("userdata.json");
+	pub fn load_from_userdata(userdata_path: &PathBuf) -> Result<Self, String> {
+		// Load the userdata.json content as string.
+		let json_content = fs::read_to_string(userdata_path);
 
-		// Check if userdata.json exists
-		if userdata_path.exists() {
-			// Read and deserialize the UserData
-			match fs::read_to_string(&userdata_path) {
-				Ok(content) => {
-					// Deserialize the UserData using serde_json
-					match serde_json::from_str::<UserData>(&content) {
-						Ok(user_data) => {
-							let recent_files = user_data.recent_files.clone();
-
-							let current_tab_id = Some(user_data.last_open_tab.clone());
-
-							let current_theme = user_data.current_theme.clone();
-
-							let tabs = user_data
-								.active_tabs
-								.iter()
-								.map(|d| (d.id.to_string(), d.clone()))
-								.collect();
-
-							return Ok(Self {
-								tab_switcher: RwLock::new(TabManager {
-									current_tab_id,
-									tabs,
-								}),
-								workspace: FileManager {
-									documents: HashMap::new(),
-									recent_files,
-									current_theme,
-								}
-								.into(),
-								..Default::default()
-							});
-						}
-						Err(e) => {
-							// If deserialization fails, log the error and delete the file
-							log::warn!("Failed to deserialize userdata: {}. Deleting the file.", e);
-
-							// Attempt to delete the problematic userdata file
-							if let Err(delete_err) = fs::remove_file(&userdata_path) {
-								log::error!(
-									"Failed to delete corrupted userdata file: {}",
-									delete_err
-								);
-							}
-						}
-					}
-				}
-				Err(e) => {
-					// If reading the file fails, log the error
-					log::warn!(
-						"Failed to read userdata file: {}. Proceeding with default.",
-						e
-					);
-				}
-			}
+		// Handle the case if it fails to load userdata.json content as string.
+		if json_content.is_err() {
+			// If reading the file fails, log the error
+			let error = json_content.unwrap_err();
+			log::warn!(
+				"Failed to read userdata file: {}. Proceeding with default.",
+				error
+			);
+			return Err(format!("Failed to init app: {}", error));
 		}
 
-		// If userdata.json doesn't exist, load all markdown files from the trove directory
+		// Attempt to Deserialise the json to UserData
+		let maybe_user_data = serde_json::from_str::<UserData>(&json_content.unwrap());
+		// If deserialization fails, log the error and delete the file
+		if maybe_user_data.is_err() {
+			let error = maybe_user_data.unwrap_err();
+			log::warn!(
+				"Failed to deserialize userdata: {}. Deleting the file.",
+				error
+			);
+
+			// Attempt to delete the problematic userdata file
+			if let Err(delete_err) = fs::remove_file(userdata_path) {
+				log::error!("Failed to delete corrupted userdata file: {}", delete_err);
+			}
+			return Err(format!("Failed to init app: {}", error));
+		}
+
+		let user_data = maybe_user_data.unwrap();
+		let recent_files = user_data.recent_files.clone();
+		let current_tab_id = Some(user_data.last_open_tab.clone());
+		let current_theme = user_data.current_theme.clone();
+		let tabs: IndexMap<String, Tab> = user_data
+			.active_tabs
+			.iter()
+			.map(|d| (d.id.to_string(), d.clone()))
+			.collect();
+		
+			let mut tab_documents: HashMap<String, Arc<TabDocument>> = HashMap::new();
+			for tab in tabs.iter() {
+				let tab_data = tab.1.clone();
+				let maybe_tab_content = fetch_document_from_disk(tab_data);
+				
+				if maybe_tab_content.is_none() {
+					return Err("Failed to load the documents".to_string());
+				}
+				let tab_content = maybe_tab_content.unwrap();
+				let tab_document = Arc::new(TabDocument {
+					title: tab_content.title,
+					contents: tab_content.content
+				});
+				tab_documents.insert(tab.0.clone(), tab_document);
+			}
+			
+		Ok(Self {
+			tab_switcher: RwLock::new(TabManager {
+				current_tab_id,
+				tabs,
+			}),
+			workspace: FileManager {
+				documents: tab_documents,
+				recent_files,
+				current_theme,
+			}
+			.into(),
+			..Default::default()
+		})
+	}
+
+	pub fn load_from_default_trove() -> Result<Self, String> {
 		let trove_dir = get_trove_dir(TROVE_DIR);
 		let mut tabs = IndexMap::new();
 		let mut recent_files = Vec::new();
@@ -227,7 +237,7 @@ impl AppStateInner {
 							};
 
 							tabs.insert(id.clone(), tab);
-							recent_files.push(FileInfo {
+							recent_files.push(FileData {
 								id: id.clone(),
 								title,
 								path: entry.path(),
@@ -257,7 +267,7 @@ impl AppStateInner {
 			fs::write(&file_path, "").map_err(|e| format!("Failed to create empty file: {}", e))?;
 
 			tabs.insert(id.clone(), tab);
-			recent_files.push(FileInfo {
+			recent_files.push(FileData {
 				id: id.clone(),
 				title,
 				path: file_path,
@@ -278,6 +288,20 @@ impl AppStateInner {
 			.into(),
 			command_registry: Mutex::new(CommandRegistry::default()),
 		})
+	}
+
+	// Loads all the last session contents from userdata.json and initialises AppStateInner.
+	pub fn init_appstate() -> Result<Self, String> {
+		log::debug!("load_last_open_tabs init");
+		let appdata_dir = get_documents_dir().join("appdata");
+		let userdata_path = appdata_dir.join("userdata.json");
+
+		if !userdata_path.exists() {
+			// If userdata.json doesn't exist, load all markdown files from the trove directory
+			return Self::load_from_default_trove();
+		}
+
+		Self::load_from_userdata(&userdata_path)
 	}
 }
 

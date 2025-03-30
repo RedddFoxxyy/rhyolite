@@ -28,7 +28,7 @@ impl TabCommands {
 			drop(tab_switcher); // Drop the lock to avoid deadlock
 
 			update_tabs_state(app.clone()).await;
-			send_document_content(Some(tab_data), app);
+			send_document_content(Some(tab_data), app).await;
 		}
 	}
 }

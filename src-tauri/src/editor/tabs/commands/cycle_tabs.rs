@@ -49,7 +49,7 @@ impl TabCommands {
 		drop(tab_switcher); // Drop tab_switcher to avoid deadlock
 
 		update_tabs_state(app.clone()).await;
-		send_document_content(current_tab_data, app);
+		send_document_content(current_tab_data, app).await;
 	}
 
 	pub async fn goto_tab_1(app: AppHandle, _payload: Option<String>) {
@@ -75,7 +75,7 @@ impl TabCommands {
 		drop(tab_switcher); // Drop tab_switcher to avoid deadlock
 
 		update_tabs_state(app.clone()).await;
-		send_document_content(current_tab_data, app);
+		send_document_content(current_tab_data, app).await;
 	}
 
 	pub async fn goto_last_tab(app: AppHandle, _payload: Option<String>) {
@@ -109,6 +109,6 @@ impl TabCommands {
 		drop(tab_switcher); // Drop tab_switcher to avoid deadlock
 
 		update_tabs_state(app.clone()).await;
-		send_document_content(current_tab_data, app);
+		send_document_content(current_tab_data, app).await;
 	}
 }

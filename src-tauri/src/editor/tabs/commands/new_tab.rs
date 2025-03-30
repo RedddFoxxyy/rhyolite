@@ -46,12 +46,13 @@ pub async fn new_tab_helper(app: AppHandle) {
 	tab_switcher.tabs.insert(new_id.clone(), new_tab.clone());
 	tab_switcher.current_tab_id = Some(new_id.clone());
 
-	// Get the current tab data to update the new document content on frontend!
-	let current_tab_data = tab_switcher.tabs.get(&new_id).cloned();
-
 	drop(tab_switcher); // drop the write lock to avoid deadlock
 
-	let _ = save_user_data(state).await;
+	let save_user_data_error = save_user_data(state).await;
+	if let Err(error) = save_user_data_error {
+		log::error!("Failed to save user data: {}", error);
+	}
+	
 	let save_document_data = MarkdownFileData {
 		id: new_id,
 		title,
@@ -59,5 +60,5 @@ pub async fn new_tab_helper(app: AppHandle) {
 	};
 	save_document_helper(state, save_document_data).await;
 	update_tabs_state(app.clone()).await;
-	send_document_content(current_tab_data, app);
+	send_document_content(Some(new_tab), app).await;
 }
