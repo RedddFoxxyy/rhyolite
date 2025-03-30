@@ -129,8 +129,8 @@ pub struct FileInfo {
 #[derive(Debug, Default)]
 pub struct FileManager {
 	pub documents: HashMap<String, Arc<DocumentContent>>, // Used to store open documents in the editor (tabid, tabdocument)
-	pub recent_files: Vec<FileInfo>,             // Stores the list of recently created files
-	pub current_theme: Theme,                    // Stores the current theme
+	pub recent_files: Vec<FileInfo>,                      // Stores the list of recently created files
+	pub current_theme: Theme,                             // Stores the current theme
 }
 
 #[derive(Default)]
@@ -186,23 +186,23 @@ impl AppStateInner {
 			.iter()
 			.map(|d| (d.id.to_string(), d.clone()))
 			.collect();
-		
-			let mut tab_documents: HashMap<String, Arc<DocumentContent>> = HashMap::new();
-			for tab in tabs.iter() {
-				let tab_data = tab.1.clone();
-				let maybe_tab_content = fetch_document_from_disk(tab_data);
-				
-				if maybe_tab_content.is_none() {
-					return Err("Failed to load the documents".to_string());
-				}
-				let tab_content = maybe_tab_content.unwrap();
-				let tab_document = Arc::new(DocumentContent {
-					title: tab_content.title,
-					contents: tab_content.content
-				});
-				tab_documents.insert(tab.0.clone(), tab_document);
+
+		let mut tab_documents: HashMap<String, Arc<DocumentContent>> = HashMap::new();
+		for tab in tabs.iter() {
+			let tab_data = tab.1.clone();
+			let maybe_tab_content = fetch_document_from_disk(tab_data);
+
+			if maybe_tab_content.is_none() {
+				return Err("Failed to load the documents".to_string());
 			}
-			
+			let tab_content = maybe_tab_content.unwrap();
+			let tab_document = Arc::new(DocumentContent {
+				title: tab_content.title,
+				contents: tab_content.content,
+			});
+			tab_documents.insert(tab.0.clone(), tab_document);
+		}
+
 		Ok(Self {
 			tab_switcher: RwLock::new(TabManager {
 				current_tab_id,
@@ -282,14 +282,14 @@ impl AppStateInner {
 		for tab in tabs.iter() {
 			let tab_data = tab.1.clone();
 			let maybe_tab_content = fetch_document_from_disk(tab_data);
-			
+
 			if maybe_tab_content.is_none() {
 				return Err("Failed to load the documents".to_string());
 			}
 			let tab_content = maybe_tab_content.unwrap();
 			let tab_document = Arc::new(DocumentContent {
 				title: tab_content.title,
-				contents: tab_content.content
+				contents: tab_content.content,
 			});
 			tab_documents.insert(tab.0.clone(), tab_document);
 		}

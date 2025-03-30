@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
+use std::{fs::read_dir, path::PathBuf};
 use tauri::{AppHandle, Emitter, Manager};
 use tokio::fs::read_to_string;
 use toml::Value;
-use std::{fs::read_dir, path::PathBuf};
 
 use crate::app_state::{AppState, CommandRegistrar, CommandRegistry};
 

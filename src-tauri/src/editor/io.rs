@@ -1,14 +1,18 @@
 //TODO: We can name this file something better instead of naming it as functions.
 
-use std::{fs, sync::Arc}; //Filesystem module
 use std::path::PathBuf;
+use std::{fs, sync::Arc}; //Filesystem module
 use tauri::{AppHandle, Emitter, Manager, State, Window};
 // use tauri_plugin_dialog::DialogExt; //DialogExt trait to show dialog boxes
+use crate::app_state::{AppStateInner, DEFAULT_NOTE_TITLE, FileInfo};
+use crate::{
+	app_state::{
+		APP_DATA_DIR, AppState, CommandRegistrar, CommandRegistry, DocumentContent,
+		MarkdownFileData, TROVE_DIR, Tab, USER_DATA_DIR, UserData,
+	},
+	editor::{markdown_handler, tabs::update_tabs_state},
+};
 use dirs;
-use crate::app_state::{AppStateInner, FileInfo, DEFAULT_NOTE_TITLE};
-use crate::{app_state::{
-		AppState, CommandRegistrar, CommandRegistry, DocumentContent, MarkdownFileData, Tab, UserData, APP_DATA_DIR, TROVE_DIR, USER_DATA_DIR
-	}, editor::{markdown_handler, tabs::update_tabs_state}};
 
 pub struct IOCommands;
 impl IOCommands {
@@ -79,7 +83,7 @@ impl IOCommands {
 		}
 	}
 
-		/// # Delete Document!
+	/// # Delete Document!
 	///
 	/// Get's the current open tab and the next tab and deletes the file
 	/// in the current tab and also removes it`s tab from app state.
@@ -256,7 +260,7 @@ pub fn fetch_document_from_disk(tab_data: Tab) -> Option<MarkdownFileData> {
 	}
 }
 
-pub async fn retrieve_cached_document(app:AppHandle, tab_data: Tab) -> Option<MarkdownFileData> {
+pub async fn retrieve_cached_document(app: AppHandle, tab_data: Tab) -> Option<MarkdownFileData> {
 	let title = tab_data.title;
 	let temp_app = app.clone();
 	let state = &temp_app.state::<AppState>();
@@ -285,9 +289,10 @@ pub async fn send_document_content(maybe_current_tab_data: Option<Tab>, app: App
 		log::warn!("Failed to get tab data!");
 		return;
 	}
-	
+
 	let current_tab_data = maybe_current_tab_data.unwrap();
-	let mut maybe_document_data = retrieve_cached_document(app.clone(), current_tab_data.clone()).await;
+	let mut maybe_document_data =
+		retrieve_cached_document(app.clone(), current_tab_data.clone()).await;
 	if maybe_document_data.is_none() {
 		log::error!("Cache Miss! Loading document content from storage.");
 		let tab_content = cache_document_data(app.clone(), &current_tab_data).await;
@@ -296,18 +301,18 @@ pub async fn send_document_content(maybe_current_tab_data: Option<Tab>, app: App
 			return;
 		}
 		let file_contents = tab_content.unwrap().contents.clone();
-		maybe_document_data = Some( MarkdownFileData {
+		maybe_document_data = Some(MarkdownFileData {
 			id: current_tab_data.id,
 			title: current_tab_data.title,
-			content: file_contents
+			content: file_contents,
 		});
 	}
-	
+
 	if maybe_document_data.is_none() {
 		log::warn!("Failed to load document data!");
 		return;
 	}
-	
+
 	let html_output = markdown_handler::markdown_to_html(&maybe_document_data.unwrap().content);
 
 	// Update the current content on the screen.
@@ -317,19 +322,27 @@ pub async fn send_document_content(maybe_current_tab_data: Option<Tab>, app: App
 	}
 }
 
-pub async fn cache_document_data(app: AppHandle, current_tab_data: &Tab) -> Option<Arc<DocumentContent>> {
+pub async fn cache_document_data(
+	app: AppHandle,
+	current_tab_data: &Tab,
+) -> Option<Arc<DocumentContent>> {
 	let temp_app = app.clone();
 	let state = &temp_app.state::<AppState>();
-	
+
 	let maybe_document_data = fetch_document_from_disk(current_tab_data.clone());
 	if let Some(document_data) = maybe_document_data {
 		let tab_content = Arc::new(DocumentContent {
 			title: document_data.title,
-			contents: document_data.content	
+			contents: document_data.content,
 		});
-		
+
 		// Cache the document content on memory
-		state.workspace.write().await.documents.insert(current_tab_data.id.clone(), tab_content.clone());
+		state
+			.workspace
+			.write()
+			.await
+			.documents
+			.insert(current_tab_data.id.clone(), tab_content.clone());
 		Some(tab_content)
 	} else {
 		log::error!("Failed to cache document data, file not on disk!");
@@ -355,7 +368,7 @@ async fn delete_document_helper(app: AppHandle, delete_tab_id: String) {
 		if tab_switcher.tabs.len() == 1 {
 			return;
 		}
-		
+
 		let next_tab_index = tab_switcher
 			.tabs
 			.shift_remove_full(&delete_tab_id)
@@ -392,8 +405,8 @@ async fn delete_document_helper(app: AppHandle, delete_tab_id: String) {
 	workspace
 		.documents
 		.retain(|tabid, _| *tabid != delete_tab_id);
-	
-	drop(workspace);	// drop workspace to avoid deadlock.
+
+	drop(workspace); // drop workspace to avoid deadlock.
 
 	// Handle file operations
 	let trove_dir = get_trove_dir(TROVE_DIR);
@@ -424,7 +437,6 @@ pub async fn save_document_helper(
 	let safe_filename = sanitize_filename::sanitize(format!("{}.md", document_data.title));
 	let file_path = trove_dir.join(&safe_filename);
 
-
 	// Get the old title (Assuming the title of the document has been changed.)
 	let old_title = {
 		let tab_switcher = state.tab_switcher.write().await;
@@ -435,9 +447,9 @@ pub async fn save_document_helper(
 			.map(|tab| tab.title.clone())
 			.unwrap_or_else(|| String::from(DEFAULT_NOTE_TITLE))
 	};
-	
+
 	let mut workspace = state.workspace.write().await;
-	
+
 	// Update the recent files.
 	if let Some(doc) = workspace
 		.recent_files
@@ -452,14 +464,16 @@ pub async fn save_document_helper(
 			path: file_path.clone(),
 		});
 	}
-	
+
 	// Create the new TabDocument( tab contents ), which will be replaced by old TabDocument.
 	let new_doc = Arc::new(DocumentContent {
 		title: document_data.title,
-		contents: document_data.content
+		contents: document_data.content,
 	});
-	workspace.documents.insert(document_data.id, new_doc.clone());
-	
+	workspace
+		.documents
+		.insert(document_data.id, new_doc.clone());
+
 	drop(workspace);
 
 	// Get the file path to check if there was a change in title or not.
@@ -467,7 +481,8 @@ pub async fn save_document_helper(
 
 	// if the title has changed, delete the old file
 	if old_path != file_path && old_path.exists() {
-		let delete_file_error = fs::remove_file(old_path).map_err(|e| format!("Failed to delete old file: {}", e));
+		let delete_file_error =
+			fs::remove_file(old_path).map_err(|e| format!("Failed to delete old file: {}", e));
 		if delete_file_error.is_err() {
 			log::error!("{}", delete_file_error.unwrap_err());
 		}
