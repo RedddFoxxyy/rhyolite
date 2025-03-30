@@ -7,15 +7,13 @@
 // PRs are welcomed with regard to docs/comments! Thank You.
 
 use crate::editor::io;
-use crate::editor::tabs;
-use app_state::{AppStateInner, FileInfo};
+use app_state::AppStateInner;
 use tauri::{Manager, WindowEvent};
 
 mod app_state;
 mod commands;
 mod editor;
 mod helpers;
-mod utils;
 
 //Main tauri function.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -61,11 +59,6 @@ pub fn run() {
 		})
 		.plugin(tauri_plugin_opener::init())
 		.invoke_handler(tauri::generate_handler![
-			io::load_last_open_tabs,
-			io::get_recent_files_metadata,
-			tabs::update_states,
-			tabs::load_tab,
-			tabs::get_tabs,
 			commands::exec_command
 		])
 		.run(tauri::generate_context!())

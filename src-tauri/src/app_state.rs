@@ -19,7 +19,7 @@ use tauri::AppHandle;
 use tauri::async_runtime::{Mutex, RwLock};
 use uuid::Uuid;
 
-use crate::editor::io::commands::get_document_content::fetch_document_from_disk;
+use crate::editor::io::fetch_document_from_disk;
 use crate::editor::{
 	io::{get_documents_dir, get_trove_dir},
 	settings::themes::Theme,
