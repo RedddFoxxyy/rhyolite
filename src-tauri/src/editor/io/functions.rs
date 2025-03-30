@@ -9,7 +9,7 @@ use uuid::Uuid;
 use dirs;
 
 use crate::{
-	FileData,
+	FileInfo,
 	app_state::{
 		APP_DATA_DIR, AppState, CommandRegistrar, CommandRegistry, MarkdownFileData, TROVE_DIR,
 		Tab, USER_DATA_DIR, UserData,
@@ -196,7 +196,7 @@ pub async fn load_last_open_tabs(
 #[tauri::command]
 pub async fn get_recent_files_metadata(
 	state: State<'_, AppState>,
-) -> Result<Vec<FileData>, String> {
+) -> Result<Vec<FileInfo>, String> {
 	if let Err(e) = save_user_data(&state).await {
 		eprintln!("Warning: Failed to save user data: {}", e);
 	}

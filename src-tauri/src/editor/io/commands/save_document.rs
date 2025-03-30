@@ -1,6 +1,6 @@
 use crate::{
 	app_state::{
-		AppState, AppStateInner, FileData, MarkdownFileData, TabDocument, DEFAULT_NOTE_TITLE, TROVE_DIR
+		AppState, AppStateInner, FileInfo, MarkdownFileData, DocumentContent, DEFAULT_NOTE_TITLE, TROVE_DIR
 	},
 	editor::{
 		io::{get_trove_dir, IOCommands},
@@ -57,7 +57,7 @@ pub async fn save_document_helper(
 	{
 		doc.title = document_data.title.clone();
 	} else {
-		workspace.recent_files.push(FileData {
+		workspace.recent_files.push(FileInfo {
 			id: document_data.id.clone(),
 			title: document_data.title.clone(),
 			path: file_path.clone(),
@@ -65,7 +65,7 @@ pub async fn save_document_helper(
 	}
 	
 	// Create the new TabDocument( tab contents ), which will be replaced by old TabDocument.
-	let new_doc = Arc::new(TabDocument {
+	let new_doc = Arc::new(DocumentContent {
 		title: document_data.title,
 		contents: document_data.content
 	});

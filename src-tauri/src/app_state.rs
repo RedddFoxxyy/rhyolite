@@ -71,7 +71,7 @@ pub struct Tab {
 pub struct UserData {
 	pub active_tabs: Vec<Tab>, // Stores the list of last active tabs before the editor was closed
 	pub last_open_tab: String, // Stores the tab id of the last open tab
-	pub recent_files: Vec<FileData>, // Stores the list of recently created files
+	pub recent_files: Vec<FileInfo>, // Stores the list of recently created files
 	pub current_theme: Theme,  // Stores the current theme color palette
 }
 
@@ -113,13 +113,13 @@ pub trait CommandRegistrar {
 /// a graph of connections between markdown files( yet to be implemented ).
 #[allow(dead_code)]
 #[derive(Debug)]
-pub struct TabDocument {
+pub struct DocumentContent {
 	pub title: String,
 	pub contents: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct FileData {
+pub struct FileInfo {
 	pub id: String,
 	pub title: String,
 	pub path: PathBuf,
@@ -128,8 +128,8 @@ pub struct FileData {
 #[allow(dead_code)]
 #[derive(Debug, Default)]
 pub struct FileManager {
-	pub documents: HashMap<String, Arc<TabDocument>>, // Will be used to store open documents in the editor (tabid, tabdocument)
-	pub recent_files: Vec<FileData>,             // Stores the list of recently created files
+	pub documents: HashMap<String, Arc<DocumentContent>>, // Used to store open documents in the editor (tabid, tabdocument)
+	pub recent_files: Vec<FileInfo>,             // Stores the list of recently created files
 	pub current_theme: Theme,                    // Stores the current theme
 }
 
@@ -137,7 +137,9 @@ pub struct FileManager {
 pub struct AppStateInner {
 	// Q: Should the TabManager have an rwlock or should the elements in
 	// TabManager have RwLock
+	// TODO: The elements in TabManager should have RwLock instead of TabManger.
 	pub tab_switcher: RwLock<TabManager>,
+	pub active_tab_switch: Arc<Mutex<()>>, // Used to avoid tab switching race condition.
 	pub command_registry: Mutex<CommandRegistry>,
 	pub workspace: RwLock<FileManager>,
 }
@@ -185,7 +187,7 @@ impl AppStateInner {
 			.map(|d| (d.id.to_string(), d.clone()))
 			.collect();
 		
-			let mut tab_documents: HashMap<String, Arc<TabDocument>> = HashMap::new();
+			let mut tab_documents: HashMap<String, Arc<DocumentContent>> = HashMap::new();
 			for tab in tabs.iter() {
 				let tab_data = tab.1.clone();
 				let maybe_tab_content = fetch_document_from_disk(tab_data);
@@ -194,7 +196,7 @@ impl AppStateInner {
 					return Err("Failed to load the documents".to_string());
 				}
 				let tab_content = maybe_tab_content.unwrap();
-				let tab_document = Arc::new(TabDocument {
+				let tab_document = Arc::new(DocumentContent {
 					title: tab_content.title,
 					contents: tab_content.content
 				});
@@ -237,7 +239,7 @@ impl AppStateInner {
 							};
 
 							tabs.insert(id.clone(), tab);
-							recent_files.push(FileData {
+							recent_files.push(FileInfo {
 								id: id.clone(),
 								title,
 								path: entry.path(),
@@ -267,7 +269,7 @@ impl AppStateInner {
 			fs::write(&file_path, "").map_err(|e| format!("Failed to create empty file: {}", e))?;
 
 			tabs.insert(id.clone(), tab);
-			recent_files.push(FileData {
+			recent_files.push(FileInfo {
 				id: id.clone(),
 				title,
 				path: file_path,
@@ -275,13 +277,31 @@ impl AppStateInner {
 			current_tab_id = Some(id);
 		}
 
+		// Cache the contents of open tabs in memory
+		let mut tab_documents: HashMap<String, Arc<DocumentContent>> = HashMap::new();
+		for tab in tabs.iter() {
+			let tab_data = tab.1.clone();
+			let maybe_tab_content = fetch_document_from_disk(tab_data);
+			
+			if maybe_tab_content.is_none() {
+				return Err("Failed to load the documents".to_string());
+			}
+			let tab_content = maybe_tab_content.unwrap();
+			let tab_document = Arc::new(DocumentContent {
+				title: tab_content.title,
+				contents: tab_content.content
+			});
+			tab_documents.insert(tab.0.clone(), tab_document);
+		}
+
 		Ok(Self {
 			tab_switcher: RwLock::new(TabManager {
 				current_tab_id,
 				tabs,
 			}),
+			active_tab_switch: Arc::new(Mutex::new(())),
 			workspace: FileManager {
-				documents: HashMap::new(),
+				documents: tab_documents,
 				recent_files,
 				current_theme: Theme::default(),
 			}
@@ -292,7 +312,7 @@ impl AppStateInner {
 
 	// Loads all the last session contents from userdata.json and initialises AppStateInner.
 	pub fn init_appstate() -> Result<Self, String> {
-		log::debug!("load_last_open_tabs init");
+		log::debug!("Initialising App State.");
 		let appdata_dir = get_documents_dir().join("appdata");
 		let userdata_path = appdata_dir.join("userdata.json");
 

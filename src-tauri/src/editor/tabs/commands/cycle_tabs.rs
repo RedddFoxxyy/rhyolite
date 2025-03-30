@@ -14,6 +14,7 @@ impl TabCommands {
 		let temp_app = app.clone();
 		let state = temp_app.state::<AppState>();
 
+		let _tab_switch_lock = state.active_tab_switch.lock().await;
 		let mut tab_switcher = state.tab_switcher.write().await;
 
 		let current_tab_id = tab_switcher.current_tab_id.clone();
@@ -57,6 +58,7 @@ impl TabCommands {
 		let temp_app = app.clone();
 		let state = temp_app.state::<AppState>();
 
+		let _tab_switch_lock = state.active_tab_switch.lock().await;
 		let mut tab_switcher = state.tab_switcher.write().await;
 
 		if tab_switcher.tabs.is_empty() {
@@ -83,6 +85,7 @@ impl TabCommands {
 		let temp_app = app.clone();
 		let state = temp_app.state::<AppState>();
 
+		let _tab_switch_lock = state.active_tab_switch.lock().await;
 		let mut tab_switcher = state.tab_switcher.write().await;
 
 		if tab_switcher.tabs.is_empty() {

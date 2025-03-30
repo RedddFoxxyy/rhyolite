@@ -8,7 +8,7 @@
 
 use crate::editor::io;
 use crate::editor::tabs;
-use app_state::{AppStateInner, FileData};
+use app_state::{AppStateInner, FileInfo};
 use tauri::{Manager, WindowEvent};
 
 mod app_state;

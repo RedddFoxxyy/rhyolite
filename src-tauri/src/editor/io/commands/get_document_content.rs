@@ -1,5 +1,5 @@
 use crate::{
-	app_state::{AppState, MarkdownFileData, Tab, TabDocument, TROVE_DIR},
+	app_state::{AppState, MarkdownFileData, Tab, DocumentContent, TROVE_DIR},
 	editor::{
 		io::{get_trove_dir, IOCommands},
 		markdown_handler,
@@ -112,13 +112,13 @@ pub async fn send_document_content(maybe_current_tab_data: Option<Tab>, app: App
 	}
 }
 
-pub async fn cache_document_data(app: AppHandle, current_tab_data: &Tab) -> Option<Arc<TabDocument>> {
+pub async fn cache_document_data(app: AppHandle, current_tab_data: &Tab) -> Option<Arc<DocumentContent>> {
 	let temp_app = app.clone();
 	let state = &temp_app.state::<AppState>();
 	
 	let maybe_document_data = fetch_document_from_disk(current_tab_data.clone());
 	if let Some(document_data) = maybe_document_data {
-		let tab_content = Arc::new(TabDocument {
+		let tab_content = Arc::new(DocumentContent {
 			title: document_data.title,
 			contents: document_data.content	
 		});
