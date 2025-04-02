@@ -26,7 +26,7 @@ html {
 }
 
 * {
-	font-family: "JetBrains Mono", serif;
+	font-family: "JetBrains Mono";
 	overscroll-behavior: none;
 	-ms-scroll-chaining: none;
 }

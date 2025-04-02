@@ -9,7 +9,6 @@
 	import { themesStore } from "$lib/stores/themes.svelte";
 
 	onMount(() => {
-		// TabsStore.initTabsStore();
 		DocumentService.initFrontendState();
 		if (document.readyState === "complete") {
 			themesStore.initThemesStore();
