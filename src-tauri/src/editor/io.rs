@@ -10,7 +10,7 @@ use crate::{
 		APP_DATA_DIR, AppState, CommandRegistrar, CommandRegistry, DocumentContent,
 		MarkdownFileData, TROVE_DIR, Tab, USER_DATA_DIR, UserData,
 	},
-	editor::{markdown_handler, tabs::update_tabs_state},
+	editor::tabs::update_tabs_state,
 };
 use dirs;
 

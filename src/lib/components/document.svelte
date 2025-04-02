@@ -3,9 +3,10 @@
 	import type { ViewUpdate } from "@codemirror/view";
 	import documentCmds from "$lib/tauri-cmd/document";
 	import type { Tab } from "$lib/types/tab";
-	import ContentEditor from "$lib/components/content-editor/content-editor.svelte";
 	import CodemirrorEditor from "$lib/components/content-editor/codemirror-editor.svelte";
+	import { contentEditorStore } from "$lib/stores/contentEditor.svelte";
 	import { listen } from "@tauri-apps/api/event";
+	import { Code, BookOpen } from "lucide-svelte";
 
 	let currentTab: Tab | null = $state(null);
 	let documentTitle: string = $state("");
@@ -67,10 +68,14 @@
 		return { characters, words };
 	}
 
+	function handleToggleMode() {
+		contentEditorStore.toggleDocumentMode();
+	}
+
 </script>
 
 <!-- TODO: Decide whether not open tabs should be hidden or removed from DOM -->
-<div class={` flex flex-col w-full max-w-screen-xl`}>
+<div class=" flex flex-col w-full max-w-screen">
 	<div class="flex h-[80px] mb-6 mx-auto justify-center w-[50%] min-w-[300px]">
 		<textarea
 			class="w-full h-full resize-none border-none bg-base rounded-lg py-7 text-text text-[2rem] focus:outline-none focus:ring-0 shadow-lg"
@@ -83,6 +88,13 @@
 	<div
 		class="fixed flex flex-row gap-[20px] text-nowrap self-end bottom-[10px] right-[10px] bg-base px-[10px] py-[5px] rounded-[18px] z-10 text-text text-[0.85em] select-none"
 	>
+		<button onclick={handleToggleMode} class="w-full rounded-lg text-left text-text bg-transparent cursor-pointer transition-all duration-300 text-sm hover:bg-surface1 focus:bg-surface1">
+			{#if contentEditorStore.isPreviewMode()}
+				<Code class="w-4 h-4"/>
+		  	{:else}
+				<BookOpen class="w-4 h-4"/>
+		  	{/if}
+		</button>
 		<div>{wordCount} Words</div>
 		<div>{charCount} Characters</div>
 	</div>
