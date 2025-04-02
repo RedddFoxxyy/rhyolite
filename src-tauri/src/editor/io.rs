@@ -313,10 +313,10 @@ pub async fn send_document_content(maybe_current_tab_data: Option<Tab>, app: App
 		return;
 	}
 
-	let html_output = markdown_handler::markdown_to_html(&maybe_document_data.unwrap().content);
+	let markdown_content = maybe_document_data.unwrap().content;
 
 	// Update the current content on the screen.
-	let emit_error = app.emit("current_editor_content", html_output);
+	let emit_error = app.emit("current_editor_content", markdown_content);
 	if emit_error.is_err() {
 		log::error!("Failed to emit current_editor_content!");
 	}

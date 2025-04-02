@@ -3,7 +3,8 @@
 	import { Editor } from "svelte-tiptap";
 	import documentCmds from "$lib/tauri-cmd/document";
 	import type { Tab } from "$lib/types/tab";
-	import ContentEditor from "./content-editor/content-editor.svelte";
+	import ContentEditor from "$lib/components/content-editor/content-editor.svelte";
+	import CodemirrorEditor from "$lib/components/content-editor/codemirror-editor.svelte";
 	import { listen } from "@tauri-apps/api/event";
 
 	let currentTab: Tab | null = $state(null);
@@ -11,10 +12,8 @@
 	let documentContent: any = $state();
 	let wordCount: number = $state(0);
 	let charCount: number = $state(0);
-	let initialized: boolean = $state(false);
 
 	onMount(() => {
-		initialized = true;
 		const currentTablisten = listen<Tab>("Current_Tab", (event) => {
 			currentTab = event.payload;
 			documentTitle = currentTab.title;
@@ -67,15 +66,7 @@
 			oninput={handleTitleChange}
 		></textarea>
 	</div>
-
-	{#if initialized}
-		<ContentEditor
-			class="overflow-auto mb-20 p-2 min-h-96 w-[80%] min-w-[400px] mx-auto"
-			content={documentContent}
-			onchange={handleContentChange}
-		/>
-	{/if}
-
+	<CodemirrorEditor/>
 	<div
 		class="fixed flex flex-row gap-[20px] text-nowrap self-end bottom-[10px] right-[10px] bg-base px-[10px] py-[5px] rounded-[18px] z-10 text-text text-[0.85em] select-none"
 	>
