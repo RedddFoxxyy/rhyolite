@@ -4,16 +4,14 @@
 //! All the required global statics are declared in this module.
 
 use std::sync::Arc;
-use std::{
-	collections::HashMap,
-	future::Future,
-	path::PathBuf,
-	pin::Pin,
-};
+use std::{collections::HashMap, future::Future, path::PathBuf, pin::Pin};
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, async_runtime::{Mutex, RwLock}};
+use tauri::{
+	AppHandle,
+	async_runtime::{Mutex, RwLock},
+};
 
 use crate::editor::settings::themes::Theme;
 

@@ -22,8 +22,15 @@ use indexmap::IndexMap;
 use uuid::Uuid;
 
 use crate::{
-	app_state::{CommandRegistry, DocumentContent, FileInfo, FileManager, Tab, TabManager, UserData, DEFAULT_NOTE_TITLE, TROVE_DIR, USER_DATA_DIR, USER_DATA_FILE}, editor::{io::{fetch_document_from_disk, get_documents_dir, get_trove_dir}, settings::themes::Theme}, AppStateInner
-	// app_state::{CommandRegistry, FileManager, TabManager},
+	AppStateInner, // app_state::{CommandRegistry, FileManager, TabManager},
+	app_state::{
+		CommandRegistry, DEFAULT_NOTE_TITLE, DocumentContent, FileInfo, FileManager, TROVE_DIR,
+		Tab, TabManager, USER_DATA_DIR, USER_DATA_FILE, UserData,
+	},
+	editor::{
+		io::{fetch_document_from_disk, get_documents_dir, get_trove_dir},
+		settings::themes::Theme,
+	},
 };
 use tauri::async_runtime::{Mutex, RwLock};
 
