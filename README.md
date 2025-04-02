@@ -9,12 +9,12 @@
 ![Rhyolite Editor Preview Command Palette](assets/rhyolite_command_preview.png)
 
 ### [Rhyolite](https://rhyolite.xyz/) is a simple markdown editor build using tauri framework that allows user to edit and work on markdown files.
+
 > Rhyolite is inspired by volcanic rocks, much like Obsidian. The project is my way to contribute and grow as a developer while sharing something meaningful with the open-source community.
-> 
+>
 > Rhyolite was a fork of [fextify](https://github.com/face-hh/fextify), but was later rewritten from scratch,
 > using sveltekit for the frontend and tauri version was changed from v1 to v2. As of now this project does not
 > share any similarities to the [fextify](https://github.com/face-hh/fextify) project.
-
 
 ## **Current Updates**
 
@@ -24,13 +24,12 @@
 - A app-state based system that uses tauri events is being written in the `state-refactor` branch.
 - Working on a adding support for more markdowns.
 
-
 ## For New Contributors
 
 1. If you want to contribute to the app, you can work on any of the issues that have not been assigned to anyone.
 2. Join our **[Discord server](https://discord.gg/K6FAd8FTma)** to collaborate effectively.
 3. The project uses lld as the default linker for the rust code on linux systems so make sure you have lld(llvm linker) installed
-on your linux system.(If you wish to use the default linker, comment out the code in .cargo when you build).
+   on your linux system.(If you wish to use the default linker, comment out the code in .cargo when you build).
 
 ---
 
@@ -94,6 +93,7 @@ Make the file executable and run:
 chmod +x Rhyolite_[version]_.AppImage
 ./Rhyolite_[version]_.AppImage
 ```
+
 #### Flatpack
 
 > Work In Progress!
@@ -138,9 +138,9 @@ npm run tauri build --verbose
 
 ## Licensing
 
-> NOTE: We’re making an important update to Rhyolite’s open-source license. All past app releases 
-and their source code till commit `900aea8` will remain under Apache 2.0, but future development 
-will be licensed under GPLv3.
+> NOTE: We’re making an important update to Rhyolite’s open-source license. All past app releases
+> and their source code till commit `900aea8` will remain under Apache 2.0, but future development
+> will be licensed under GPLv3.
 
 ```
 Copyright (C) 2025  RedddFoxxyy(Suyog Tandel)

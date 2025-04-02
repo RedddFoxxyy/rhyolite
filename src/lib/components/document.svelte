@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { Editor } from "svelte-tiptap";
+	import type { ViewUpdate } from "@codemirror/view";
 	import documentCmds from "$lib/tauri-cmd/document";
 	import type { Tab } from "$lib/types/tab";
 	import ContentEditor from "$lib/components/content-editor/content-editor.svelte";
@@ -35,13 +35,16 @@
 	let saveTimeout: number | undefined;
 	const delaySave = 200;
 
-	function handleContentChange(editor: Editor) {
-		documentContent = editor.getHTML();
-		// console.log(documentContent) // Uncomment for debugging.
-		// Update word and character counts
-		wordCount = editor.storage.characterCount.words();
-		charCount = editor.storage.characterCount.characters();
-		saveDocument();
+	async function handleContentChange(update: ViewUpdate) {
+		if (update.docChanged) {
+			documentContent = update.state.doc.toString();
+			// console.log(documentContent) // Uncomment for debugging.
+			// Update word and character counts
+			const counts = calculateCounts(documentContent);
+			wordCount = counts.words;
+			charCount = counts.characters;
+			saveDocument();
+		}
 	}
 
 	async function saveDocument() {
@@ -54,6 +57,16 @@
 			}
 		}, delaySave ?? 200);
 	}
+
+	function calculateCounts(text: string): { characters: number; words: number } {
+		const characters = text.length;
+		// Trim whitespace from start/end, split by any whitespace sequence,
+		// filter out empty strings (handles multiple spaces), and count.
+        const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+
+		return { characters, words };
+	}
+
 </script>
 
 <!-- TODO: Decide whether not open tabs should be hidden or removed from DOM -->
@@ -66,7 +79,7 @@
 			oninput={handleTitleChange}
 		></textarea>
 	</div>
-	<CodemirrorEditor/>
+	<CodemirrorEditor onContentChange={handleContentChange} />
 	<div
 		class="fixed flex flex-row gap-[20px] text-nowrap self-end bottom-[10px] right-[10px] bg-base px-[10px] py-[5px] rounded-[18px] z-10 text-text text-[0.85em] select-none"
 	>

@@ -433,7 +433,6 @@ pub async fn save_document_helper(
 	document_data: MarkdownFileData,
 ) {
 	let trove_dir = get_trove_dir(TROVE_DIR);
-	let markdown_content = markdown_handler::html_to_markdown(&document_data.content);
 	let safe_filename = sanitize_filename::sanitize(format!("{}.md", document_data.title));
 	let file_path = trove_dir.join(&safe_filename);
 
@@ -489,7 +488,7 @@ pub async fn save_document_helper(
 	}
 
 	// Now write the new file.
-	let _ = if let Err(e) = fs::write(&file_path, markdown_content) {
+	let _ = if let Err(e) = fs::write(&file_path, &new_doc.contents) {
 		Err(format!("Failed to write file: {}", e))
 	} else {
 		Ok(file_path.to_string_lossy().to_string())

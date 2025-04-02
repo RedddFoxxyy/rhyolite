@@ -1,6 +1,7 @@
 # Contributing
 
 ## Request for changes/ Pull Requests
+
 You first need to create a fork of the [roblox-template](https://github.com/iceeburr/roblox-template/) repository to commit your changes to it. Methods to fork a repository can be found in the [GitHub Documentation](https://docs.github.com/en/get-started/quickstart/fork-a-repo).
 
 Then add your fork as a local project:
@@ -31,6 +32,7 @@ git remote -v
 ```
 
 ## Receive remote updates
+
 In view of staying up to date with the central repository:
 
 ```sh
@@ -38,6 +40,7 @@ git pull upstream main
 ```
 
 ## Choose a base branch
+
 Before starting development, you need to know which branch to base your modifications/additions on. When in doubt, use main.
 When creating a new branch, name it with useful information. For example, if your pull request fixes a bug, name it bugfix-20.
 This way it is clear that this branch fixes issue #20 which is a bug.
