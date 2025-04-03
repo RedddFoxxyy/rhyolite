@@ -1,15 +1,43 @@
 <script lang="ts">
-	import { EditorView, basicSetup, minimalSetup } from "codemirror";
-	import { ViewPlugin, keymap } from "@codemirror/view";
+	import { EditorView, minimalSetup } from "codemirror";
+	import {
+		ViewPlugin,
+		keymap,
+		drawSelection,
+		highlightActiveLine,
+		dropCursor,
+		rectangularSelection,
+		crosshairCursor,
+		lineNumbers
+	} from "@codemirror/view";
 	import type { ViewUpdate } from "@codemirror/view";
 	import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 	import { EditorState, StateEffect } from "@codemirror/state";
+	import {
+		defaultHighlightStyle,
+		syntaxHighlighting,
+		indentOnInput,
+		bracketMatching,
+		foldGutter,
+		foldKeymap
+	} from "@codemirror/language";
 	import { languages } from "@codemirror/language-data";
+	import { searchKeymap, highlightSelectionMatches } from "@codemirror/search";
+	import { lintKeymap } from "@codemirror/lint";
+	import {
+		autocompletion,
+		completionKeymap,
+		closeBrackets,
+		closeBracketsKeymap
+	} from "@codemirror/autocomplete";
 	import { markdown, commonmarkLanguage, markdownLanguage } from "@codemirror/lang-markdown";
 	import { Marked } from "marked";
 	import { onMount } from "svelte";
 	import { listen } from "@tauri-apps/api/event";
-	import { editorTheme } from "./components/cm-theme.svelte";
+	import {
+		editorTheme,
+		markdownHighlightStyle
+	} from "$lib/components/content-editor/cm-theme.svelte";
 	import { contentEditorStore } from "$lib/stores/contentEditor.svelte";
 
 	// HTMLElements for Codemirror container and marked preview container
@@ -26,7 +54,7 @@
 	let parsed_content: string | Promise<string> = $state("");
 
 	// Create a Marked Instance.
-	const marked: Marked = new Marked({ gfm: true });
+	const marked: Marked = new Marked({});
 
 	const { onContentChange = (update: ViewUpdate) => {} } = $props<{
 		onContentChange?: (update: ViewUpdate) => void;
@@ -57,10 +85,10 @@
 	});
 
 	$effect(() => {
-        if (contentEditorStore.isPreviewMode()) {
-            updateMarkdownPreview();
-        }
-    });
+		if (contentEditorStore.isPreviewMode()) {
+			updateMarkdownPreview();
+		}
+	});
 
 	async function updateMarkdownPreview() {
 		if (!codemirrorEditorView || !markedPreviewContainer) return;
@@ -85,6 +113,17 @@
 					addKeymap: true
 				}),
 				history(),
+				drawSelection(),
+				dropCursor(),
+				foldGutter(),
+				autocompletion(),
+				rectangularSelection(),
+				crosshairCursor(),
+				highlightSelectionMatches(),
+				bracketMatching(),
+				closeBrackets(),
+				indentOnInput(),
+				syntaxHighlighting(markdownHighlightStyle),
 				EditorView.updateListener.of(onContentChange)
 			],
 			parent: editorContainer,
@@ -109,113 +148,140 @@
 	}
 </script>
 
-<main class=" overflow-auto mb-20 p-2 min-h-96 w-[90%] h-full min-w-[400px] mx-auto">
-    <div bind:this={editorContainer} class="text-text" style={contentEditorStore.isPreviewMode() ? 'display: none;' : ''}></div>
-    
-    {#if contentEditorStore.isPreviewMode()}
-        {@const _ = updateMarkdownPreview()}
-        <div bind:this={markedPreviewContainer} class="markdown-preview text-text"></div>
-    {/if}
+<main class=" overflow-auto mb-15 p-2 min-h-96 w-[90%] h-full min-w-[400px] mx-auto">
+	<div
+		bind:this={editorContainer}
+		class="text-text"
+		style={contentEditorStore.isPreviewMode() ? "display: none;" : ""}
+	></div>
+
+	{#if contentEditorStore.isPreviewMode()}
+		{@const _ = updateMarkdownPreview()}
+		<div bind:this={markedPreviewContainer} class="markdown-preview text-text"></div>
+	{/if}
 </main>
 
 <!-- This styling needs to be moved to a css file, also can this be replaced with tailwind class? -->
 <style>
 	.markdown-preview :global(h1) {
-    font-size: 2em;
-    margin-top: 0.67em;
-    margin-bottom: 0.67em;
-    font-weight: bold;
-    color: var(--color-text);
-}
+		font-size: 2.2em;
+		font-weight: bold;
+		margin-top: 0.67em;
+		margin-bottom: 0.67em;
+		color: var(--color-text);
+	}
 
-.markdown-preview :global(h2) {
-    font-size: 1.5em;
-    margin-top: 0.83em;
-    margin-bottom: 0.83em;
-    font-weight: bold;
-    color: var(--color-text);
-}
+	.markdown-preview :global(h2) {
+		font-size: 2em;
+		font-weight: bold;
+		margin-top: 0.83em;
+		margin-bottom: 0.83em;
+		color: var(--color-text);
+	}
 
-.markdown-preview :global(h3) {
-    font-size: 1.17em;
-    margin-top: 1em;
-    margin-bottom: 1em;
-    font-weight: bold;
-    color: var(--color-text);
-}
+	.markdown-preview :global(h3) {
+		font-size: 1.8em;
+		font-weight: bold;
+		margin-top: 1em;
+		margin-bottom: 1em;
+		color: var(--color-text);
+	}
 
-.markdown-preview :global(p) {
-    margin-top: 1em;
-    margin-bottom: 1em;
-    line-height: 1.6;
-	color: var(--color-text);
-}
+	.markdown-preview :global(h4) {
+		font-size: 1.6em;
+		font-weight: bold;
+		margin-top: 1.33em;
+		margin-bottom: 1.33em;
+		color: var(--color-text);
+	}
 
-.markdown-preview :global(ul) {
-    padding-left: 2em;
-    margin-top: 1em;
-    margin-bottom: 1em;
-	color: var(--color-text);
-	list-style-type: disc;
-	list-style-type: decimal;
-}
- 
-.markdown-preview :global(ol) {
-    padding-left: 2em;
-    margin-top: 1em;
-    margin-bottom: 1em;
-	color: var(--color-text);
-}
+	.markdown-preview :global(h5) {
+		font-size: 1.4em;
+		font-weight: bold;
+		margin-top: 1.67em;
+		margin-bottom: 1.67em;
+		color: var(--color-text);
+	}
 
-.markdown-preview :global(blockquote) {
-    border-left: 4px solid #ccc;
-    padding-left: 1em;
-    margin-left: 0;
-    color: var(--color-text);
-}
+	.markdown-preview :global(h6) {
+		font-size: 1.2em;
+		font-weight: bold;
+		margin-top: 2.33em;
+		margin-bottom: 2.33em;
+		color: var(--color-text);
+	}
 
-.markdown-preview :global(code) {
-    background-color: #f5f5f5;
-    padding: 0.2em 0.4em;
-    border-radius: 3px;
-    font-family: monospace;
-}
+	.markdown-preview :global(p) {
+		margin-top: 1em;
+		margin-bottom: 1em;
+		line-height: 1.6;
+		color: var(--color-text);
+	}
 
-.markdown-preview :global(pre) {
-    background-color: #f5f5f5;
-    padding: 1em;
-    border-radius: 5px;
-    overflow-x: auto;
-}
+	.markdown-preview :global(ul) {
+		padding-left: 2em;
+		margin-top: 1em;
+		margin-bottom: 1em;
+		color: var(--color-text);
+		list-style-type: disc;
+	}
 
-.markdown-preview :global(pre code) {
-    background-color: transparent;
-    padding: 0;
-}
+	.markdown-preview :global(ol) {
+		padding-left: 2em;
+		margin-top: 1em;
+		margin-bottom: 1em;
+		color: var(--color-text);
+		list-style-type: decimal;
+	}
 
-.markdown-preview :global(a) {
-    color: #0366d6;
-    text-decoration: none;
-}
+	.markdown-preview :global(blockquote) {
+		border-left: 4px solid rgb(var(--color-subtext0));
+		padding-left: 1em;
+		margin-left: 0;
+		color: var(--color-text);
+	}
 
-.markdown-preview :global(a:hover) {
-    text-decoration: underline;
-}
+	.markdown-preview :global(code) {
+		padding: 0.2em 0.4em;
+		border-radius: 3px;
+		font-family: monospace;
+	}
 
-.markdown-preview :global(table) {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 1em 0;
-}
+	.markdown-preview :global(pre) {
+		background-color: rgb(var(--color-mantle));
+		padding: 1em;
+		border-radius: 5px;
+		overflow-x: auto;
+	}
 
-.markdown-preview :global(th), 
-.markdown-preview :global(td) {
-    border: 1px solid #ddd;
-    padding: 8px;
-}
+	.markdown-preview :global(pre code) {
+		background-color: transparent;
+		padding: 0;
+	}
 
-.markdown-preview :global(th) {
-    background-color: #f2f2f2;
-    text-align: left;
-}
+	.markdown-preview :global(a) {
+		color: #0366d6;
+		text-decoration: none;
+	}
+
+	.markdown-preview :global(a:hover) {
+		text-decoration: underline;
+	}
+
+	.markdown-preview :global(table) {
+		border-collapse: collapse;
+		width: 100%;
+		margin: 1em 0;
+	}
+
+	.markdown-preview :global(th),
+	.markdown-preview :global(td) {
+		border: 1px solid #ddd;
+		padding: 8px;
+	}
+
+	.markdown-preview :global(th) {
+		background-color: #f2f2f2;
+		text-align: left;
+	}
 </style>

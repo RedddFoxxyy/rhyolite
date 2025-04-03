@@ -38,7 +38,7 @@
 		},
 		{
 			name: "Close Tab",
-			shortcut: "Ctrl + C",
+			shortcut: "Ctrl + w",
 			action: () => {
 				TabService.closeTab();
 				commandPaletteStore.toggleVisibility();
@@ -173,7 +173,7 @@
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div
-		class="fixed top-0 left-0 w-full h-full bg-black/50 z-20"
+		class="fixed top-0 left-0 w-full h-full bg-black/20 backdrop-blur-xs z-20"
 		tabindex="-1"
 		aria-modal="true"
 		role="dialog"

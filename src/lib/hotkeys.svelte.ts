@@ -41,7 +41,7 @@ function handleKeydown(event: KeyboardEvent) {
 				if (currentTabId) documentCmds.deleteDocumentTab(currentTabId);
 				break;
 
-			case "c":
+			case "w":
 				// const currentTabId = TabsStore.getCurrentTabState()?.id;
 				if (currentTabId) tabCmds.closeTab(currentTabId);
 				break;

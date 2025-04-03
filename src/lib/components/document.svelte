@@ -63,7 +63,7 @@
 		const characters = text.length;
 		// Trim whitespace from start/end, split by any whitespace sequence,
 		// filter out empty strings (handles multiple spaces), and count.
-        const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+		const words = text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
 
 		return { characters, words };
 	}
@@ -71,7 +71,6 @@
 	function handleToggleMode() {
 		contentEditorStore.toggleDocumentMode();
 	}
-
 </script>
 
 <!-- TODO: Decide whether not open tabs should be hidden or removed from DOM -->
@@ -88,12 +87,15 @@
 	<div
 		class="fixed flex flex-row gap-[20px] text-nowrap self-end bottom-[10px] right-[10px] bg-base px-[10px] py-[5px] rounded-[18px] z-10 text-text text-[0.85em] select-none"
 	>
-		<button onclick={handleToggleMode} class="w-full rounded-lg text-left text-text bg-transparent cursor-pointer transition-all duration-300 text-sm hover:bg-surface1 focus:bg-surface1">
+		<button
+			onclick={handleToggleMode}
+			class="w-full rounded-lg text-left text-text bg-transparent cursor-pointer transition-all duration-300 hover:bg-surface1"
+		>
 			{#if contentEditorStore.isPreviewMode()}
-				<Code class="w-4 h-4"/>
-		  	{:else}
-				<BookOpen class="w-4 h-4"/>
-		  	{/if}
+				<Code class="w-4 h-4" />
+			{:else}
+				<BookOpen class="w-4 h-4" />
+			{/if}
 		</button>
 		<div>{wordCount} Words</div>
 		<div>{charCount} Characters</div>

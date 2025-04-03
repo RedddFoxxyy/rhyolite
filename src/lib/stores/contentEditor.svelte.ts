@@ -1,8 +1,8 @@
-export type DocumentMode = 'source' | 'preview';
+export type DocumentMode = "source" | "preview";
 
 class ContentEditorStore {
 	#isVisible: boolean = $state(false);
-	#documentMode: DocumentMode = $state('source');
+	#documentMode: DocumentMode = $state("source");
 
 	isVisible(): boolean {
 		return this.#isVisible;
@@ -14,15 +14,15 @@ class ContentEditorStore {
 	}
 
 	toggleDocumentMode() {
-		if (this.#documentMode == 'source') {
-			this.#documentMode = 'preview';
+		if (this.#documentMode == "source") {
+			this.#documentMode = "preview";
 		} else {
-			this.#documentMode = 'source';
+			this.#documentMode = "source";
 		}
 	}
 
 	isPreviewMode(): boolean {
-		if (this.#documentMode == 'preview') {
+		if (this.#documentMode == "preview") {
 			return true;
 		} else {
 			return false;
