@@ -78,7 +78,7 @@ export const markdownHighlightStyle = HighlightStyle.define([
 	},
 	{
 		tag: t.processingInstruction, // Handles #, >, etc.
-		color: "rgb(var(--color-subtext0))"
+		color: "rgb(var(--color-subtext1))"
 	},
 	{
 		tag: t.strong,
@@ -87,7 +87,7 @@ export const markdownHighlightStyle = HighlightStyle.define([
 	{
 		tag: t.strikethrough, // Strikethrough text
 		textDecoration: "line-through",
-		color: "rgb(var(--color-subtext0))"
+		color: "rgb(var(--color-subtext1))"
 	},
 	{
 		tag: t.quote // Blockquotes

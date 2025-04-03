@@ -268,7 +268,7 @@
 	}
 
 	.markdown-preview :global(a) {
-		color: #0366d6;
+		color: rgb(var(--color-subtext0));
 		text-decoration: none;
 	}
 
