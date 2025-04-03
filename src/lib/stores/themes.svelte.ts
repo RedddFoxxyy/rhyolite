@@ -6,18 +6,17 @@ class ThemesStore {
 	themesList: ThemeListItem[] = $state([]);
 
 	#currentTheme: Theme | null = $state(null);
-	// originalTheme cannot be made private through the # prefix because otherwise javascript
-	// will emit an error since the value is accessed through the rust side
 	private originalTheme: Theme | null = $state(null);
-	#originalThemeName: string | null = $state(null);
+	#isPreviewing: boolean = $state(false);
 
 	loadThemes() {
 		invoke("exec_command", { cmd: "get_loaded_themes" });
 	}
 
 	saveOriginalTheme() {
-		if (this.#currentTheme) {
-			this.originalTheme = this.#currentTheme;
+		if (this.#currentTheme && !this.originalTheme) {
+			console.log("Saving original theme:", this.#currentTheme);
+			this.originalTheme = JSON.parse(JSON.stringify(this.#currentTheme));
 		}
 	}
 
@@ -26,6 +25,7 @@ class ThemesStore {
 	}
 
 	setCurrentTheme(theme: Theme) {
+		console.log("Setting current theme:", theme);
 		this.#currentTheme = theme;
 		applyTheme(theme);
 	}
@@ -35,34 +35,41 @@ class ThemesStore {
 	}
 
 	changeTheme(theme: string) {
-		// invoke("exec_command", {
-		//   cmd: "set_theme",
-		//   payload: JSON.stringify(theme),
-		// });
-		this.originalTheme = this.#currentTheme;
+		console.log("Changing theme permanently to:", theme);
+		this.#isPreviewing = false;
+
+		invoke("exec_command", {
+			cmd: "set_theme",
+			payload: JSON.stringify(theme)
+		});
+
+		this.originalTheme = null;
+
 		settingsMenuStore.toggleVisibility();
 	}
 
 	previewTheme(theme: string) {
-		this.originalTheme = this.#currentTheme;
+		console.log("Previewing theme:", theme);
+		this.saveOriginalTheme();
+		this.#isPreviewing = true;
+
 		invoke("exec_command", {
 			cmd: "set_theme",
 			payload: JSON.stringify(theme)
 		});
 	}
 
-	// TODO: We need to also update the reset of theme
-	// on the back end, I was thinking of some function called
-	// reset theme that can be invoked on backend to reset the
-	// theme on backend too.
 	resetTheme() {
-		if (this.originalTheme) {
-			this.#currentTheme = this.originalTheme;
+		if (this.#isPreviewing && this.originalTheme) {
+			console.log("Resetting to original theme:", this.originalTheme);
 			this.setCurrentTheme(this.originalTheme);
+
 			invoke("exec_command", {
-				cmd: "reset_theme",
-				payload: JSON.stringify(this.originalTheme)
+				cmd: "set_theme",
+				payload: JSON.stringify(this.originalTheme.filename || "")
 			});
+
+			this.#isPreviewing = false;
 		}
 	}
 }
