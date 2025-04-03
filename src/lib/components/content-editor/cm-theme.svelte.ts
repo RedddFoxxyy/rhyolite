@@ -42,37 +42,38 @@ export const editorTheme = EditorView.theme({
 export const markdownHighlightStyle = HighlightStyle.define([
 	{
 		tag: t.heading1,
-		fontSize: "2.2em",
+		fontSize: "2.0em",
 		fontWeight: "bold"
 	},
 	{
 		tag: t.heading2,
-		fontSize: "2em",
-		fontWeight: "bold"
-	},
-	{
-		tag: t.heading3,
 		fontSize: "1.8em",
 		fontWeight: "bold"
 	},
 	{
-		tag: t.heading4,
+		tag: t.heading3,
 		fontSize: "1.6em",
 		fontWeight: "bold"
 	},
 	{
-		tag: t.heading5,
+		tag: t.heading4,
 		fontSize: "1.4em",
 		fontWeight: "bold"
 	},
 	{
-		tag: t.heading6,
+		tag: t.heading5,
 		fontSize: "1.2em",
+		fontWeight: "bold"
+	},
+	{
+		tag: t.heading6,
+		fontSize: "1.0em",
 		fontWeight: "bold"
 	},
 	{
 		tag: t.emphasis,
 		// color: "#666666",
+		color: "rgb(var(--color-subtext0))",
 		fontStyle: "italic"
 	},
 	{

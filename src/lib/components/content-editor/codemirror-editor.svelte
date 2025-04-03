@@ -60,43 +60,6 @@
 		onContentChange?: (update: ViewUpdate) => void;
 	}>();
 
-	onMount(() => {
-		setupEditorView();
-		const docContentlisten = listen<string>("current_editor_content", (event) => {
-			const documentContent = event.payload;
-			// console.log("Setting editor content from event");
-			if (codemirrorEditorView) {
-				setEditorContent(codemirrorEditorView, documentContent);
-			} else {
-				// Fallback if event arrives before editor is ready (less likely but possible)
-				console.warn(
-					"EditorView not ready when receiving content, updating initial content instead."
-				);
-				initial_editor_content = documentContent;
-				// Note: This won't update the editor if it mounts *later* with the old initial content.
-				// Robust handling might require queueing the update.
-			}
-
-			// onchange($editor);
-		});
-		return () => {
-			docContentlisten.then((unsub) => unsub());
-		};
-	});
-
-	$effect(() => {
-		if (contentEditorStore.isPreviewMode()) {
-			updateMarkdownPreview();
-		}
-	});
-
-	async function updateMarkdownPreview() {
-		if (!codemirrorEditorView || !markedPreviewContainer) return;
-		const currentContent: string = codemirrorEditorView.state.doc.toString();
-		parsed_content = await marked.parse(currentContent);
-		markedPreviewContainer.innerHTML = parsed_content;
-	}
-
 	// Initialise the codemirror editor view with required extentions.
 	function setupEditorView() {
 		if (codemirrorEditorView || !editorContainer) return; // Might be a hacky fix for the null issue
@@ -129,6 +92,51 @@
 			parent: editorContainer,
 			doc: initial_editor_content
 		});
+	}
+
+	onMount(() => {
+		setupEditorView();
+		const docContentlisten = listen<string>("current_editor_content", (event) => {
+			const documentContent = event.payload;
+			// console.log("Setting editor content from event");
+			if (codemirrorEditorView) {
+				setEditorContent(codemirrorEditorView, documentContent);
+				// If the editor is in preview mode then update the markdown preview with the content of new document.
+				if (contentEditorStore.isPreviewMode()) {
+					updateMarkdownPreview();
+				}
+			} else {
+				// Fallback if event arrives before editor is ready (less likely but possible)
+				console.warn(
+					"EditorView not ready when receiving content, updating initial content instead."
+				);
+				initial_editor_content = documentContent;
+				// If the editor is in preview mode then update the markdown preview with the content of new document.
+				if (contentEditorStore.isPreviewMode()) {
+					updateMarkdownPreview();
+				}
+				// Note: This won't update the editor if it mounts *later* with the old initial content.
+				// Robust handling might require queueing the update.
+			}
+
+			// onchange($editor);
+		});
+		return () => {
+			docContentlisten.then((unsub) => unsub());
+		};
+	});
+
+	$effect(() => {
+		if (contentEditorStore.isPreviewMode()) {
+			updateMarkdownPreview();
+		}
+	});
+
+	async function updateMarkdownPreview() {
+		if (!codemirrorEditorView || !markedPreviewContainer) return;
+		const currentContent: string = codemirrorEditorView.state.doc.toString();
+		parsed_content = await marked.parse(currentContent);
+		markedPreviewContainer.innerHTML = parsed_content;
 	}
 
 	/**
@@ -164,7 +172,7 @@
 <!-- This styling needs to be moved to a css file, also can this be replaced with tailwind class? -->
 <style>
 	.markdown-preview :global(h1) {
-		font-size: 2.2em;
+		font-size: 2em;
 		font-weight: bold;
 		margin-top: 0.67em;
 		margin-bottom: 0.67em;
@@ -172,7 +180,7 @@
 	}
 
 	.markdown-preview :global(h2) {
-		font-size: 2em;
+		font-size: 1.8em;
 		font-weight: bold;
 		margin-top: 0.83em;
 		margin-bottom: 0.83em;
@@ -180,7 +188,7 @@
 	}
 
 	.markdown-preview :global(h3) {
-		font-size: 1.8em;
+		font-size: 1.6em;
 		font-weight: bold;
 		margin-top: 1em;
 		margin-bottom: 1em;
@@ -188,7 +196,7 @@
 	}
 
 	.markdown-preview :global(h4) {
-		font-size: 1.6em;
+		font-size: 1.4em;
 		font-weight: bold;
 		margin-top: 1.33em;
 		margin-bottom: 1.33em;
@@ -196,7 +204,7 @@
 	}
 
 	.markdown-preview :global(h5) {
-		font-size: 1.4em;
+		font-size: 1.2em;
 		font-weight: bold;
 		margin-top: 1.67em;
 		margin-bottom: 1.67em;
@@ -204,7 +212,7 @@
 	}
 
 	.markdown-preview :global(h6) {
-		font-size: 1.2em;
+		font-size: 1em;
 		font-weight: bold;
 		margin-top: 2.33em;
 		margin-bottom: 2.33em;
