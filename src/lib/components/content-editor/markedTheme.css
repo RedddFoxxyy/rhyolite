@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+.markdown-preview :global(h1) {
+	font-size: 2em;
+	font-weight: bold;
+	margin-top: 0.67em;
+	margin-bottom: 0.67em;
+	color: var(--color-text);
+}
+
+.markdown-preview :global(h2) {
+	font-size: 1.8em;
+	font-weight: bold;
+	margin-top: 0.83em;
+	margin-bottom: 0.83em;
+	color: var(--color-text);
+}
+
+.markdown-preview :global(h3) {
+	font-size: 1.6em;
+	font-weight: bold;
+	margin-top: 1em;
+	margin-bottom: 1em;
+	color: var(--color-text);
+}
+
+.markdown-preview :global(h4) {
+	font-size: 1.4em;
+	font-weight: bold;
+	margin-top: 1.33em;
+	margin-bottom: 1.33em;
+	color: var(--color-text);
+}
+
+.markdown-preview :global(h5) {
+	font-size: 1.2em;
+	font-weight: bold;
+	margin-top: 1.67em;
+	margin-bottom: 1.67em;
+	color: var(--color-text);
+}
+
+.markdown-preview :global(h6) {
+	font-size: 1em;
+	font-weight: bold;
+	margin-top: 2.33em;
+	margin-bottom: 2.33em;
+	color: var(--color-text);
+}
+
+.markdown-preview :global(p) {
+	margin-top: 1em;
+	margin-bottom: 1em;
+	line-height: 1.6;
+	color: var(--color-text);
+}
+
+.markdown-preview :global(ul) {
+	padding-left: 2em;
+	margin-top: 1em;
+	margin-bottom: 1em;
+	color: var(--color-text);
+	list-style-type: disc;
+}
+
+.markdown-preview :global(ol) {
+	padding-left: 2em;
+	margin-top: 1em;
+	margin-bottom: 1em;
+	color: var(--color-text);
+	list-style-type: decimal;
+}
+
+.markdown-preview :global(blockquote) {
+	border-left: 4px solid rgb(var(--color-subtext0));
+	padding-left: 1em;
+	margin-left: 0;
+	color: var(--color-text);
+}
+
+.markdown-preview :global(code) {
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-family: monospace;
+}
+
+.markdown-preview :global(pre) {
+	background-color: rgb(var(--color-mantle));
+	padding: 1em;
+	border-radius: 5px;
+	overflow-x: auto;
+}
+
+.markdown-preview :global(pre code) {
+	background-color: transparent;
+	padding: 0;
+}
+
+.markdown-preview :global(a) {
+	color: rgb(var(--color-subtext0));
+	text-decoration: none;
+}
+
+.markdown-preview :global(a:hover) {
+	text-decoration: underline;
+}
+
+.markdown-preview :global(table) {
+	border-collapse: collapse;
+	width: 100%;
+	margin: 1em 0;
+}
+
+.markdown-preview :global(th),
+.markdown-preview :global(td) {
+	border: 1px solid #ddd;
+	padding: 8px;
+}
+
+.markdown-preview :global(th) {
+	background-color: #f2f2f2;
+	text-align: left;
+}
