@@ -176,7 +176,7 @@
 		font-weight: bold;
 		margin-top: 0.67em;
 		margin-bottom: 0.67em;
-		color: var(--color-text);
+		color: rgb(var(--color-text));
 	}
 
 	.markdown-preview :global(h2) {
@@ -184,7 +184,7 @@
 		font-weight: bold;
 		margin-top: 0.83em;
 		margin-bottom: 0.83em;
-		color: var(--color-text);
+		color: rgb(var(--color-text));
 	}
 
 	.markdown-preview :global(h3) {
@@ -192,7 +192,7 @@
 		font-weight: bold;
 		margin-top: 1em;
 		margin-bottom: 1em;
-		color: var(--color-text);
+		color: rgb(var(--color-text));
 	}
 
 	.markdown-preview :global(h4) {
@@ -200,7 +200,7 @@
 		font-weight: bold;
 		margin-top: 1.33em;
 		margin-bottom: 1.33em;
-		color: var(--color-text);
+		color: rgb(var(--color-text));
 	}
 
 	.markdown-preview :global(h5) {
@@ -208,7 +208,7 @@
 		font-weight: bold;
 		margin-top: 1.67em;
 		margin-bottom: 1.67em;
-		color: var(--color-text);
+		color: rgb(var(--color-text));
 	}
 
 	.markdown-preview :global(h6) {
@@ -216,21 +216,21 @@
 		font-weight: bold;
 		margin-top: 2.33em;
 		margin-bottom: 2.33em;
-		color: var(--color-text);
+		color: rgb(var(--color-text));
 	}
 
 	.markdown-preview :global(p) {
 		margin-top: 1em;
 		margin-bottom: 1em;
 		line-height: 1.6;
-		color: var(--color-text);
+		color: rgb(var(--color-text));
 	}
 
 	.markdown-preview :global(ul) {
 		padding-left: 2em;
 		margin-top: 1em;
 		margin-bottom: 1em;
-		color: var(--color-text);
+		color: rgb(var(--color-text));
 		list-style-type: disc;
 	}
 
@@ -238,7 +238,7 @@
 		padding-left: 2em;
 		margin-top: 1em;
 		margin-bottom: 1em;
-		color: var(--color-text);
+		color: rgb(var(--color-text));
 		list-style-type: decimal;
 	}
 
@@ -246,7 +246,7 @@
 		border-left: 4px solid rgb(var(--color-subtext0));
 		padding-left: 1em;
 		margin-left: 0;
-		color: var(--color-text);
+		color: rgb(var(--color-text));
 	}
 
 	.markdown-preview :global(code) {
