@@ -29,6 +29,7 @@ export type Colors = {
 };
 
 export type Theme = {
+	filename: string;
 	info: ThemeInfo;
 	colors: Colors;
 };
