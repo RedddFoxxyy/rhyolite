@@ -16,6 +16,25 @@
 		action: () => void;
 	}
 
+	function positionCommandPalette() {
+		if (commandPaletteStore.isVisible()) {
+			const titleElement = document.querySelector("#document-title-input");
+			const commandPalette = document.querySelector("#command-palette-container");
+
+			if (titleElement && commandPalette) {
+				const titleRect = titleElement.getBoundingClientRect();
+				const paletteWidth = commandPalette.clientWidth;
+
+				const newTop = titleRect.bottom + 10; // 10px gap below title
+				const newLeft = titleRect.left + titleRect.width / 2 - paletteWidth / 2;
+
+				commandPalette.style.top = `${newTop}px`;
+				commandPalette.style.left = `${newLeft}px`;
+				commandPalette.style.transform = "none"; // Remove transform since we're setting exact position
+			}
+		}
+	}
+
 	onMount(() => {
 		const currentTablisten = listen<Tab>("Current_Tab", (event) => {
 			currentTabId = event.payload.id;
@@ -161,9 +180,12 @@
 	$effect(() => {
 		if (commandPaletteStore.isVisible()) {
 			(document.querySelector("#commandPaletteTextArea") as HTMLTextAreaElement).focus();
+			setTimeout(positionCommandPalette, 0);
+			window.addEventListener("resize", positionCommandPalette);
 		} else {
 			selectedIndex = -1;
 			searchText = "";
+			window.removeEventListener("resize", positionCommandPalette);
 		}
 	});
 </script>
@@ -182,7 +204,8 @@
 		}}
 	>
 		<div
-			class="fixed top-[40%] left-1/2 flex flex-col bg-crust rounded-lg p-3 z-[60] w-min-[200px] w-[50%] h-fit min-h-[100px] max-h-[400px] -translate-x-1/2 -translate-y-1/2 overflow-hidden"
+			id="command-palette-container"
+			class="fixed bg-crust rounded-lg p-3 z-[60] w-min-[200px] w-[50%] h-fit min-h-[100px] max-h-[400px] overflow-hidden"
 		>
 			<div
 				class="relative basis-[42px] w-full shrink-0 overflow-hidden shadow-none hover:shadow-xl focus:shadow-xl transition duration-300 rounded-lg"

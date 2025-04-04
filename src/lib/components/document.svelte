@@ -65,6 +65,7 @@
 			placeholder="Enter title here..."
 			value={documentTitle}
 			oninput={handleTitleChange}
+			id="document-title-input"
 		></textarea>
 	</div>
 
