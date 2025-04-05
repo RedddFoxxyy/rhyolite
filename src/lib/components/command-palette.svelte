@@ -3,7 +3,7 @@
 	import DocumentService from "$lib/tauri-cmd/document";
 	import TabService from "$lib/tauri-cmd/tab";
 	import { onMount } from "svelte";
-	import { listen } from "@tauri-apps/api/event";
+	import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 	import type { Tab } from "$lib/types/tab";
 
 	let selectedIndex: number = $state(-1);
@@ -17,7 +17,7 @@
 	}
 
 	onMount(() => {
-		const currentTablisten = listen<Tab>("Current_Tab", (event) => {
+		const currentTablisten: Promise<UnlistenFn> = listen<Tab>("Current_Tab", (event) => {
 			currentTabId = event.payload.id;
 		});
 		return () => {
@@ -87,11 +87,11 @@
 		// }
 	];
 
-	function handleKeydown(event: KeyboardEvent) {
+	function handleKeydown(event: KeyboardEvent): void {
 		if (!commandPaletteStore.isVisible()) return;
 		console.log(event.key, event.shiftKey, event);
 
-		function nextEntry() {
+		function nextEntry(): void {
 			event.preventDefault();
 			if (selectedIndex === -1) {
 				selectedIndex = 0;
@@ -100,7 +100,7 @@
 			}
 		}
 
-		function prevEntry() {
+		function prevEntry(): void {
 			event.preventDefault();
 			if (selectedIndex === -1) {
 				selectedIndex = commands.length - 1;
@@ -145,7 +145,7 @@
 				?.scrollIntoView({ behavior: "smooth", block: "nearest" });
 	});
 
-	function handleWheel(event: WheelEvent) {
+	function handleWheel(event: WheelEvent): void {
 		if (!commandPaletteStore.isVisible()) return;
 
 		event.preventDefault();

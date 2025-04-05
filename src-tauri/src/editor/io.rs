@@ -222,10 +222,10 @@ pub async fn save_user_data(state: &State<'_, AppState>) -> Result<(), String> {
 
 	let appdata_dir = get_documents_dir().join(USER_DATA_DIR);
 	fs::create_dir_all(&appdata_dir).expect("Could not create appdata directory");
-	let userdata_path = appdata_dir.join("userdata.json");
+	let userdata_path = appdata_dir.join("userdata.toml");
 
-	match serde_json::to_string_pretty(&user_data) {
-		Ok(json_content) => fs::write(userdata_path, json_content)
+	match toml::to_string_pretty(&user_data) {
+		Ok(toml_content) => fs::write(userdata_path, toml_content)
 			.map_err(|e| format!("Failed to save userdata: {}", e)),
 		Err(e) => Err(format!("Failed to serialize userdata: {}", e)),
 	}

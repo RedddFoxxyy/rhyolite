@@ -61,6 +61,17 @@ html {
   }
 }
 
+::-moz-selection {
+	/* Code for Firefox */
+	/* color: rgb(var(--color-subtext0)); */
+	background: rgb(var(--color-subtext0) / 0.3);
+}
+
+::selection {
+	/* color: rgb(var(--color-subtext0)); */
+	background: rgb(var(--color-subtext0) / 0.3);
+}
+
 /* Firefox */
 /* NOTE: without @supports, it breaks webkit scrollbars */
 @supports (scrollbar-color: auto) {

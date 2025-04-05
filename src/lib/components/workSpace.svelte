@@ -5,17 +5,14 @@
 	import type { Tab } from "$lib/types/tab";
 	import CodemirrorEditor from "$lib/components/content-editor/codemirror-editor.svelte";
 	import { contentEditorStore } from "$lib/stores/contentEditor.svelte";
-	import { listen } from "@tauri-apps/api/event";
+	import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 	import { Code, BookOpen } from "lucide-svelte";
 
 	let currentTab: Tab | null = $state(null);
 	let documentTitle: string = $state("");
-	let documentContent: any = $state();
-	let wordCount: number = $state(0);
-	let charCount: number = $state(0);
 
 	onMount(() => {
-		const currentTablisten = listen<Tab>("Current_Tab", (event) => {
+		const currentTablisten: Promise<UnlistenFn> = listen<Tab>("Current_Tab", (event) => {
 			currentTab = event.payload;
 			documentTitle = currentTab.title;
 		});
@@ -25,7 +22,7 @@
 	});
 
 	function handleTitleChange(event: Event) {
-		const target = event.target as HTMLTextAreaElement;
+		const target: HTMLTextAreaElement = event.target as HTMLTextAreaElement;
 		documentTitle = target.value;
 		if (currentTab) {
 			documentCmds.updateTabTitle(currentTab.id, target.value);
@@ -34,42 +31,28 @@
 	}
 
 	let saveTimeout: number | undefined;
-	const delaySave = 200;
+	const delaySave: number = 200;
 
-	async function handleContentChange(update: ViewUpdate) {
+	async function handleContentChange(update: ViewUpdate): Promise<void> {
 		if (update.docChanged) {
-			documentContent = update.state.doc.toString();
-			// console.log(documentContent) // Uncomment for debugging.
-			// Update word and character counts
-			const counts = calculateCounts(documentContent);
-			wordCount = counts.words;
-			charCount = counts.characters;
+			contentEditorStore.setDocumentContent(update.state.doc.toString());
 			saveDocument();
 		}
 	}
 
-	async function saveDocument() {
+	async function saveDocument(): Promise<void> {
 		// Clear the previous timeout
 		if (saveTimeout) clearTimeout(saveTimeout);
 		// Set a new timeout to trigger `saveAction` after 0.2 seconds
 		saveTimeout = setTimeout(() => {
 			if (currentTab) {
-				documentCmds.saveDocument(currentTab.id, documentTitle, documentContent);
+				documentCmds.saveDocument(
+					currentTab.id,
+					documentTitle,
+					contentEditorStore.getDocumentContent()
+				);
 			}
 		}, delaySave ?? 200);
-	}
-
-	function calculateCounts(text: string): { characters: number; words: number } {
-		const characters = text.length;
-		// Trim whitespace from start/end, split by any whitespace sequence,
-		// filter out empty strings (handles multiple spaces), and count.
-		const words = text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
-
-		return { characters, words };
-	}
-
-	function handleToggleMode() {
-		contentEditorStore.toggleDocumentMode();
 	}
 </script>
 
@@ -89,7 +72,7 @@
 		class="fixed flex flex-row gap-[20px] text-nowrap self-end bottom-[10px] right-[10px] bg-base px-[10px] py-[5px] rounded-[18px] z-10 text-text text-[0.85em] select-none"
 	>
 		<button
-			onclick={handleToggleMode}
+			onclick={() => contentEditorStore.toggleDocumentMode()}
 			class="w-full rounded-lg text-left text-text bg-transparent cursor-pointer transition-all duration-300 hover:bg-surface1"
 			title={contentEditorStore.isPreviewMode()
 				? "Switch to Source Mode."
@@ -101,7 +84,7 @@
 				<BookOpen class="w-4 h-4" />
 			{/if}
 		</button>
-		<div>{wordCount} Words</div>
-		<div>{charCount} Characters</div>
+		<div>{contentEditorStore.wordCount} Words</div>
+		<div>{contentEditorStore.charCount} Characters</div>
 	</div>
 </div>

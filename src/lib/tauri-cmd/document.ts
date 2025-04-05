@@ -2,7 +2,7 @@ import type { RecentFileInfo } from "$lib/types/document";
 import type { Tab } from "$lib/types/tab";
 import { invoke } from "@tauri-apps/api/core";
 
-// NOTE: This functioni will be soon changed or depreciated.
+// NOTE: This function will be soon changed or depreciated.
 function getAllDocumentTabs() {
 	invoke("exec_command", { cmd: "update_states" });
 }

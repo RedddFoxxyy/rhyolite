@@ -2,7 +2,7 @@
 	import { recentFilesStore } from "$lib/stores/recentFiles.svelte";
 	import { onMount } from "svelte";
 	import type { RecentFileInfo } from "$lib/types/document";
-	import { listen } from "@tauri-apps/api/event";
+	import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 	import documentCmds from "$lib/tauri-cmd/document";
 
 	let files: RecentFileInfo[] = $state([]);
@@ -11,15 +11,18 @@
 
 	onMount(() => {
 		// Listen for the 'recent_files_metadata' event from the backend
-		const recentFileslisten = listen<RecentFileInfo[]>("recent_files_metadata", (event) => {
-			files = event.payload;
-		});
+		const recentFileslisten: Promise<UnlistenFn> = listen<RecentFileInfo[]>(
+			"recent_files_metadata",
+			(event) => {
+				files = event.payload;
+			}
+		);
 		return () => {
 			recentFileslisten.then((unsub) => unsub());
 		};
 	});
 
-	function loadFiles() {
+	function loadFiles(): void {
 		try {
 			documentCmds.getRecentlyOpenedFiles();
 		} catch (error) {
@@ -27,7 +30,7 @@
 		}
 	}
 
-	function openFile(file: RecentFileInfo) {
+	function openFile(file: RecentFileInfo): void {
 		try {
 			documentCmds.loadDocument(file);
 			toggleFilesMenu();
@@ -36,12 +39,11 @@
 		}
 	}
 
-	function toggleFilesMenu() {
+	function toggleFilesMenu(): void {
 		recentFilesStore.toggleVisibility();
-		// loadFiles();
 	}
 
-	function handleKeydown(event: KeyboardEvent) {
+	function handleKeydown(event: KeyboardEvent): void {
 		if (!recentFilesStore.isVisible()) return;
 
 		switch (event.key) {

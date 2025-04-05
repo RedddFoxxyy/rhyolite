@@ -49,39 +49,88 @@ impl AppStateInner {
 		Self::load_from_userdata(&userdata_path)
 	}
 
+	fn get_userdata_from_file(userdata_path: &PathBuf) -> Result<UserData, String> {
+		// Check the extention of the userdata file first, is it the old json fomat
+		// or the new toml format.
+		let check_extention = userdata_path.extension().unwrap().to_str();
+		if check_extention.is_none() {
+			return Err("Failed to load UserData".to_string());
+		}
+		let userdata_extention = check_extention.unwrap();
+		// If the extention is json, load the deserailise the UserData struct using serde_json,
+		// else if it is toml then deserialise using toml, else return an error as wrong exetention.
+		if userdata_extention == "json" {
+			// Handle the case if it fails to load userdata.json content as string.
+			let json_content = fs::read_to_string(userdata_path);
+			if json_content.is_err() {
+				// If reading the file fails, log the error
+				let error = json_content.unwrap_err();
+				log::warn!(
+					"Failed to read userdata file: {}. Proceeding with default.",
+					error
+				);
+				return Err(format!("Failed to init app: {}", error));
+			}
+
+			let maybe_user_data = serde_json::from_str::<UserData>(&json_content.unwrap());
+			// If deserialization fails, log the error and delete the file
+			if maybe_user_data.is_err() {
+				let error = maybe_user_data.unwrap_err();
+				log::warn!(
+					"Failed to deserialize userdata: {}. Deleting the file.",
+					error
+				);
+
+				// Attempt to delete the problematic userdata file
+				if let Err(delete_err) = fs::remove_file(userdata_path) {
+					log::error!("Failed to delete corrupted userdata file: {}", delete_err);
+				}
+				return Err(format!("Failed to init app: {}", error));
+			}
+			let user_data = maybe_user_data.unwrap();
+			Ok(user_data)
+		} else if userdata_extention == "toml" {
+			let toml_content = fs::read_to_string(userdata_path);
+			if toml_content.is_err() {
+				let error = toml_content.unwrap_err();
+				log::warn!(
+					"Failed to read userdata file: {}. Proceeding with default.",
+					error
+				);
+				return Err(format!("Failed to init app: {}", error));
+			}
+
+			let maybe_user_data = toml::from_str::<UserData>(&toml_content.unwrap());
+			if maybe_user_data.is_err() {
+				let error = maybe_user_data.unwrap_err();
+				log::warn!(
+					"Failed to deserialize userdata: {}. Deleting the file.",
+					error
+				);
+
+				// Attempt to delete the problematic userdata file
+				if let Err(delete_err) = fs::remove_file(userdata_path) {
+					log::error!("Failed to delete corrupted userdata file: {}", delete_err);
+				}
+				return Err(format!("Failed to init app: {}", error));
+			}
+			let user_data = maybe_user_data.unwrap();
+			Ok(user_data)
+		} else {
+			return Err("Undefined userdata file!!! App will not load.".to_string());
+		}
+	}
+
 	pub fn load_from_userdata(userdata_path: &PathBuf) -> Result<Self, String> {
 		// Load the userdata.json content as string.
-		let json_content = fs::read_to_string(userdata_path);
-
-		// Handle the case if it fails to load userdata.json content as string.
-		if json_content.is_err() {
-			// If reading the file fails, log the error
-			let error = json_content.unwrap_err();
-			log::warn!(
-				"Failed to read userdata file: {}. Proceeding with default.",
-				error
-			);
-			return Err(format!("Failed to init app: {}", error));
-		}
-
-		// Attempt to Deserialise the json to UserData
-		let maybe_user_data = serde_json::from_str::<UserData>(&json_content.unwrap());
+		let check_user_data = Self::get_userdata_from_file(userdata_path);
 		// If deserialization fails, log the error and delete the file
-		if maybe_user_data.is_err() {
-			let error = maybe_user_data.unwrap_err();
-			log::warn!(
-				"Failed to deserialize userdata: {}. Deleting the file.",
-				error
-			);
-
-			// Attempt to delete the problematic userdata file
-			if let Err(delete_err) = fs::remove_file(userdata_path) {
-				log::error!("Failed to delete corrupted userdata file: {}", delete_err);
-			}
-			return Err(format!("Failed to init app: {}", error));
+		if check_user_data.is_err() {
+			let error = check_user_data.unwrap_err();
+			return Err(error);
 		}
 
-		let user_data = maybe_user_data.unwrap();
+		let user_data = check_user_data.unwrap();
 		let recent_files = user_data.recent_files.clone();
 		let current_tab_id = Some(user_data.last_open_tab.clone());
 		let current_theme = user_data.current_theme.clone();

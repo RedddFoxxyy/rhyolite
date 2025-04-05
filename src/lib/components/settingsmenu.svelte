@@ -4,7 +4,7 @@
 	import { settingsMenuStore } from "$lib/stores/settingsMenu.svelte";
 	import { themesStore } from "$lib/stores/themes.svelte";
 	import type { Theme, ThemeListItem } from "$lib/types/theme";
-	import { listen } from "@tauri-apps/api/event";
+	import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 	import { onMount } from "svelte";
 
 	let showThemeOptions = $state(false);
@@ -12,10 +12,10 @@
 	let themeMenu: HTMLElement | null = $state(null);
 
 	onMount(() => {
-		const currentThemelisten = listen<Theme>("update_current_theme", (event) => {
+		const currentThemelisten: Promise<UnlistenFn> = listen<Theme>("update_current_theme", (event) => {
 			themesStore.setCurrentTheme(event.payload);
 		});
-		const themeListlisten = listen<ThemeListItem[]>("themes_list", (event) => {
+		const themeListlisten: Promise<UnlistenFn> = listen<ThemeListItem[]>("themes_list", (event) => {
 			themesStore.updateThemesList(event.payload);
 		});
 		return () => {
@@ -59,7 +59,7 @@
 		}
 	];
 
-	function handleCloseEvent(e: MouseEvent | KeyboardEvent) {
+	function handleCloseEvent(e: MouseEvent | KeyboardEvent): void {
 		if (
 			(e instanceof MouseEvent && !self?.contains(e.target as Node)) ||
 			(e instanceof KeyboardEvent && e.key === "Escape")
@@ -69,8 +69,7 @@
 		}
 	}
 
-	function handleMouseLeave() {
-		console.log("Mouse left theme menu, resetting theme");
+	function handleMouseLeave(): void {
 		themesStore.resetTheme();
 	}
 

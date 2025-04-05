@@ -9,33 +9,30 @@ class ThemesStore {
 	private originalTheme: Theme | null = $state(null);
 	#isPreviewing: boolean = $state(false);
 
-	loadThemes() {
+	loadThemes(): void {
 		invoke("exec_command", { cmd: "get_loaded_themes" });
 	}
 
-	saveOriginalTheme() {
+	saveOriginalTheme(): void {
 		if (this.#currentTheme && !this.originalTheme) {
-			console.log("Saving original theme:", this.#currentTheme);
 			this.originalTheme = JSON.parse(JSON.stringify(this.#currentTheme));
 		}
 	}
 
-	async initThemesStore() {
+	async initThemesStore(): Promise<void> {
 		invoke("exec_command", { cmd: "get_current_theme" });
 	}
 
-	setCurrentTheme(theme: Theme) {
-		console.log("Setting current theme:", theme);
+	setCurrentTheme(theme: Theme): void {
 		this.#currentTheme = theme;
 		applyTheme(theme);
 	}
 
-	updateThemesList(themesList: ThemeListItem[]) {
+	updateThemesList(themesList: ThemeListItem[]): void {
 		this.themesList = themesList;
 	}
 
-	changeTheme(theme: string) {
-		console.log("Changing theme permanently to:", theme);
+	changeTheme(theme: string): void {
 		this.#isPreviewing = false;
 
 		invoke("exec_command", {
@@ -48,8 +45,7 @@ class ThemesStore {
 		settingsMenuStore.toggleVisibility();
 	}
 
-	previewTheme(theme: string) {
-		console.log("Previewing theme:", theme);
+	previewTheme(theme: string): void {
 		this.saveOriginalTheme();
 		this.#isPreviewing = true;
 
@@ -59,9 +55,8 @@ class ThemesStore {
 		});
 	}
 
-	resetTheme() {
+	resetTheme(): void {
 		if (this.#isPreviewing && this.originalTheme) {
-			console.log("Resetting to original theme:", this.originalTheme);
 			this.setCurrentTheme(this.originalTheme);
 
 			invoke("exec_command", {
@@ -74,9 +69,9 @@ class ThemesStore {
 	}
 }
 
-export const themesStore = new ThemesStore();
+export const themesStore: ThemesStore = new ThemesStore();
 
-function colorToRgb(color: string) {
+function colorToRgb(color: string): number[] {
 	let match = /^#([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})$/i.exec(color);
 	if (match) {
 		return match.slice(1).map((hex) => parseInt(hex, 16));
@@ -92,7 +87,7 @@ function colorToRgb(color: string) {
 	throw new Error(`Unsupported color: "${color}"`);
 }
 
-function applyTheme(theme: Theme) {
+function applyTheme(theme: Theme): void {
 	const root: HTMLHtmlElement = document.querySelector(":root")!;
 	Object.entries(theme.colors).forEach(([name, value]) => {
 		root.style.setProperty(`--color-${name}`, colorToRgb(value).join(" "));

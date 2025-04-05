@@ -1,7 +1,6 @@
 import type { Tab } from "$lib/types/tab";
 import { invoke } from "@tauri-apps/api/core";
 
-// TODO: Let the backend exec loading of document too!
 function switchTab(tab: Tab) {
 	// Invoke the switch_tab command
 	invoke("exec_command", {
