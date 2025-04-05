@@ -69,37 +69,13 @@
 		}
 	}
 
-	function positionRecentFilesModal() {
-		if (recentFilesStore.isVisible()) {
-			const titleElement = document.querySelector("#document-title-input");
-			const recentFilesModal: HTMLElement | null =
-				document.querySelector("#recent-files-container");
-
-			if (titleElement && recentFilesModal) {
-				const titleRect = titleElement.getBoundingClientRect();
-				const modalWidth = recentFilesModal.clientWidth;
-
-				const newTop = titleRect.bottom + 10; // 10px gap below title
-				const newLeft = titleRect.left + titleRect.width / 2 - modalWidth / 2;
-
-				recentFilesModal.style.top = `${newTop}px`;
-				recentFilesModal.style.left = `${newLeft}px`;
-				recentFilesModal.style.transform = "none"; // Remove transform since we're setting exact position
-			}
-		}
-	}
-
 	$effect(() => {
 		if (recentFilesStore.isVisible()) {
 			loadFiles();
 			(document.querySelector("#recentFilesTextArea") as HTMLTextAreaElement).focus();
-
-			setTimeout(positionRecentFilesModal, 0);
-			window.addEventListener("resize", positionRecentFilesModal);
 		} else {
 			selectedIndex = -1;
 			searchText = "";
-			window.removeEventListener("resize", positionRecentFilesModal);
 		}
 	});
 </script>
@@ -117,8 +93,7 @@
 		}}
 	>
 		<div
-			id="recent-files-container"
-			class="fixed bg-crust rounded-lg p-3 z-[60] w-min-[200px] w-[50%] h-[40%] gap-2 overflow-hidden shadow-2xl"
+			class="fixed top-[40%] left-1/2 flex flex-col bg-crust rounded-lg p-3 z-[60] w-min-[200px] w-[50%] h-[40%] gap-2 -translate-x-1/2 -translate-y-1/2 overflow-hidden"
 		>
 			<div
 				class="relative basis-[42px] w-full shrink-0 overflow-hidden shadow-none hover:shadow-xl focus:shadow-xl transition duration-300 rounded-lg"

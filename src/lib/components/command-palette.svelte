@@ -23,6 +23,7 @@
 				"#command-palette-container"
 			);
 
+
 			if (titleElement && commandPalette) {
 				const titleRect = titleElement.getBoundingClientRect();
 				const paletteWidth = commandPalette.clientWidth;
