@@ -16,28 +16,6 @@
 		action: () => void;
 	}
 
-	function positionCommandPalette() {
-		if (commandPaletteStore.isVisible()) {
-			const titleElement = document.querySelector("#document-title-input");
-			const commandPalette: HTMLElement | null = document.querySelector(
-				"#command-palette-container"
-			);
-
-
-			if (titleElement && commandPalette) {
-				const titleRect = titleElement.getBoundingClientRect();
-				const paletteWidth = commandPalette.clientWidth;
-
-				const newTop = titleRect.bottom + 10; // 10px gap below title
-				const newLeft = titleRect.left + titleRect.width / 2 - paletteWidth / 2;
-
-				commandPalette.style.top = `${newTop}px`;
-				commandPalette.style.left = `${newLeft}px`;
-				commandPalette.style.transform = "none"; // Remove transform since we're setting exact position
-			}
-		}
-	}
-
 	onMount(() => {
 		const currentTablisten = listen<Tab>("Current_Tab", (event) => {
 			currentTabId = event.payload.id;
@@ -183,12 +161,9 @@
 	$effect(() => {
 		if (commandPaletteStore.isVisible()) {
 			(document.querySelector("#commandPaletteTextArea") as HTMLTextAreaElement).focus();
-			setTimeout(positionCommandPalette, 0);
-			window.addEventListener("resize", positionCommandPalette);
 		} else {
 			selectedIndex = -1;
 			searchText = "";
-			window.removeEventListener("resize", positionCommandPalette);
 		}
 	});
 </script>
@@ -198,7 +173,7 @@
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div
-		class="fixed top-0 left-0 w-full h-full bg-black/20 backdrop-blur-xs z-20"
+		class="fixed flex justify-center items-center top-0 left-0 w-full h-full bg-black/20 backdrop-blur-xs z-20"
 		tabindex="-1"
 		aria-modal="true"
 		role="dialog"
@@ -207,8 +182,7 @@
 		}}
 	>
 		<div
-			id="command-palette-container"
-			class="fixed bg-crust rounded-lg p-3 z-[60] w-min-[200px] w-[50%] h-fit min-h-[100px] max-h-[400px] overflow-hidden shadow-2xl"
+			class="fixed top-[40%] left-1/2 flex flex-col bg-crust rounded-lg p-3 z-[60] w-min-[200px] w-[50%] h-[40%] min-h-[100px] max-h-[400px] overflow-hidden shadow-2xl -translate-x-1/2 -translate-y-1/2"
 		>
 			<div
 				class="relative basis-[42px] w-full shrink-0 overflow-hidden shadow-none hover:shadow-xl focus:shadow-xl transition duration-300 rounded-lg"
@@ -225,7 +199,7 @@
 					onclick={() => commandPaletteStore.toggleVisibility()}>✕</button
 				>
 			</div>
-			<div id="command-palette-options" class="flex overflow-y-auto flex-col pt-3">
+			<div class="flex overflow-y-auto flex-col pt-3">
 				<div>
 					{#each commands as command, index}
 						<button

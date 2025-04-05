@@ -25,7 +25,7 @@
 	});
 
 	const layout = {
-		position: { top: 150, left: 46, bottom: 10 },
+		position: { top: 150, left: 50, bottom: 10 },
 		dimensions: { width: 200, height: 200 }
 	};
 

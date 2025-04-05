@@ -243,6 +243,7 @@
 	}
 
 	.markdown-preview :global(blockquote) {
+		background-color: rgb(var(--color-base));
 		border-left: 4px solid rgb(var(--color-subtext0));
 		padding-left: 1em;
 		margin-left: 0;
@@ -250,6 +251,7 @@
 	}
 
 	.markdown-preview :global(code) {
+		background-color: rgb(var(--color-base));
 		padding: 0.2em 0.4em;
 		border-radius: 3px;
 		font-family: monospace;
@@ -260,6 +262,8 @@
 		padding: 1em;
 		border-radius: 5px;
 		overflow-x: auto;
+		width: fit-content;
+		min-width: 200px;
 	}
 
 	.markdown-preview :global(pre code) {
@@ -284,12 +288,12 @@
 
 	.markdown-preview :global(th),
 	.markdown-preview :global(td) {
-		border: 1px solid #ddd;
+		border: 1px solid rgb(var(--color-subtext0));
 		padding: 8px;
 	}
 
 	.markdown-preview :global(th) {
-		background-color: #f2f2f2;
+		background-color: rgb(var(--color-crust));
 		text-align: left;
 	}
 </style>

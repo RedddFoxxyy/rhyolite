@@ -84,7 +84,7 @@
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div
-		class="fixed top-0 left-0 w-full h-full bg-black/20 backdrop-blur-xs z-20"
+		class="fixed flex justify-center items-center top-0 left-0 w-full h-full bg-black/20 backdrop-blur-xs z-20"
 		tabindex="-1"
 		aria-modal="true"
 		role="dialog"
@@ -93,7 +93,7 @@
 		}}
 	>
 		<div
-			class="fixed top-[40%] left-1/2 flex flex-col bg-crust rounded-lg p-3 z-[60] w-min-[200px] w-[50%] h-[40%] gap-2 -translate-x-1/2 -translate-y-1/2 overflow-hidden"
+			class="fixed top-[40%] left-1/2 flex flex-col bg-crust rounded-lg p-3 z-[60] w-min-[200px] w-[50%] h-[40%] gap-2 overflow-hidden -translate-x-1/2 -translate-y-1/2"
 		>
 			<div
 				class="relative basis-[42px] w-full shrink-0 overflow-hidden shadow-none hover:shadow-xl focus:shadow-xl transition duration-300 rounded-lg"
