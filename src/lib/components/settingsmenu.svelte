@@ -109,7 +109,10 @@
 		{#each menuButtons as { label, icon: Icon, onClick, hasSubmenu }}
 			<button
 				class="w-full p-1 rounded-lg text-left text-text cursor-pointer transition-all duration-300 text-sm hover:bg-surface1 focus:bg-surface1 flex flex-row justify-between items-center"
-				on:click|stopPropagation={onClick}
+				onclick={(e) => {
+					e.stopPropagation();
+					onClick();
+				}}
 			>
 				<div class="flex flex-row gap-1.5 items-center">
 					<Icon class="w-4 h-4" />
@@ -128,14 +131,16 @@
 				tabindex="0"
 				class="absolute left-full rounded-lg p-1 bottom-[50%] mt-8 ml-1 w-max bg-base shadow-xl"
 				style="width: {layout.dimensions.width}px;"
-				on:mouseleave={handleMouseLeave}
+				onmouseleave={handleMouseLeave}
 			>
 				{#each themesStore.themesList as themeListItem}
 					<button
 						class="w-full p-1 rounded-lg text-left text-text bg-transparent cursor-pointer transition-all duration-300 text-sm hover:bg-surface1 focus:bg-surface1"
 						onmouseenter={() => themesStore.previewTheme(themeListItem.filename)}
-						on:click|stopPropagation={() =>
-							themesStore.changeTheme(themeListItem.filename)}
+						onclick={(e) => {
+							e.stopPropagation();
+							themesStore.changeTheme(themeListItem.filename);
+						}}
 					>
 						{themeListItem.name}
 					</button>

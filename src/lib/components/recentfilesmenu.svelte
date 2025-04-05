@@ -72,7 +72,8 @@
 	function positionRecentFilesModal() {
 		if (recentFilesStore.isVisible()) {
 			const titleElement = document.querySelector("#document-title-input");
-			const recentFilesModal = document.querySelector("#recent-files-container");
+			const recentFilesModal: HTMLElement | null =
+				document.querySelector("#recent-files-container");
 
 			if (titleElement && recentFilesModal) {
 				const titleRect = titleElement.getBoundingClientRect();

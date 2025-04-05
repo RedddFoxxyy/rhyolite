@@ -19,7 +19,9 @@
 	function positionCommandPalette() {
 		if (commandPaletteStore.isVisible()) {
 			const titleElement = document.querySelector("#document-title-input");
-			const commandPalette = document.querySelector("#command-palette-container");
+			const commandPalette: HTMLElement | null = document.querySelector(
+				"#command-palette-container"
+			);
 
 			if (titleElement && commandPalette) {
 				const titleRect = titleElement.getBoundingClientRect();

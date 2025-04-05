@@ -91,6 +91,9 @@
 		<button
 			onclick={handleToggleMode}
 			class="w-full rounded-lg text-left text-text bg-transparent cursor-pointer transition-all duration-300 hover:bg-surface1"
+			title={contentEditorStore.isPreviewMode()
+				? "Switch to Source Mode."
+				: "Switch to Preview Mode."}
 		>
 			{#if contentEditorStore.isPreviewMode()}
 				<Code class="w-4 h-4" />
