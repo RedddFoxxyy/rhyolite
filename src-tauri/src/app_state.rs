@@ -32,7 +32,7 @@ pub const USER_DATA_FILE: &str = "userdata.json";
 // string "Untitled_Trove" instead of this constant, replace it with
 // this constant!
 /// Name of the Default Trove used by the app!
-pub const TROVE_DIR: &str = "Untitled_Trove";
+pub const DEFAULT_TROVE_DIR: &str = "Untitled_Trove";
 
 // TODO: If you find any code in the code base, that uses
 // string "Untitled" instead of this constant, replace it with

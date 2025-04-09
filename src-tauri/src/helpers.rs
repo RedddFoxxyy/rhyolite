@@ -24,8 +24,8 @@ use uuid::Uuid;
 use crate::{
 	AppStateInner, // app_state::{CommandRegistry, FileManager, TabManager},
 	app_state::{
-		CommandRegistry, DEFAULT_NOTE_TITLE, DocumentContent, FileInfo, FileManager, TROVE_DIR,
-		Tab, TabManager, USER_DATA_DIR, USER_DATA_FILE, UserData,
+		CommandRegistry, DEFAULT_NOTE_TITLE, DEFAULT_TROVE_DIR, DocumentContent, FileInfo,
+		FileManager, Tab, TabManager, USER_DATA_DIR, USER_DATA_FILE, UserData,
 	},
 	editor::{
 		io::{fetch_document_from_disk, get_documents_dir, get_trove_dir},
@@ -52,72 +52,73 @@ impl AppStateInner {
 	fn get_userdata_from_file(userdata_path: &PathBuf) -> Result<UserData, String> {
 		// Check the extention of the userdata file first, is it the old json fomat
 		// or the new toml format.
+		// If the extention is json, load and deserailise the UserData struct using serde_json,
+		// else if it is toml then deserialise using toml, else return an error because of wrong exetention.
 		let check_extention = userdata_path.extension().unwrap().to_str();
-		if check_extention.is_none() {
-			return Err("Failed to load UserData".to_string());
-		}
-		let userdata_extention = check_extention.unwrap();
-		// If the extention is json, load the deserailise the UserData struct using serde_json,
-		// else if it is toml then deserialise using toml, else return an error as wrong exetention.
-		if userdata_extention == "json" {
-			// Handle the case if it fails to load userdata.json content as string.
-			let json_content = fs::read_to_string(userdata_path);
-			if json_content.is_err() {
-				// If reading the file fails, log the error
-				let error = json_content.unwrap_err();
-				log::warn!(
-					"Failed to read userdata file: {}. Proceeding with default.",
-					error
-				);
-				return Err(format!("Failed to init app: {}", error));
-			}
-
-			let maybe_user_data = serde_json::from_str::<UserData>(&json_content.unwrap());
-			// If deserialization fails, log the error and delete the file
-			if maybe_user_data.is_err() {
-				let error = maybe_user_data.unwrap_err();
-				log::warn!(
-					"Failed to deserialize userdata: {}. Deleting the file.",
-					error
-				);
-
-				// Attempt to delete the problematic userdata file
-				if let Err(delete_err) = fs::remove_file(userdata_path) {
-					log::error!("Failed to delete corrupted userdata file: {}", delete_err);
+		match check_extention {
+			None => Err("Failed to load UserData.".to_string()),
+			Some("json") => {
+				// Handle the case if it fails to load userdata.json content as string.
+				let json_content = fs::read_to_string(userdata_path);
+				if json_content.is_err() {
+					// If reading the file fails, log the error
+					let error = json_content.unwrap_err();
+					log::warn!(
+						"Failed to read userdata file: {}. Proceeding with default.",
+						error
+					);
+					return Err(format!("Failed to init app: {}", error));
 				}
-				return Err(format!("Failed to init app: {}", error));
-			}
-			let user_data = maybe_user_data.unwrap();
-			Ok(user_data)
-		} else if userdata_extention == "toml" {
-			let toml_content = fs::read_to_string(userdata_path);
-			if toml_content.is_err() {
-				let error = toml_content.unwrap_err();
-				log::warn!(
-					"Failed to read userdata file: {}. Proceeding with default.",
-					error
-				);
-				return Err(format!("Failed to init app: {}", error));
-			}
 
-			let maybe_user_data = toml::from_str::<UserData>(&toml_content.unwrap());
-			if maybe_user_data.is_err() {
-				let error = maybe_user_data.unwrap_err();
-				log::warn!(
-					"Failed to deserialize userdata: {}. Deleting the file.",
-					error
-				);
+				let maybe_user_data: Result<UserData, serde_json::Error> =
+					serde_json::from_str(&json_content.unwrap());
+				// If deserialization fails, log the error and delete the file
+				if maybe_user_data.is_err() {
+					let error = maybe_user_data.unwrap_err();
+					log::warn!(
+						"Failed to deserialize userdata: {}. Deleting the file.",
+						error
+					);
 
-				// Attempt to delete the problematic userdata file
-				if let Err(delete_err) = fs::remove_file(userdata_path) {
-					log::error!("Failed to delete corrupted userdata file: {}", delete_err);
+					// Attempt to delete the problematic userdata file
+					if let Err(delete_err) = fs::remove_file(userdata_path) {
+						log::error!("Failed to delete corrupted userdata file: {}", delete_err);
+					}
+					return Err(format!("Failed to init app: {}", error));
 				}
-				return Err(format!("Failed to init app: {}", error));
+				let user_data = maybe_user_data.unwrap();
+				Ok(user_data)
 			}
-			let user_data = maybe_user_data.unwrap();
-			Ok(user_data)
-		} else {
-			return Err("Undefined userdata file!!! App will not load.".to_string());
+			Some("toml") => {
+				let toml_content = fs::read_to_string(userdata_path);
+				if toml_content.is_err() {
+					let error = toml_content.unwrap_err();
+					log::warn!(
+						"Failed to read userdata file: {}. Proceeding with default.",
+						error
+					);
+					return Err(format!("Failed to init app: {}", error));
+				}
+
+				let maybe_user_data = toml::from_str::<UserData>(&toml_content.unwrap());
+				if maybe_user_data.is_err() {
+					let error = maybe_user_data.unwrap_err();
+					log::warn!(
+						"Failed to deserialize userdata: {}. Deleting the file.",
+						error
+					);
+
+					// Attempt to delete the problematic userdata file
+					if let Err(delete_err) = fs::remove_file(userdata_path) {
+						log::error!("Failed to delete corrupted userdata file: {}", delete_err);
+					}
+					return Err(format!("Failed to init app: {}", error));
+				}
+				let user_data = maybe_user_data.unwrap();
+				Ok(user_data)
+			}
+			// Return error for any undefined extention.
+			Some(_) => Err("Undefined userdata file!!! App will not load.".to_string()),
 		}
 	}
 
@@ -172,7 +173,7 @@ impl AppStateInner {
 	}
 
 	pub fn load_from_default_trove() -> Result<Self, String> {
-		let trove_dir = get_trove_dir(TROVE_DIR);
+		let trove_dir = get_trove_dir(DEFAULT_TROVE_DIR);
 		let mut tabs = IndexMap::new();
 		let mut recent_files = Vec::new();
 		let mut current_tab_id = None;

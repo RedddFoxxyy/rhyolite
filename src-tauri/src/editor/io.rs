@@ -8,7 +8,7 @@ use crate::app_state::{AppStateInner, DEFAULT_NOTE_TITLE, FileInfo};
 use crate::{
 	app_state::{
 		APP_DATA_DIR, AppState, CommandRegistrar, CommandRegistry, DocumentContent,
-		MarkdownFileData, TROVE_DIR, Tab, USER_DATA_DIR, UserData,
+		MarkdownFileData, DEFAULT_TROVE_DIR, Tab, USER_DATA_DIR, UserData,
 	},
 	editor::tabs::update_tabs_state,
 };
@@ -236,7 +236,7 @@ pub fn fetch_document_from_disk(tab_data: Tab) -> Option<MarkdownFileData> {
 	let title = tab_data.title;
 
 	// Get the path of the document using title
-	let trove_dir = get_trove_dir(TROVE_DIR);
+	let trove_dir = get_trove_dir(DEFAULT_TROVE_DIR);
 	let file_path = trove_dir.join(format!("{}.md", title));
 
 	// Check if the file exists
@@ -409,7 +409,7 @@ async fn delete_document_helper(app: AppHandle, delete_tab_id: String) {
 	drop(workspace); // drop workspace to avoid deadlock.
 
 	// Handle file operations
-	let trove_dir = get_trove_dir(TROVE_DIR);
+	let trove_dir = get_trove_dir(DEFAULT_TROVE_DIR);
 	let filename = sanitize_filename::sanitize(format!("{}.md", delete_tab_title));
 	let file_path = trove_dir.join(&filename);
 
@@ -432,7 +432,7 @@ pub async fn save_document_helper(
 	state: &State<'_, AppStateInner>,
 	document_data: MarkdownFileData,
 ) {
-	let trove_dir = get_trove_dir(TROVE_DIR);
+	let trove_dir = get_trove_dir(DEFAULT_TROVE_DIR);
 	let safe_filename = sanitize_filename::sanitize(format!("{}.md", document_data.title));
 	let file_path = trove_dir.join(&safe_filename);
 
