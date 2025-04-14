@@ -8,9 +8,9 @@ use crate::app_state::{AppStateInner, DEFAULT_NOTE_TITLE, FileInfo};
 use crate::{
 	app_state::{
 		APP_DATA_DIR, AppState, CommandRegistrar, CommandRegistry, DocumentContent,
-		MarkdownFileData, TROVE_DIR, Tab, USER_DATA_DIR, UserData,
+		MarkdownFileData, DEFAULT_TROVE_DIR, Tab, USER_DATA_DIR, UserData,
 	},
-	editor::{markdown_handler, tabs::update_tabs_state},
+	editor::tabs::update_tabs_state,
 };
 use dirs;
 
@@ -222,10 +222,10 @@ pub async fn save_user_data(state: &State<'_, AppState>) -> Result<(), String> {
 
 	let appdata_dir = get_documents_dir().join(USER_DATA_DIR);
 	fs::create_dir_all(&appdata_dir).expect("Could not create appdata directory");
-	let userdata_path = appdata_dir.join("userdata.json");
+	let userdata_path = appdata_dir.join("userdata.toml");
 
-	match serde_json::to_string_pretty(&user_data) {
-		Ok(json_content) => fs::write(userdata_path, json_content)
+	match toml::to_string_pretty(&user_data) {
+		Ok(toml_content) => fs::write(userdata_path, toml_content)
 			.map_err(|e| format!("Failed to save userdata: {}", e)),
 		Err(e) => Err(format!("Failed to serialize userdata: {}", e)),
 	}
@@ -236,7 +236,7 @@ pub fn fetch_document_from_disk(tab_data: Tab) -> Option<MarkdownFileData> {
 	let title = tab_data.title;
 
 	// Get the path of the document using title
-	let trove_dir = get_trove_dir(TROVE_DIR);
+	let trove_dir = get_trove_dir(DEFAULT_TROVE_DIR);
 	let file_path = trove_dir.join(format!("{}.md", title));
 
 	// Check if the file exists
@@ -313,10 +313,10 @@ pub async fn send_document_content(maybe_current_tab_data: Option<Tab>, app: App
 		return;
 	}
 
-	let html_output = markdown_handler::markdown_to_html(&maybe_document_data.unwrap().content);
+	let markdown_content = maybe_document_data.unwrap().content;
 
 	// Update the current content on the screen.
-	let emit_error = app.emit("current_editor_content", html_output);
+	let emit_error = app.emit("current_editor_content", markdown_content);
 	if emit_error.is_err() {
 		log::error!("Failed to emit current_editor_content!");
 	}
@@ -409,7 +409,7 @@ async fn delete_document_helper(app: AppHandle, delete_tab_id: String) {
 	drop(workspace); // drop workspace to avoid deadlock.
 
 	// Handle file operations
-	let trove_dir = get_trove_dir(TROVE_DIR);
+	let trove_dir = get_trove_dir(DEFAULT_TROVE_DIR);
 	let filename = sanitize_filename::sanitize(format!("{}.md", delete_tab_title));
 	let file_path = trove_dir.join(&filename);
 
@@ -432,8 +432,7 @@ pub async fn save_document_helper(
 	state: &State<'_, AppStateInner>,
 	document_data: MarkdownFileData,
 ) {
-	let trove_dir = get_trove_dir(TROVE_DIR);
-	let markdown_content = markdown_handler::html_to_markdown(&document_data.content);
+	let trove_dir = get_trove_dir(DEFAULT_TROVE_DIR);
 	let safe_filename = sanitize_filename::sanitize(format!("{}.md", document_data.title));
 	let file_path = trove_dir.join(&safe_filename);
 
@@ -489,7 +488,7 @@ pub async fn save_document_helper(
 	}
 
 	// Now write the new file.
-	let _ = if let Err(e) = fs::write(&file_path, markdown_content) {
+	let _ = if let Err(e) = fs::write(&file_path, &new_doc.contents) {
 		Err(format!("Failed to write file: {}", e))
 	} else {
 		Ok(file_path.to_string_lossy().to_string())

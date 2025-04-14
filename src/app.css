@@ -25,6 +25,11 @@ html {
 	--scrollbar-track-color: var(--color-surface2);
 }
 
+@font-face {
+	font-family: "JetBrains Mono";
+	src: url("/fonts/JetBrainsMono-VariableFont_wght.ttf") format("truetype");
+}
+
 * {
 	font-family: "JetBrains Mono";
 	overscroll-behavior: none;
@@ -59,6 +64,17 @@ html {
     -webkit-box-shadow: inset 0 0 6px rgba(var(--color-base) / 0.3);
     /* border: 0; */
   }
+}
+
+::-moz-selection {
+	/* Code for Firefox */
+	/* color: rgb(var(--color-subtext0)); */
+	background: rgb(var(--color-subtext0) / 0.3);
+}
+
+::selection {
+	/* color: rgb(var(--color-subtext0)); */
+	background: rgb(var(--color-subtext0) / 0.3);
 }
 
 /* Firefox */

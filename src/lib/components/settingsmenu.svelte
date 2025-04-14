@@ -4,7 +4,7 @@
 	import { settingsMenuStore } from "$lib/stores/settingsMenu.svelte";
 	import { themesStore } from "$lib/stores/themes.svelte";
 	import type { Theme, ThemeListItem } from "$lib/types/theme";
-	import { listen } from "@tauri-apps/api/event";
+	import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 	import { onMount } from "svelte";
 
 	let showThemeOptions = $state(false);
@@ -12,10 +12,10 @@
 	let themeMenu: HTMLElement | null = $state(null);
 
 	onMount(() => {
-		const currentThemelisten = listen<Theme>("update_current_theme", (event) => {
+		const currentThemelisten: Promise<UnlistenFn> = listen<Theme>("update_current_theme", (event) => {
 			themesStore.setCurrentTheme(event.payload);
 		});
-		const themeListlisten = listen<ThemeListItem[]>("themes_list", (event) => {
+		const themeListlisten: Promise<UnlistenFn> = listen<ThemeListItem[]>("themes_list", (event) => {
 			themesStore.updateThemesList(event.payload);
 		});
 		return () => {
@@ -25,7 +25,7 @@
 	});
 
 	const layout = {
-		position: { top: 150, left: 46, bottom: 10 },
+		position: { top: 150, left: 50, bottom: 10 },
 		dimensions: { width: 200, height: 200 }
 	};
 
@@ -59,7 +59,7 @@
 		}
 	];
 
-	function handleCloseEvent(e: MouseEvent | KeyboardEvent) {
+	function handleCloseEvent(e: MouseEvent | KeyboardEvent): void {
 		if (
 			(e instanceof MouseEvent && !self?.contains(e.target as Node)) ||
 			(e instanceof KeyboardEvent && e.key === "Escape")
@@ -69,8 +69,7 @@
 		}
 	}
 
-	function handleMouseLeave() {
-		console.log("Mouse left theme menu, resetting theme");
+	function handleMouseLeave(): void {
 		themesStore.resetTheme();
 	}
 
@@ -109,7 +108,10 @@
 		{#each menuButtons as { label, icon: Icon, onClick, hasSubmenu }}
 			<button
 				class="w-full p-1 rounded-lg text-left text-text cursor-pointer transition-all duration-300 text-sm hover:bg-surface1 focus:bg-surface1 flex flex-row justify-between items-center"
-				on:click|stopPropagation={onClick}
+				onclick={(e) => {
+					e.stopPropagation();
+					onClick();
+				}}
 			>
 				<div class="flex flex-row gap-1.5 items-center">
 					<Icon class="w-4 h-4" />
@@ -128,14 +130,16 @@
 				tabindex="0"
 				class="absolute left-full rounded-lg p-1 bottom-[50%] mt-8 ml-1 w-max bg-base shadow-xl"
 				style="width: {layout.dimensions.width}px;"
-				on:mouseleave={handleMouseLeave}
+				onmouseleave={handleMouseLeave}
 			>
 				{#each themesStore.themesList as themeListItem}
 					<button
 						class="w-full p-1 rounded-lg text-left text-text bg-transparent cursor-pointer transition-all duration-300 text-sm hover:bg-surface1 focus:bg-surface1"
-						on:mouseenter={() => themesStore.previewTheme(themeListItem.filename)}
-						on:click|stopPropagation={() =>
-							themesStore.changeTheme(themeListItem.filename)}
+						onmouseenter={() => themesStore.previewTheme(themeListItem.filename)}
+						onclick={(e) => {
+							e.stopPropagation();
+							themesStore.changeTheme(themeListItem.filename);
+						}}
 					>
 						{themeListItem.name}
 					</button>

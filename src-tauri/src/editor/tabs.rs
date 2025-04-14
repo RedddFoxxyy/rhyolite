@@ -9,8 +9,8 @@ use uuid::Uuid;
 
 use crate::{
 	app_state::{
-		AppState, CommandRegistrar, CommandRegistry, DEFAULT_NOTE_TITLE, MarkdownFileData,
-		TROVE_DIR, Tab,
+		AppState, CommandRegistrar, CommandRegistry, DEFAULT_NOTE_TITLE, DEFAULT_TROVE_DIR,
+		MarkdownFileData, Tab,
 	},
 	editor::io::{
 		generate_available_path, get_trove_dir, save_document_helper, save_user_data,
@@ -34,7 +34,7 @@ impl TabCommands {
 
 		let new_id = Uuid::new_v4().to_string();
 
-		let trove_dir = get_trove_dir(TROVE_DIR);
+		let trove_dir = get_trove_dir(DEFAULT_TROVE_DIR);
 
 		let new_path =
 			generate_available_path(trove_dir.join(String::from(DEFAULT_NOTE_TITLE) + ".md"));
@@ -189,7 +189,7 @@ impl TabCommands {
 
 			// Delete the file with old title, if old title exists.
 			if old_title.is_some() {
-				let trove_dir = get_trove_dir(TROVE_DIR);
+				let trove_dir = get_trove_dir(DEFAULT_TROVE_DIR);
 				let filename = sanitize_filename::sanitize(format!("{}.md", old_title.unwrap()));
 				let file_path = trove_dir.join(&filename);
 

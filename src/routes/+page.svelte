@@ -2,7 +2,7 @@
 	import { onMount } from "svelte";
 	import CommandPalette from "$lib/components/command-palette.svelte";
 	import RecentFiles from "$lib/components/recentfilesmenu.svelte";
-	import Document from "$lib/components/document.svelte";
+	import WorkSpace from "$lib/components/workSpace.svelte";
 	import TitleBar from "$lib/components/titlebar.svelte";
 	import DocumentService from "$lib/tauri-cmd/document";
 	import Sidebar from "$lib/components/sidebar.svelte";
@@ -28,7 +28,7 @@
 			<!--    Pro: possibly retained DOM states. Con: Too large DOM-->
 			<!-- 2: Have only active tab in DOM -->
 			<!--    Pro: possibly retained DOM states. Con: Too large DOM-->
-			<Document />
+			<WorkSpace />
 		</div>
 	</div>
 	<CommandPalette />

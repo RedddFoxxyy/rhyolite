@@ -2,7 +2,7 @@
 	import { recentFilesStore } from "$lib/stores/recentFiles.svelte";
 	import { onMount } from "svelte";
 	import type { RecentFileInfo } from "$lib/types/document";
-	import { listen } from "@tauri-apps/api/event";
+	import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 	import documentCmds from "$lib/tauri-cmd/document";
 
 	let files: RecentFileInfo[] = $state([]);
@@ -11,15 +11,18 @@
 
 	onMount(() => {
 		// Listen for the 'recent_files_metadata' event from the backend
-		const recentFileslisten = listen<RecentFileInfo[]>("recent_files_metadata", (event) => {
-			files = event.payload;
-		});
+		const recentFileslisten: Promise<UnlistenFn> = listen<RecentFileInfo[]>(
+			"recent_files_metadata",
+			(event) => {
+				files = event.payload;
+			}
+		);
 		return () => {
 			recentFileslisten.then((unsub) => unsub());
 		};
 	});
 
-	function loadFiles() {
+	function loadFiles(): void {
 		try {
 			documentCmds.getRecentlyOpenedFiles();
 		} catch (error) {
@@ -27,7 +30,7 @@
 		}
 	}
 
-	function openFile(file: RecentFileInfo) {
+	function openFile(file: RecentFileInfo): void {
 		try {
 			documentCmds.loadDocument(file);
 			toggleFilesMenu();
@@ -36,12 +39,11 @@
 		}
 	}
 
-	function toggleFilesMenu() {
+	function toggleFilesMenu(): void {
 		recentFilesStore.toggleVisibility();
-		// loadFiles();
 	}
 
-	function handleKeydown(event: KeyboardEvent) {
+	function handleKeydown(event: KeyboardEvent): void {
 		if (!recentFilesStore.isVisible()) return;
 
 		switch (event.key) {
@@ -69,36 +71,13 @@
 		}
 	}
 
-	function positionRecentFilesModal() {
-		if (recentFilesStore.isVisible()) {
-			const titleElement = document.querySelector("#document-title-input");
-			const recentFilesModal = document.querySelector("#recent-files-container");
-
-			if (titleElement && recentFilesModal) {
-				const titleRect = titleElement.getBoundingClientRect();
-				const modalWidth = recentFilesModal.clientWidth;
-
-				const newTop = titleRect.bottom + 10; // 10px gap below title
-				const newLeft = titleRect.left + titleRect.width / 2 - modalWidth / 2;
-
-				recentFilesModal.style.top = `${newTop}px`;
-				recentFilesModal.style.left = `${newLeft}px`;
-				recentFilesModal.style.transform = "none"; // Remove transform since we're setting exact position
-			}
-		}
-	}
-
 	$effect(() => {
 		if (recentFilesStore.isVisible()) {
 			loadFiles();
 			(document.querySelector("#recentFilesTextArea") as HTMLTextAreaElement).focus();
-
-			setTimeout(positionRecentFilesModal, 0);
-			window.addEventListener("resize", positionRecentFilesModal);
 		} else {
 			selectedIndex = -1;
 			searchText = "";
-			window.removeEventListener("resize", positionRecentFilesModal);
 		}
 	});
 </script>
@@ -107,7 +86,7 @@
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div
-		class="fixed top-0 left-0 w-full h-full bg-black/50 z-20"
+		class="fixed flex justify-center items-center top-0 left-0 w-full h-full bg-black/20 backdrop-blur-xs z-20"
 		tabindex="-1"
 		aria-modal="true"
 		role="dialog"
@@ -116,8 +95,7 @@
 		}}
 	>
 		<div
-			id="recent-files-container"
-			class="fixed bg-crust rounded-lg p-3 z-[60] w-min-[200px] w-[50%] h-[40%] gap-2 overflow-hidden"
+			class="fixed top-[40%] left-1/2 flex flex-col bg-crust rounded-lg p-3 z-[60] w-min-[200px] w-[50%] h-[40%] gap-2 overflow-hidden -translate-x-1/2 -translate-y-1/2"
 		>
 			<div
 				class="relative basis-[42px] w-full shrink-0 overflow-hidden shadow-none hover:shadow-xl focus:shadow-xl transition duration-300 rounded-lg"
