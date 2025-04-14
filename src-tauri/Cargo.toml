@@ -1,6 +1,6 @@
 [package]
 name = "Rhyolite"
-version = "0.1.8"
+version = "0.1.9"
 description = "A simple markdown editor written in Tauri, inspired by Obsidian."
 authors = ["Suyog Tandel(RedddFoxxyy)"]
 license = "GPL-3.0"
@@ -33,7 +33,7 @@ uuid = { version = "1.16.0", features = ["v4"] }
 indexmap = "2.9.0"
 regex = "1.11.1"
 # The markdown engine is not needed anymore now that we are editing the markdown code itself.
-# markdown_engine = { path = "./Crates/markdown_engine" } 
+# markdown_engine = { path = "./Crates/markdown_engine" }
 # tauri-plugin-fs = "2.2.0"
 tauri-plugin-log = "2.3.1"
 log = { version = "0.4.27"}
