@@ -5,7 +5,7 @@
 <h1 align="center">An Open Source Markdown Editor Inspired by Obsidian!</h1>
 
 ![Rhyolite Editor Preview GIF](assets/readme_gif.gif)
-![Rhyolite Editor Preview](assets/Rhyolite_is_Cool!.png)  
+![Rhyolite Editor Preview](assets/Rhyolite_is_Cool!.png)
 ![Rhyolite Editor Preview Command Palette](assets/rhyolite_command_preview.png)
 
 ### [Rhyolite](https://rhyolite.xyz/) is a simple markdown editor build using tauri framework that allows user to edit and work on markdown files.
@@ -13,23 +13,20 @@
 > Rhyolite is inspired by volcanic rocks, much like Obsidian. The project is my way to contribute and grow as a developer while sharing something meaningful with the open-source community.
 >
 > Rhyolite was a fork of [fextify](https://github.com/face-hh/fextify), but was later rewritten from scratch,
-> using sveltekit for the frontend and tauri version was changed from v1 to v2. As of now this project does not
-> share any similarities to the [fextify](https://github.com/face-hh/fextify) project.
+> using sveltekit for the frontend and tauri version was changed from v1 to v2. As of now this project does not share any similarities to the [fextify](https://github.com/face-hh/fextify) project.
 
 ## **Current Updates**
 
 ### Changes Underway
 
-- Frontend is being worked on and new features are being added.
-- A app-state based system that uses tauri events is being written in the `state-refactor` branch.
+- Frontend is being worked on and new features are being added like improving markdown editor based on codemirror.
 - Working on a adding support for more markdowns.
+- Work on a theme and plugin system is in progress.
 
 ## For New Contributors
 
 1. If you want to contribute to the app, you can work on any of the issues that have not been assigned to anyone.
 2. Join our **[Discord server](https://discord.gg/K6FAd8FTma)** to collaborate effectively.
-3. The project uses lld as the default linker for the rust code on linux systems so make sure you have lld(llvm linker) installed
-   on your linux system.(If you wish to use the default linker, comment out the code in .cargo when you build).
 
 ---
 
@@ -138,9 +135,7 @@ npm run tauri build --verbose
 
 ## Licensing
 
-> NOTE: We’re making an important update to Rhyolite’s open-source license. All past app releases
-> and their source code till commit `900aea8` will remain under Apache 2.0, but future development
-> will be licensed under GPLv3.
+This project is licensed under the terms of the GPL-3.0 open source license. Please refer to [GPL-3.0](./LICENSE) for the full terms.
 
 ```
 Copyright (C) 2025  RedddFoxxyy(Suyog Tandel)
@@ -158,3 +153,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ```
+
+## Maintainers
+
+[@RedddFoxxyy](https://github.com/RedddFoxxyy)
