@@ -87,25 +87,36 @@
 		// }
 	];
 
+	let filteredCommands: Command[] = $state(commands);
+	$effect(() => {
+		filteredCommands = commands.filter((command) =>
+			command.name.toLowerCase().includes(searchText.toLowerCase())
+		);
+	});
+
 	function handleKeydown(event: KeyboardEvent): void {
 		if (!commandPaletteStore.isVisible()) return;
 		console.log(event.key, event.shiftKey, event);
 
 		function nextEntry(): void {
 			event.preventDefault();
+			if (filteredCommands.length === 0) return;
+
 			if (selectedIndex === -1) {
 				selectedIndex = 0;
 			} else {
-				selectedIndex = (selectedIndex + 1) % commands.length;
+				selectedIndex = (selectedIndex + 1) % filteredCommands.length;
 			}
 		}
 
 		function prevEntry(): void {
 			event.preventDefault();
+			if (filteredCommands.length === 0) return;
+
 			if (selectedIndex === -1) {
 				selectedIndex = commands.length - 1;
 			} else {
-				selectedIndex = (selectedIndex - 1 + commands.length) % commands.length;
+				selectedIndex = (selectedIndex - 1 + commands.length) % filteredCommands.length;
 			}
 		}
 
@@ -123,8 +134,8 @@
 				break;
 
 			case "Enter":
-				if (selectedIndex >= 0 && selectedIndex < commands.length) {
-					commands[selectedIndex].action();
+				if (selectedIndex >= 0 && selectedIndex < filteredCommands.length) {
+					filteredCommands[selectedIndex].action();
 				}
 				break;
 
@@ -201,7 +212,7 @@
 			</div>
 			<div class="flex overflow-y-auto flex-col pt-3">
 				<div>
-					{#each commands as command, index}
+					{#each filteredCommands as command, index}
 						<button
 							type="button"
 							class="flex px-3 justify-between items-center hover:bg-surface0 cursor-pointer w-full h-[34px] text-left text-text border-none shadow-none rounded-lg transition-colors duration-200"

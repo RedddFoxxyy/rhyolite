@@ -72,8 +72,6 @@ export const markdownHighlightStyle = HighlightStyle.define([
 	},
 	{
 		tag: t.emphasis,
-		// color: "#666666",
-		color: "rgb(var(--color-subtext0) / 0.5)",
 		fontStyle: "italic"
 	},
 	{

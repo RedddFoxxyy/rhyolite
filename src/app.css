@@ -25,6 +25,11 @@ html {
 	--scrollbar-track-color: var(--color-surface2);
 }
 
+@font-face {
+	font-family: "JetBrains Mono";
+	src: url("/fonts/JetBrainsMono-VariableFont_wght.ttf") format("truetype");
+}
+
 * {
 	font-family: "JetBrains Mono";
 	overscroll-behavior: none;
