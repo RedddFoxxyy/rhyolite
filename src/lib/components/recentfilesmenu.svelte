@@ -6,6 +6,7 @@
 	import documentCmds from "$lib/tauri-cmd/document";
 
 	let files: RecentFileInfo[] = $state([]);
+	let filteredFiles: RecentFileInfo[] = $state([]);
 	let selectedIndex: number = $state(-1);
 	let searchText: string = $state("");
 
@@ -33,14 +34,10 @@
 	function openFile(file: RecentFileInfo): void {
 		try {
 			documentCmds.loadDocument(file);
-			toggleFilesMenu();
+			recentFilesStore.toggleVisibility();
 		} catch (error) {
 			console.error("Failed to open file:", error);
 		}
-	}
-
-	function toggleFilesMenu(): void {
-		recentFilesStore.toggleVisibility();
 	}
 
 	function handleKeydown(event: KeyboardEvent): void {
@@ -66,10 +63,16 @@
 				break;
 			case "Escape":
 				event.preventDefault();
-				toggleFilesMenu();
+				recentFilesStore.toggleVisibility();
 				break;
 		}
 	}
+
+	$effect(() => {
+		filteredFiles = files.filter((RecentFileInfo) => 
+			RecentFileInfo.title.toLowerCase().includes(searchText.toLowerCase())
+		);
+	});
 
 	$effect(() => {
 		if (recentFilesStore.isVisible()) {
@@ -91,7 +94,7 @@
 		aria-modal="true"
 		role="dialog"
 		onclick={(e) => {
-			if (e.target === e.currentTarget) toggleFilesMenu();
+			if (e.target === e.currentTarget) recentFilesStore.toggleVisibility();
 		}}
 	>
 		<div
@@ -109,12 +112,12 @@
 				></textarea>
 				<button
 					class="absolute right-4 top-1/2 -translate-y-1/2 bg-transparent text-text opacity-70 hover:opacity-100 transition-opacity duration-200"
-					onclick={() => toggleFilesMenu()}>✕</button
+					onclick={() => recentFilesStore.toggleVisibility()}>✕</button
 				>
 			</div>
 			<div class="flex overflow-y-auto flex-col gap-[0.5px]">
 				<div class="mx-2">
-					{#each files as file, index}
+					{#each filteredFiles as file, index}
 						<button
 							type="button"
 							class="flex px-4 justify-between items-center p-1 hover:bg-surface0 cursor-pointer w-full h-[34px] text-left text-text border-none shadow-none rounded transition-colors duration-200"

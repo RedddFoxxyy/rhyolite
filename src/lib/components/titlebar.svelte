@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Close from "$lib/static/close.svg.svelte";
-	import Maximise from "$lib/static/maximise.svg.svelte";
-	import Minimise from "$lib/static/minimise.svg.svelte";
-	import Restore from "$lib/static/restore.svg.svelte";
+	import Close from "$lib/assets/close.svg.svelte";
+	import Maximise from "$lib/assets/maximise.svg.svelte";
+	import Minimise from "$lib/assets/minimise.svg.svelte";
+	import Restore from "$lib/assets/restore.svg.svelte";
 	import { listen } from "@tauri-apps/api/event";
 	import { getCurrentWindow } from "@tauri-apps/api/window";
 	import { onMount } from "svelte";

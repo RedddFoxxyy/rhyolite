@@ -1,11 +1,11 @@
 <script lang="ts">
-	import CommandIcon from "$lib/static/command_palette.svg.svelte";
-	import RecentFilesIcon from "$lib/static/recent_files.svg.svelte";
+	import CommandIcon from "$lib/assets/command_palette.svg.svelte";
+	import RecentFilesIcon from "$lib/assets/recent_files.svg.svelte";
 	import { commandPaletteStore } from "$lib/stores/commandPalette.svelte";
 	import { recentFilesStore } from "$lib/stores/recentFiles.svelte";
-	import SettingsIcon from "$lib/static/settings.svg.svelte";
+	import SettingsIcon from "$lib/assets/settings.svg.svelte";
 	import { settingsMenuStore } from "$lib/stores/settingsMenu.svelte";
-	import SettingsMenu from "./settingsmenu.svelte";
+	import SettingsMenu from "./settingsdropdown.svelte";
 </script>
 
 <main class="h-full basis-[40px] grow-0 shrink-0 border-r-2 border-r-surface0">
