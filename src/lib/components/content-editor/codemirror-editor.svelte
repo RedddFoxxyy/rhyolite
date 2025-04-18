@@ -40,7 +40,6 @@
 	} from "$lib/components/content-editor/cm-theme.svelte";
 	import { contentEditorStore } from "$lib/stores/contentEditor.svelte";
 	import DOMPurify from "dompurify";
-	import { wysiwygPlugin } from "./cmPlugins.svelte";
 
 	// HTMLElements for Codemirror container and marked preview container
 	let editorContainer = $state<HTMLElement | null>(null);

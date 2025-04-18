@@ -4,11 +4,11 @@ use std::path::PathBuf;
 use std::{fs, sync::Arc}; //Filesystem module
 use tauri::{AppHandle, Emitter, Manager, State, Window};
 // use tauri_plugin_dialog::DialogExt; //DialogExt trait to show dialog boxes
-use crate::app_state::{AppStateInner, DEFAULT_NOTE_TITLE, FileInfo};
+use crate::app_state::{AppStateInner, DEFAULT_NOTE_TITLE, FileInfo, USER_DATA_FILE};
 use crate::{
 	app_state::{
-		APP_DATA_DIR, AppState, CommandRegistrar, CommandRegistry, DocumentContent,
-		MarkdownFileData, DEFAULT_TROVE_DIR, Tab, USER_DATA_DIR, UserData,
+		APP_DATA_DIR, AppState, CommandRegistrar, CommandRegistry, DEFAULT_TROVE_DIR,
+		DocumentContent, MarkdownFileData, Tab, USER_DATA_DIR, UserData,
 	},
 	editor::tabs::update_tabs_state,
 };
@@ -39,7 +39,7 @@ impl IOCommands {
 			log::error!("Warning: Failed to save user data: {}", e);
 		}
 		let appdata_dir = get_documents_dir().join(USER_DATA_DIR);
-		let userdata_path = appdata_dir.join("userdata.json");
+		let userdata_path = appdata_dir.join(USER_DATA_FILE);
 
 		let metadata = if userdata_path.exists() {
 			let content_result = fs::read_to_string(&userdata_path);
@@ -51,8 +51,8 @@ impl IOCommands {
 			}
 			let content = content_result.unwrap();
 
-			// Try to deserialize the JSON.
-			let user_data_result = serde_json::from_str::<UserData>(&content);
+			// Try to deserialize the TOML.
+			let user_data_result = toml::from_str::<UserData>(&content);
 			if let Err(e) = &user_data_result {
 				log::error!(
 					"Failed to get the user_data from the metadata content: {}",
@@ -206,7 +206,7 @@ pub async fn on_app_close(window: &Window) {
 	}
 }
 
-/// This function saves the user data to the userdata.json file.
+/// This function saves the user data to the USER_DATA_FILE.
 pub async fn save_user_data(state: &State<'_, AppState>) -> Result<(), String> {
 	let user_data = {
 		let tab_switcher = state.tab_switcher.read().await;
@@ -222,7 +222,7 @@ pub async fn save_user_data(state: &State<'_, AppState>) -> Result<(), String> {
 
 	let appdata_dir = get_documents_dir().join(USER_DATA_DIR);
 	fs::create_dir_all(&appdata_dir).expect("Could not create appdata directory");
-	let userdata_path = appdata_dir.join("userdata.toml");
+	let userdata_path = appdata_dir.join(USER_DATA_FILE);
 
 	match toml::to_string_pretty(&user_data) {
 		Ok(toml_content) => fs::write(userdata_path, toml_content)

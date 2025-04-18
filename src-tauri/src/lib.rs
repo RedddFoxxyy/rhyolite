@@ -28,7 +28,7 @@ pub fn run() {
 				window.set_decorations(true)?;
 				window.set_title_bar_style(tauri::TitleBarStyle::Overlay)?;
 			}
-			#[cfg(not(target_os = "macos"))]
+			#[cfg(not(any(target_os = "macos", target_os = "ios", target_os = "android")))]
 			{
 				window.set_decorations(false)?;
 			}

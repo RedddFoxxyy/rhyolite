@@ -1,7 +1,7 @@
 //! # App State.
 //! Stores the current state and defines core skeleton of the app.
 //!
-//! All the required global statics are declared in this module.
+//! All the required global statics/constants are declared in this module.
 
 use std::sync::Arc;
 use std::{collections::HashMap, future::Future, path::PathBuf, pin::Pin};
@@ -26,7 +26,7 @@ pub const APP_DATA_DIR: &str = "Rhyolite";
 // this constant!
 /// Name of the Default Note Title used by the app!
 pub const USER_DATA_DIR: &str = "appdata";
-pub const USER_DATA_FILE: &str = "userdata.json";
+pub const USER_DATA_FILE: &str = "userdata.toml";
 
 // TODO: If you find any code in the code base, that uses
 // string "Untitled_Trove" instead of this constant, replace it with

@@ -35,14 +35,14 @@ use crate::{
 use tauri::async_runtime::{Mutex, RwLock};
 
 impl AppStateInner {
-	// Loads all the last session contents from userdata.json and initialises AppStateInner.
+	// Loads all the last session contents from USER_DATA_FILE and initialises AppStateInner.
 	pub fn init_appstate() -> Result<Self, String> {
 		log::debug!("Initialising App State.");
 		let appdata_dir = get_documents_dir().join(USER_DATA_DIR);
 		let userdata_path = appdata_dir.join(USER_DATA_FILE);
 
 		if !userdata_path.exists() {
-			// If userdata.json doesn't exist, load all markdown files from the trove directory
+			// If USER_DATA_FILE doesn't exist, load all markdown files from the trove directory
 			return Self::load_from_default_trove();
 		}
 
@@ -58,7 +58,7 @@ impl AppStateInner {
 		match check_extention {
 			None => Err("Failed to load UserData.".to_string()),
 			Some("json") => {
-				// Handle the case if it fails to load userdata.json content as string.
+				// Handle the case if it fails to load USER_DATA_FILE content as string.
 				let json_content = fs::read_to_string(userdata_path);
 				if json_content.is_err() {
 					// If reading the file fails, log the error
@@ -123,7 +123,7 @@ impl AppStateInner {
 	}
 
 	pub fn load_from_userdata(userdata_path: &PathBuf) -> Result<Self, String> {
-		// Load the userdata.json content as string.
+		// Load the USER_DATA_FILE content as string.
 		let check_user_data = Self::get_userdata_from_file(userdata_path);
 		// If deserialization fails, log the error and delete the file
 		if check_user_data.is_err() {

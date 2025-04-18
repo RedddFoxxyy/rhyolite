@@ -135,7 +135,7 @@ npm run tauri build --verbose
 
 ## Licensing
 
-This project is licensed under the terms of the GPL-3.0 open source license. Please refer to [GPL-3.0](./LICENSE) for the full terms.
+This project is licensed under the terms of the GPL-3.0 open source license. Please refer to [GPL-3.0](./LICENSE.txt) for the full terms.
 
 ```
 Copyright (C) 2025  RedddFoxxyy(Suyog Tandel)
