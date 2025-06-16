@@ -19,9 +19,7 @@
 
 ### Changes Underway
 
-- Frontend is being worked on and new features are being added like improving markdown editor based on codemirror.
-- Working on a adding support for more markdowns.
-- Work on a theme and plugin system is in progress.
+- The app will be migrated from tauri to a rust native GUI framework.(WIP)
 
 ## For New Contributors
 
@@ -157,3 +155,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ## Maintainers
 
 [@RedddFoxxyy](https://github.com/RedddFoxxyy)
+
+## Thanks to all the contributers!!
+
+This project would have not been possible without the initial guidance and help of [@80avin](https://github.com/80avin), [@RaphGL](https://github.com/RaphGL) and [@prettyblueberry](https://github.com/prettyblueberry).
