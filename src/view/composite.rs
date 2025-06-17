@@ -9,14 +9,14 @@ pub fn app() -> Element {
 	let background_color = APP_THEME.read().colors.crust.clone();
 
 	rsx!(rect {
-		width: "100%",
-		height: "100%",
+		width: "fill",
+		height: "fill",
 		background: background_color,
 		direction: "vertical",
 		top_nav_bar {}
 		rect {
 			width: "100%",
-			height: "100%",
+			height: "fill",
 			direction: "horizontal",
 			side_bar{},
 			work_space{}

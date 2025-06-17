@@ -7,7 +7,7 @@ pub fn side_bar() -> Element {
 
 	rsx!(rect {
 		width: "60",
-		height: "100%",
+		height: "fill",
 		background: "transparent",
 		border: "0 2 0 0 inner {border_color}",
 		side_bar_buttons{}
@@ -70,7 +70,7 @@ fn bottom_buttons() -> Element {
 		width: "100%",
 		height: "auto",
 		spacing: "2",
-		margin: "0 0 58 0",
+		margin: "0 0 8 0",
 
 		// Settings Toggle Button
 		reactive_button {

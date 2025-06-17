@@ -1070,17 +1070,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dioxus-radio"
-version = "0.5.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "24ecc2815b0d5ca55a90ef338a5a8f5834bc81bbab679bbed2dba92d4107357c"
-dependencies = [
- "dioxus-lib",
- "generational-box",
- "warnings",
-]
-
-[[package]]
 name = "dioxus-router"
 version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1501,7 +1490,6 @@ dependencies = [
  "dioxus-signals",
  "freya-components",
  "freya-core",
- "freya-devtools",
  "freya-elements",
  "freya-engine",
  "freya-hooks",
@@ -1557,28 +1545,6 @@ dependencies = [
  "tracing",
  "uuid",
  "winit",
-]
-
-[[package]]
-name = "freya-devtools"
-version = "0.3.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab3e1ab16dc23129ce54f30aa5ce9c5099aada370dcf6fbe74cd42b20bd8d49e"
-dependencies = [
- "accesskit",
- "dioxus",
- "dioxus-radio",
- "dioxus-router",
- "freya-components",
- "freya-core",
- "freya-elements",
- "freya-engine",
- "freya-hooks",
- "freya-native-core",
- "freya-winit",
- "serde_json",
- "tokio",
- "torin",
 ]
 
 [[package]]
