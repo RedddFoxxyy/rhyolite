@@ -1,0 +1,37 @@
+[package]
+name = "Rhyolite"
+version = "0.2.0"
+description = "A simple markdown editor written in Rust, inspired by Obsidian."
+authors = ["Suyog Tandel(RedddFoxxyy)"]
+license = "GPL-3.0"
+edition = "2024"
+
+[dependencies]
+freya = { version = "0.3.4", features = ["devtools"] }
+dioxus = { version = "0.6", default-features = false, features = [
+	"macro",
+	"hooks",
+] }
+serde = { version = "1.0.219", features = ["derive"] }
+toml = "0.8.23"
+serde_json = "1.0.140"
+dirs = "6.0.0"
+sanitize-filename = "0.6.0"
+pulldown-cmark = "0.13.0"
+uuid = { version = "1.17.0", features = ["v4"] }
+indexmap = "2.9.0"
+regex = "1.11.1"
+log = { version = "0.4.27" }
+tokio = { version = "1.45.1", features = ["fs", "sync"] }
+
+
+[profile.dev]
+incremental = true  # Compile your binary in smaller steps.
+codegen-units = 256
+
+[profile.release]
+codegen-units = 1 # Allows LLVM to perform better optimization.
+# lto = true        # Enables link-time-optimizations however is not stable.
+opt-level = 3 # Prioritizes speed. Use `z` if you prefer small binary size.
+# panic = "abort" # Higher performance by disabling panic handlers.
+strip = true # Ensures debug symbols are removed.
