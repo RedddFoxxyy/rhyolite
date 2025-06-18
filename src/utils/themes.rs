@@ -1,7 +1,49 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
-use std::{fs::read_dir, path::PathBuf};
-use tokio::fs::read_to_string;
-use toml::Value;
+// use std::{
+// 	fs::{self, read_dir},
+// 	path::PathBuf,
+// };
+// use tokio::fs::read_to_string;
+// use toml::Value;
+
+include!("../build/themes_build.rs");
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ThemesStore {
+	pub store: HashMap<String, Theme>,
+	pub current_theme: Theme,
+}
+impl ThemesStore {
+	pub fn default() -> ThemesStore {
+		let mut theme_map: HashMap<String, Theme> = HashMap::new();
+
+		for (file_name, toml_str) in THEMES {
+			let theme: Theme = toml::from_str(toml_str)
+				.unwrap_or_else(|e| panic!("Error parsing {}: {}", file_name, e));
+
+			theme_map.insert(theme.info.name.clone(), theme);
+		}
+
+		ThemesStore {
+			store: theme_map,
+			current_theme: Theme::default(),
+		}
+	}
+
+	pub fn toggle_theme_test(&mut self) {
+		self.current_theme = self
+			.store
+			.get("Gruvbox Material Dark(Hard)")
+			.unwrap()
+			.clone();
+	}
+
+	pub fn change_current_theme(&mut self, theme_key: &String) {
+		self.current_theme = self.store.get(theme_key).unwrap().clone();
+	}
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct Theme {
@@ -53,8 +95,8 @@ pub struct Colors {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ThemeListItem {
-	pub filename: String, // File stem (e.g., "dark")
-	pub name: String,     // Display name from TOML (e.g., "My Dark Theme")
+	pub filename: String,
+	pub name: String,
 }
 
 impl Theme {
@@ -87,3 +129,30 @@ impl Theme {
 		}
 	}
 }
+
+// pub fn new_theme_store() -> (Vec<Theme>, Vec<String>) {
+// 	let mut default_theme_store: Vec<Theme> = Vec::new();
+// 	let mut theme_list: Vec<String> = Vec::new();
+
+// 	let themes_path = "../../app_themes";
+
+// 	for themefile in read_dir(themes_path).unwrap() {
+// 		let theme_file_path = themefile.unwrap().path();
+
+// 		if theme_file_path
+// 			.extension()
+// 			.and_then(|s| s.to_str())
+// 			.map(|ext| ext.eq_ignore_ascii_case("toml"))
+// 			.unwrap_or(false)
+// 		{
+// 			let theme_content = fs::read_to_string(&theme_file_path).unwrap();
+
+// 			let theme: Theme = toml::from_str(&theme_content).unwrap();
+// 			let theme_name = theme.info.name.clone();
+// 			default_theme_store.push(theme);
+// 			theme_list.push(theme_name);
+// 		}
+// 	}
+
+// 	(default_theme_store, theme_list)
+// }

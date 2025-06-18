@@ -1,16 +1,19 @@
-use crate::{APP_THEME, GLOBAL_APP_STATE};
+use crate::{THEME_STORE, app_state::ui_stores::SHOW_SETTINGS_DROPUP};
 use freya::prelude::*;
 
 #[component]
 pub fn side_bar() -> Element {
-	let border_color = use_memo(move || APP_THEME.read().colors.surface0.clone());
+	let theme = THEME_STORE().current_theme.colors;
 
 	rsx!(rect {
 		width: "60",
 		height: "fill",
 		background: "transparent",
-		border: "0 2 0 0 inner {border_color}",
-		side_bar_buttons{}
+		border: "0 2 0 0 inner { theme.surface0 }",
+		side_bar_buttons{},
+		if *SHOW_SETTINGS_DROPUP.read() {
+			settings_drop_up {}
+		}
 	})
 }
 
@@ -28,7 +31,7 @@ fn side_bar_buttons() -> Element {
 
 #[component]
 fn top_buttons() -> Element {
-	let text_color = use_memo(move || APP_THEME.read().colors.surface2.clone());
+	let theme = THEME_STORE().current_theme.colors;
 
 	rsx!(rect {
 		direction: "vertical",
@@ -38,23 +41,23 @@ fn top_buttons() -> Element {
 		margin: "6 0 0 0",
 
 		// Command Pallete Toggle Button
-		reactive_button {
-			on_click: move |_| return,
+		sidebar_reactive_button {
+			on_click: move |_| {THEME_STORE.write().toggle_theme_test()},
 			svg {
 				width: "100%",
 				height: "100%",
-				stroke: "{text_color}",
+				stroke: "{ theme.surface2 }",
 				svg_content: include_str!("../static/svgs/command_palette.svg")
 			}
 		},
 
 		// Recent Files Toggle Button
-		reactive_button {
+		sidebar_reactive_button {
 			on_click: move |_| return,
 			svg {
 				width: "100%",
 				height: "100%",
-				stroke: "{text_color}",
+				stroke: "{ theme.surface2 }",
 				svg_content: include_str!("../static/svgs/recent_files.svg")
 			}
 		}
@@ -63,7 +66,7 @@ fn top_buttons() -> Element {
 
 #[component]
 fn bottom_buttons() -> Element {
-	let text_color = use_memo(move || APP_THEME.read().colors.surface2.clone());
+	let theme = THEME_STORE().current_theme.colors;
 
 	rsx!(rect {
 		direction: "vertical",
@@ -73,12 +76,15 @@ fn bottom_buttons() -> Element {
 		margin: "0 0 8 0",
 
 		// Settings Toggle Button
-		reactive_button {
-			on_click: move |_| return,
+		sidebar_reactive_button {
+			on_click: move |_| {
+				let current = *SHOW_SETTINGS_DROPUP.read();
+				*SHOW_SETTINGS_DROPUP.write() = !current;
+			},
 			svg {
 				width: "100%",
 				height: "100%",
-				stroke: "{text_color}",
+				stroke: "{ theme.surface2 }",
 				svg_content: include_str!("../static/svgs/settings.svg")
 			}
 		},
@@ -86,13 +92,72 @@ fn bottom_buttons() -> Element {
 }
 
 #[component]
-fn reactive_button(on_click: EventHandler<()>, children: Element) -> Element {
-	let hover_color = use_memo(move || APP_THEME.read().colors.surface2.clone());
+fn settings_drop_up() -> Element {
+	let theme = THEME_STORE().current_theme.colors;
+	let themes_list = &THEME_STORE().store;
+	rsx!(
+		rect {
+			position: "global",
+			width: "220",
+			height: "320",
+			position_bottom: "10",
+			position_left: "65",
+			padding: "8 10",
+			background: "{theme.base}",
+			corner_radius: "20",
+			ScrollView {
+				width: "fill",
+				direction: "vertical",
+				spacing: "10",
+				for key in themes_list.keys().cloned() {
+					drop_up_item {
+						label: key,
+					}
+				}
+			}
+		}
+	)
+}
+
+#[component]
+fn drop_up_item(label: String) -> Element {
+	let theme = THEME_STORE().current_theme.colors;
+	let mut hovered = use_signal(|| false);
+	let background = if *hovered.read() {
+		theme.surface2.to_string()
+	} else {
+		"transparent".to_string()
+	};
+	let label_clone = label.clone();
+
+	rsx!(
+		rect {
+			width: "fill",
+			height: "auto",
+			background: "{background}",
+			corner_radius: "10",
+			padding: "2 5",
+			key: "{label}",
+			onclick: move |_| THEME_STORE.write().change_current_theme(&label_clone),
+			onmouseenter: move |_| hovered.set(true),
+			onmouseleave: move |_| hovered.set(false),
+			label {
+				color:"{ theme.text }",
+				font_size: "18",
+				"{label}"
+			}
+		}
+	)
+}
+
+#[component]
+fn sidebar_reactive_button(on_click: EventHandler<()>, children: Element) -> Element {
+	let theme = THEME_STORE().current_theme.colors;
 
 	let mut hovered = use_signal(|| false);
 
 	let background = if *hovered.read() {
-		hover_color.to_string()
+		theme.surface2.to_string()
 	} else {
 		"transparent".to_string()
 	};

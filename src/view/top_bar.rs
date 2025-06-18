@@ -1,10 +1,10 @@
-use crate::{APP_ICON, APP_THEME};
+use crate::{APP_ICON, THEME_STORE};
 use freya::prelude::*;
 
 #[component]
 pub fn top_nav_bar() -> Element {
 	// let background_color = &app_state_hook.workspace.current_theme.colors.base;
-	let background_color = use_memo(move || APP_THEME.read().colors.base.clone());
+	let theme = THEME_STORE().current_theme.colors;
 
 	rsx!(
 		// Will be used when this is fixed!
@@ -15,7 +15,7 @@ pub fn top_nav_bar() -> Element {
 			direction: "horizontal",
 			main_align: "space-between",
 			cross_align: "center",
-			background: "{background_color}",
+			background: "{ theme.base }",
 
 			// 1. First Child: Aligned to the LEFT
 			ActiveTabs {},
@@ -65,8 +65,7 @@ fn ActiveTabs() -> Element {
 
 #[component]
 fn tab_button(on_click: EventHandler<()>, children: Element) -> Element {
-	let background_color = use_memo(move || APP_THEME.read().colors.surface1.clone());
-	let text_color = use_memo(move || APP_THEME.read().colors.text.clone());
+	let theme = THEME_STORE().current_theme.colors;
 
 	let mut hovered = use_signal(|| false);
 
@@ -90,19 +89,19 @@ fn tab_button(on_click: EventHandler<()>, children: Element) -> Element {
 			direction: "horizontal",
 			main_align: "space-between",
 			cross_align: "center",
-			background: "{background_color}",
+			background: "{ theme.surface1 }",
 			background_opacity:"{background_opacity_hover}",
 			corner_radius: "50",
 			onclick: move |_| on_click.call(()),
 			onmouseenter: move |_| hovered.set(true),
 			onmouseleave: move |_| hovered.set(false),
 			label {
-				color: "{text_color}",
+				color: "{ theme.text }",
 				font_size: "22",
 				"Untitled"
 			},
 			label {
-				color: "{text_color}",
+				color: "{ theme.text }",
 				font_size: "20",
 				"×"
 			}
@@ -140,9 +139,7 @@ fn NavButton(on_click: EventHandler<()>, hover_color: String, children: Element)
 fn NavigationButtons() -> Element {
 	let platform = use_platform();
 
-	let text_color = use_memo(move || APP_THEME.read().colors.text.clone());
-
-	let hover_color = use_memo(move || APP_THEME.read().colors.surface2.clone());
+	let theme = THEME_STORE().current_theme.colors;
 
 	rsx!(rect {
 		direction: "horizontal",
@@ -150,23 +147,23 @@ fn NavigationButtons() -> Element {
 		height: "100%",
 		NavButton {
 			on_click: move |_| platform.toggle_minimize_window(),
-			hover_color: hover_color,
+			hover_color: "{ theme.surface2 }",
 			svg {
 				width: "100%",
 				height: "60%",
-				stroke: "{text_color}",
-				fill: "{text_color}",
+				stroke: "{ theme.text }",
+				fill: "{ theme.text }",
 				svg_content: include_str!("../static/svgs/minimise.svg")
 			}
 		},
 		NavButton {
 			on_click: move |_| platform.toggle_maximize_window(),
-			hover_color: hover_color,
+			hover_color: theme.surface2,
 			svg {
 				width: "90%",
 				height: "60%",
-				stroke: "{text_color}",
-				fill: "{text_color}",
+				stroke: "{ theme.text }",
+				fill: "{ theme.text }",
 				svg_content: include_str!("../static/svgs/maximise.svg")
 			}
 		},
@@ -176,8 +173,8 @@ fn NavigationButtons() -> Element {
 			svg {
 				width: "90%",
 				height: "60%",
-				stroke: "{text_color}",
-				fill: "{text_color}",
+				stroke: "{ theme.text }",
+				fill: "{ theme.text }",
 				svg_content: include_str!("../static/svgs/close.svg")
 			}
 		}

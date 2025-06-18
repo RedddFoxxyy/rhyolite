@@ -3,6 +3,7 @@
 //!
 //! All the required global statics/constants are declared in this module.
 
+use freya::prelude::Signal;
 use std::sync::Arc;
 use std::{collections::HashMap, future::Future, path::PathBuf, pin::Pin};
 use tokio::sync::{Mutex, RwLock};
@@ -106,11 +107,11 @@ impl Default for FileManager {
 }
 
 #[derive(Default)]
+pub struct UIStore {
+	show_settings_drop_up: Signal<bool>,
+}
+
+#[derive(Default)]
 pub struct AppState {
-	// Q: Should the TabManager have an rwlock or should the elements in
-	// TabManager have RwLock
-	// TODO: The elements in TabManager should have RwLock instead of TabManger.
-	pub tab_switcher: RwLock<TabManager>,
-	pub active_tab_switch: Arc<Mutex<()>>, // Used to avoid tab switching race condition.
-	pub workspace: FileManager,
+	ui_states: UIStore,
 }

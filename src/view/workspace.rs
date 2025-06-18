@@ -1,4 +1,4 @@
-use crate::{APP_THEME, GLOBAL_APP_STATE, view::bottom_bar::bottom_floating_bar};
+use crate::{THEME_STORE, view::bottom_bar::bottom_floating_bar};
 use freya::prelude::*;
 
 #[component]
@@ -22,8 +22,7 @@ fn document_area() -> Element {
 }
 
 fn document_title_box() -> Element {
-	let background_color = use_memo(move || APP_THEME.read().colors.base.clone());
-	let text_color = use_memo(move || APP_THEME.read().colors.text.clone());
+	let theme = THEME_STORE().current_theme.colors;
 
 	rsx!(rect{
 		width: "fill",
@@ -39,12 +38,12 @@ fn document_title_box() -> Element {
 			min_width: "300",
 			height: "fill",
 			shadow: "5 8 8 2 rgb(0, 0, 0, 22)",
-			background: "{background_color}",
+			background: "{theme.base}",
 			corner_radius: "12",
 			main_align: "center",
 			padding: "4 12",
 			label {
-				color: "{text_color}",
+				color: "{theme.text}",
 				font_size: "46",
 				"Untitled"
 			}

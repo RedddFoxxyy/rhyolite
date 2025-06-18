@@ -1,19 +1,22 @@
 use freya::prelude::*;
 
-use crate::APP_THEME;
-use crate::view::sidebar;
+use crate::THEME_STORE;
 use crate::view::{sidebar::side_bar, top_bar::top_nav_bar, workspace::work_space};
 
 // The initial View for the app, all the app components are a part of this.
 pub fn app() -> Element {
-	let background_color = APP_THEME.read().colors.crust.clone();
+	let theme = THEME_STORE().current_theme.colors;
 
 	rsx!(rect {
 		width: "fill",
 		height: "fill",
-		background: background_color,
+		background: theme.crust,
 		direction: "vertical",
+
+		// Tabs Navigation Bar
 		top_nav_bar {}
+
+		// Main Workspace
 		rect {
 			width: "100%",
 			height: "fill",
