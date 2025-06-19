@@ -1,9 +1,9 @@
 [Desktop Entry]
 Categories=Utility;TextEditor;
 Name=Rhyolite
-Comment=A simple text editor written in Rust using Tauri
+Comment=A simple markdown editor written in Rust.
 Exec=Rhyolite
-Icon=/usr/share/icons/hicolor/1080x1080/apps/Rhyolite.png
+Icon=/usr/share/icons/hicolor/512x512/apps/Rhyolite.png
 Terminal=false
 Type=Application
 Author=Suyog Tandel

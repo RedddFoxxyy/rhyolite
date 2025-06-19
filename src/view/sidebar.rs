@@ -1,4 +1,8 @@
-use crate::{THEME_STORE, app_state::ui_stores::SHOW_SETTINGS_DROPUP};
+use crate::data::ui::{
+	SHOW_COMMAND_PALETTE, SHOW_RECENT_FILES, SHOW_SETTINGS_DROPUP, SHOW_THEMES_DROPUP, THEME_STORE,
+	toggle_command_palette, toggle_recent_files, toggle_settings_dropup,
+};
+use crate::view::settings_menu::settings_drop_up;
 use freya::prelude::*;
 
 #[component]
@@ -41,8 +45,8 @@ fn top_buttons() -> Element {
 		margin: "6 0 0 0",
 
 		// Command Pallete Toggle Button
-		sidebar_reactive_button {
-			on_click: move |_| {THEME_STORE.write().toggle_theme_test()},
+		sidebar_button {
+			on_click: move |_| toggle_command_palette(),
 			svg {
 				width: "100%",
 				height: "100%",
@@ -52,8 +56,8 @@ fn top_buttons() -> Element {
 		},
 
 		// Recent Files Toggle Button
-		sidebar_reactive_button {
-			on_click: move |_| return,
+		sidebar_button {
+			on_click: move |_| toggle_recent_files(),
 			svg {
 				width: "100%",
 				height: "100%",
@@ -76,11 +80,8 @@ fn bottom_buttons() -> Element {
 		margin: "0 0 8 0",
 
 		// Settings Toggle Button
-		sidebar_reactive_button {
-			on_click: move |_| {
-				let current = *SHOW_SETTINGS_DROPUP.read();
-				*SHOW_SETTINGS_DROPUP.write() = !current;
-			},
+		sidebar_button {
+			on_click: toggle_settings_dropup,
 			svg {
 				width: "100%",
 				height: "100%",
@@ -92,103 +93,46 @@ fn bottom_buttons() -> Element {
 }
 
 #[component]
-fn settings_drop_up() -> Element {
-	let theme = THEME_STORE().current_theme.colors;
-	let themes_list = &THEME_STORE().store;
+fn sidebar_button(on_click: EventHandler<()>, children: Element) -> Element {
+	// Transition state with duration of 150ms
+	//
+	// NOTE: Instead of using a hovered signal, we might hard code it
+	// into the on_mouse_enter and on_mouse_leave closures.
+	let animation = use_animation(move |conf| {
+		conf.auto_start(false);
+		(
+			AnimColor::new("transparent", &THEME_STORE().current_theme.colors.surface2).time(150),
+			AnimNum::new(0.0, 0.2).time(150),
+		)
+	});
+
+	let (bg_color, hover_opacity) = &*animation.get().read_unchecked();
+
 	rsx!(
-		rect {
-			position: "global",
-			width: "220",
-			height: "320",
-			position_bottom: "10",
-			position_left: "65",
-			padding: "8 10",
-			background: "{theme.base}",
-			corner_radius: "20",
-			ScrollView {
-				width: "fill",
-				direction: "vertical",
-				spacing: "10",
-				for key in themes_list.keys().cloned() {
-					drop_up_item {
-						label: key,
-					}
+		CursorArea {
+			icon: CursorIcon::Pointer,
+			rect {
+				width: "100%",
+				height: "50",
+				padding: "3.5 9",
+				main_align: "center",
+				cross_align: "center",
+				rect {
+					background: "{bg_color.read()}",
+					width: "100%",
+					height: "100%",
+					padding: "1.2",
+					main_align: "center",
+					cross_align: "center",
+					background_opacity:"{hover_opacity.read()}",
+					corner_radius: "10",
+					onclick: move |_| on_click.call(()),
+					onmouseenter: move |_| animation.start(),
+					onmouseleave: move |_| animation.reverse(),
+					{children}
 				}
 			}
 		}
-	)
-}
 
-#[component]
-fn drop_up_item(label: String) -> Element {
-	let theme = THEME_STORE().current_theme.colors;
-	let mut hovered = use_signal(|| false);
-	let background = if *hovered.read() {
-		theme.surface2.to_string()
-	} else {
-		"transparent".to_string()
-	};
-	let label_clone = label.clone();
-
-	rsx!(
-		rect {
-			width: "fill",
-			height: "auto",
-			background: "{background}",
-			corner_radius: "10",
-			padding: "2 5",
-			key: "{label}",
-			onclick: move |_| THEME_STORE.write().change_current_theme(&label_clone),
-			onmouseenter: move |_| hovered.set(true),
-			onmouseleave: move |_| hovered.set(false),
-			label {
-				color:"{ theme.text }",
-				font_size: "18",
-				"{label}"
-			}
-		}
-	)
-}
-
-#[component]
-fn sidebar_reactive_button(on_click: EventHandler<()>, children: Element) -> Element {
-	let theme = THEME_STORE().current_theme.colors;
-
-	let mut hovered = use_signal(|| false);
-
-	let background = if *hovered.read() {
-		theme.surface2.to_string()
-	} else {
-		"transparent".to_string()
-	};
-
-	let background_opacity_hover = if *hovered.read() {
-		"0.2".to_string()
-	} else {
-		"0.0".to_string()
-	};
-
-	rsx!(
-		rect {
-			width: "100%",
-			height: "50",
-			padding: "3.5 9",
-			main_align: "center",
-			cross_align: "center",
-			rect {
-				background: "{background}",
-				width: "100%",
-				height: "100%",
-				padding: "1.2",
-				main_align: "center",
-				cross_align: "center",
-				background_opacity:"{background_opacity_hover}",
-				corner_radius: "10",
-				onclick: move |_| on_click.call(()),
-				onmouseenter: move |_| hovered.set(true),
-				onmouseleave: move |_| hovered.set(false),
-				{children}
-			}
-		}
 	)
 }

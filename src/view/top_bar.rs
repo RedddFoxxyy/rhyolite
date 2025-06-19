@@ -1,4 +1,4 @@
-use crate::{APP_ICON, THEME_STORE};
+use crate::{APP_ICON, data::ui::THEME_STORE};
 use freya::prelude::*;
 
 #[component]
@@ -67,45 +67,44 @@ fn ActiveTabs() -> Element {
 fn tab_button(on_click: EventHandler<()>, children: Element) -> Element {
 	let theme = THEME_STORE().current_theme.colors;
 
-	let mut hovered = use_signal(|| false);
+	let animation = use_animation(move |conf| {
+		conf.auto_start(false);
+		AnimNum::new(0.6, 0.99999).time(150)
+	});
 
-	// let background = if *hovered.read() {
-	// 	hover_color.to_string()
-	// } else {
-	// 	"transparent".to_string()
-	// };
-
-	let background_opacity_hover = if *hovered.read() {
-		"1.0".to_string()
-	} else {
-		"0.6".to_string()
-	};
+	let bg_hover_opacity = &*animation.get().read_unchecked();
 
 	rsx!(
-		rect {
-			width: "160",
-			height: "75%",
-			padding: "2 18 2 20",
-			direction: "horizontal",
-			main_align: "space-between",
-			cross_align: "center",
-			background: "{ theme.surface1 }",
-			background_opacity:"{background_opacity_hover}",
-			corner_radius: "50",
-			onclick: move |_| on_click.call(()),
-			onmouseenter: move |_| hovered.set(true),
-			onmouseleave: move |_| hovered.set(false),
-			label {
-				color: "{ theme.text }",
-				font_size: "22",
-				"Untitled"
-			},
-			label {
-				color: "{ theme.text }",
-				font_size: "20",
-				"×"
+		CursorArea {
+			icon: CursorIcon::Pointer,
+			rect {
+				width: "160",
+				height: "75%",
+				padding: "2 18 2 20",
+				direction: "horizontal",
+				main_align: "space-between",
+				cross_align: "center",
+				background: "{ theme.surface1 }",
+				background_opacity:"{ bg_hover_opacity.read() }",
+				corner_radius: "50",
+				onclick: move |_| on_click.call(()),
+				onmouseenter: move |_| animation.start(),
+				onmouseleave: move |_| animation.reverse(),
+				label {
+					color: "{ theme.text }",
+					font_size: "22",
+					font_family: "JetBrains Mono",
+					"Untitled"
+				},
+				label {
+					color: "{ theme.text }",
+					font_size: "20",
+					font_family: "JetBrains Mono",
+					"×"
+				}
 			}
 		}
+
 	)
 }
 

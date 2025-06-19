@@ -88,23 +88,23 @@ jobs:
                   tag: v${{ env.version }}
 
             # Step 2: Generate "What's Changed" block from commits
-            - name: Generate "What's Changed" block
-              id: whats_changed
-              shell: bash
-              run: |
-                  # Get commit messages between the last tag and HEAD, or use all commits if no tags exist
-                  if git describe --tags --abbrev=0 >/dev/null 2>&1; then
-                    commits=$(git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s")
-                  else
-                    commits=$(git log --pretty=format:"- %s")
-                  fi
+            # - name: Generate "What's Changed" block
+            #   id: whats_changed
+            #   shell: bash
+            #   run: |
+            #       # Get commit messages between the last tag and HEAD, or use all commits if no tags exist
+            #       if git describe --tags --abbrev=0 >/dev/null 2>&1; then
+            #         commits=$(git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s")
+            #       else
+            #         commits=$(git log --pretty=format:"- %s")
+            #       fi
 
-                  # Format for GitHub Actions output in a cross-platform way
-                  {
-                    echo "whats_changed<<EOF"
-                    echo "$commits"
-                    echo "EOF"
-                  } >> $GITHUB_OUTPUT
+            #       # Format for GitHub Actions output in a cross-platform way
+            #       {
+            #         echo "whats_changed<<EOF"
+            #         echo "$commits"
+            #         echo "EOF"
+            #       } >> $GITHUB_OUTPUT
 
             # Step 3: Publish the release with combined release body
             - uses: tauri-apps/tauri-action@v0
@@ -119,9 +119,6 @@ jobs:
                       ## Caution:
                       - This is a nightly release and thus has a lot of bugs.
                       - Only nightly builds follow a rolling release pattern.
-
-                      ## What's Changed:
-                      ${{ steps.whats_changed.outputs.whats_changed }}
 
                       ## Auto-generated Changelog:
                       ${{ steps.changelog.outputs.changes }}

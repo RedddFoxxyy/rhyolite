@@ -6,6 +6,32 @@ authors = ["Suyog Tandel(RedddFoxxyy)"]
 license = "GPL-3.0"
 edition = "2024"
 
+[package.metadata.bundle]
+name = "Rhyolite"
+identifier = "xyz.rhyolite.dev"
+icon = [
+	"./src/static/icons/icon.png",
+	"./src/static/icons/icon.ico",
+	# "./src/static/icons/icon.svg",
+	"./src/static/icons/32x32.png",
+	"./src/static/icons/64x64.png",
+	"./src/static/icons/128x128.png",
+	"./src/static/icons/128x128@2x.png",
+	"./src/static/icons/Square284x284Logo.png",
+	"./src/static/icons/Square310x310Logo.png",
+	"./src/static/icons/Square30x30Logo.png",
+]
+
+[package.metadata.generate-rpm]
+name = "Rhyolite"
+assets = [
+	{ source = "target/release/Rhyolite", dest = "/usr/bin/Rhyolite", mode = "0755" },
+    { source = "LICENSE.txt", dest = "/usr/share/doc/Rhyolite/LICENSE", doc = true, mode = "0644" },
+    { source = "packaging/linux/Rhyolite.desktop", dest = "/usr/share/applications/Rhyolite.desktop", mode = "0644" },
+    { source = "src/static/icon.png", dest = "/usr/share/icons/hicolor/512x512/apps/Rhyolite.png", mode = "0644" },
+    { source = "packaging/linux/Rhyolite.metainfo.xml", dest = "/usr/share/metainfo/Rhyolite.metainfo.xml", mode = "0644" },
+]
+
 [dependencies]
 freya = { version = "0.3.4", features = [] }
 dioxus = { version = "0.6", default-features = false, features = [
@@ -23,7 +49,6 @@ indexmap = "2.9.0"
 regex = "1.11.1"
 log = { version = "0.4.27" }
 tokio = { version = "1.45.1", features = ["fs", "sync"] }
-
 
 [profile.dev]
 incremental = true  # Compile your binary in smaller steps.

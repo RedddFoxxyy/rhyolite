@@ -51,7 +51,7 @@ pub struct MarkdownFileData {
 /// Has a unique identifier and a title(where title is the title of the Markdown File).
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Tab {
-	pub id: String,    // Unique identifier for the tab
+	pub path: String,  // Unique identifier for the tab
 	pub title: String, // Title of the tab
 }
 

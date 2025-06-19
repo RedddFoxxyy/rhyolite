@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="./src-tauri/icons/icon.png" width=256 alt="rhyolite">
+    <img src="./src/static/icon.png" width=256 alt="Rhyolite">
 </div>
 
 <h1 align="center">An Open Source Markdown Editor Inspired by Obsidian!</h1>

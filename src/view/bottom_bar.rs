@@ -1,4 +1,4 @@
-use crate::THEME_STORE;
+use crate::data::{docspace::WORD_CHAR_COUNT, ui::THEME_STORE};
 use freya::prelude::*;
 
 #[component]
@@ -15,7 +15,7 @@ pub fn bottom_floating_bar() -> Element {
 		position_bottom: "10",
 		position_right: "10",
 		background: theme.base,
-		shadow: "4 6 8 1 rgb(0, 0, 0, 20)",
+		shadow: "4 4 8 1 rgb(0, 0, 0, 10)",
 		corner_radius: "100",
 		padding: "1",
 		rect {
@@ -24,10 +24,8 @@ pub fn bottom_floating_bar() -> Element {
 			direction: "horizontal",
 			main_align: "space-evenly",
 			cross_align: "center",
-			word_count {
-			},
-			char_count {
-			}
+			word_count {},
+			char_count {}
 		}
 	})
 }
@@ -40,7 +38,8 @@ fn word_count() -> Element {
 		label {
 			color: theme.text,
 			font_size: "18",
-			"0 Words"
+			font_family: "JetBrains Mono",
+			"{ WORD_CHAR_COUNT().0 } Words"
 		}
 	})
 }
@@ -54,7 +53,8 @@ fn char_count() -> Element {
 		label {
 			color: theme.text,
 			font_size: "18",
-			"0 Characters"
+			font_family: "JetBrains Mono",
+			"{ WORD_CHAR_COUNT().1 } Characters"
 		}
 	})
 }

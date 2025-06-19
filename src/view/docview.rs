@@ -1,4 +1,4 @@
-use crate::{THEME_STORE, view::bottom_bar::bottom_floating_bar};
+use crate::{data::ui::THEME_STORE, view::bottom_bar::bottom_floating_bar};
 use freya::prelude::*;
 
 #[component]
@@ -37,7 +37,7 @@ fn document_title_box() -> Element {
 			width: "50%",
 			min_width: "300",
 			height: "fill",
-			shadow: "5 8 8 2 rgb(0, 0, 0, 22)",
+			shadow: "5 8 8 2 rgb(0, 0, 0, 10)",
 			background: "{theme.base}",
 			corner_radius: "12",
 			main_align: "center",
@@ -45,6 +45,7 @@ fn document_title_box() -> Element {
 			label {
 				color: "{theme.text}",
 				font_size: "46",
+				font_family: "JetBrains Mono",
 				"Untitled"
 			}
 		}
