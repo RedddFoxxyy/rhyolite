@@ -7,6 +7,7 @@ use freya::prelude::Signal;
 use std::sync::Arc;
 use std::{collections::HashMap, future::Future, path::PathBuf, pin::Pin};
 use tokio::sync::{Mutex, RwLock};
+use uuid::Uuid;
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -42,7 +43,7 @@ pub const DEFAULT_NOTE_TITLE: &str = "Untitled";
 /// It stores the id( a unique document identifier ), title and path of the markdown file.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MarkdownFileData {
-	pub id: String,
+	pub path: PathBuf,
 	pub title: String,
 	pub content: String,
 }
@@ -51,8 +52,9 @@ pub struct MarkdownFileData {
 /// Has a unique identifier and a title(where title is the title of the Markdown File).
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Tab {
-	pub path: String,  // Unique identifier for the tab
-	pub title: String, // Title of the tab
+	pub id: Uuid,      // Unique identifier for the tab (usually document Path)
+	pub title: String, // Title of the Document
+	pub document: Box<Option<MarkdownFileData>>,
 }
 
 ///Userdata Struct, used to store the userdata, like last open tab and all the open tabs.
@@ -62,12 +64,6 @@ pub struct UserData {
 	pub last_open_tab: String, // Stores the tab id of the last open tab
 	pub recent_files: Vec<FileInfo>, // Stores the list of recently created files
 	pub current_theme: Theme,  // Stores the current theme color palette
-}
-
-#[derive(Debug, Default, Clone)]
-pub struct TabManager {
-	pub tabs: IndexMap<String, Tab>,
-	pub current_tab_id: Option<String>,
 }
 
 /// Document open in a tab. Not to be confused with MarkdownFileData.
@@ -104,14 +100,4 @@ impl Default for FileManager {
 			recent_files: Vec::new(),
 		}
 	}
-}
-
-#[derive(Default)]
-pub struct UIStore {
-	show_settings_drop_up: Signal<bool>,
-}
-
-#[derive(Default)]
-pub struct AppState {
-	ui_states: UIStore,
 }

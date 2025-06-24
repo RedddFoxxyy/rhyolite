@@ -8,6 +8,7 @@ use freya::prelude::*;
 struct SettingsDropUpItem {
 	name: String,
 	on_click: fn(),
+	icon: &'static str,
 }
 
 #[component]
@@ -17,18 +18,22 @@ pub fn settings_drop_up() -> Element {
 		SettingsDropUpItem {
 			name: "General Settings".to_string(),
 			on_click: || return,
+			icon: include_str!("../static/svgs/sliders-horizontal.svg"),
 		},
 		SettingsDropUpItem {
 			name: "Theme".to_string(),
 			on_click: || toggle_themes_dropup(),
+			icon: include_str!("../static/svgs/palette.svg"),
 		},
 		SettingsDropUpItem {
 			name: "Keyboard Shortcuts".to_string(),
 			on_click: || return,
+			icon: include_str!("../static/svgs/keyboard.svg"),
 		},
 		SettingsDropUpItem {
 			name: "About".to_string(),
 			on_click: || return,
+			icon: include_str!("../static/svgs/info.svg"),
 		},
 	];
 	// height: "auto",
@@ -36,11 +41,11 @@ pub fn settings_drop_up() -> Element {
 	rsx!(
 		rect {
 			position: "global",
-			width: "220",
-			height: "160",
+			width: "205",
+			height: "150",
 			position_bottom: "10",
 			position_left: "65",
-			padding: "8 13 8 10",
+			padding: "6 4",
 			background: "{theme.base}",
 			corner_radius: "12",
 			rect {
@@ -70,7 +75,7 @@ fn themes_drop_up() -> Element {
 			width: "220",
 			height: "320",
 			position_bottom: "10",
-			position_left: "290",
+			position_left: "275",
 			padding: "8 13 8 10",
 			background: "{theme.base}",
 			corner_radius: "12",
@@ -164,6 +169,9 @@ fn settings_dropup_button(item: SettingsDropUpItem) -> Element {
 				background: "{bg_color.read()}",
 				corner_radius: "10",
 				padding: "5 6",
+				direction: "horizontal",
+				spacing: "5",
+				// main_align: "space-between",
 				onclick: move |_| (item.on_click)(),
 				onmouseenter: move |_| {
 					hovered.set(true);
@@ -173,9 +181,20 @@ fn settings_dropup_button(item: SettingsDropUpItem) -> Element {
 					hovered.set(false);
 					animation.reverse();
 				},
+				rect {
+					width: "20",
+					height: "20",
+					padding: "2",
+					svg {
+						width: "100%",
+						height: "100%",
+						stroke: "{ theme.text }",
+						svg_content: item.icon
+					}
+				}
 				label {
 					color:"{ theme.text }",
-					font_size: "16",
+					font_size: "14",
 					font_family: "JetBrains Mono",
 					"{label}"
 				}
