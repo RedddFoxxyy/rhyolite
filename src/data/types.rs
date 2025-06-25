@@ -52,7 +52,7 @@ pub struct MarkdownFileData {
 /// Has a unique identifier and a title(where title is the title of the Markdown File).
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Tab {
-	pub id: Uuid,      // Unique identifier for the tab (usually document Path)
+	pub index: usize,  // Unique identifier for the tab (usually document Path)
 	pub title: String, // Title of the Document
 	pub document: Box<Option<MarkdownFileData>>,
 }

@@ -5,7 +5,7 @@
 
 use crate::data::types::Tab;
 use freya::prelude::{GlobalSignal, Readable, Signal};
-use indexmap::IndexMap;
+// use indexmap::IndexMap;
 use uuid::Uuid;
 
 use super::{
@@ -14,8 +14,8 @@ use super::{
 };
 
 // Tabs Store:
-pub static TABS: GlobalSignal<IndexMap<Uuid, Tab>> = Signal::global(IndexMap::new);
-pub static CURRENT_TAB: GlobalSignal<Option<Uuid>> = Signal::global(|| None);
+pub static TABS: GlobalSignal<Vec<Tab>> = Signal::global(Vec::new);
+pub static CURRENT_TAB: GlobalSignal<Option<usize>> = Signal::global(|| None);
 
 // Tab Methods:
 
@@ -23,9 +23,13 @@ pub static CURRENT_TAB: GlobalSignal<Option<Uuid>> = Signal::global(|| None);
 fn new_tab() {
 	let document_path =
 		generate_available_path(get_trove_dir(DEFAULT_TROVE_DIR).join(DEFAULT_NOTE_TITLE));
-	let tab_id = Uuid::new_v4();
+
+	// TODO: Handle None
+	let current_tab_index = CURRENT_TAB().unwrap();
+	let new_tab_index = current_tab_index + 1;
+
 	let newtab = Tab {
-		id: tab_id,
+		index: new_tab_index,
 		title: DEFAULT_NOTE_TITLE.to_string(),
 		document: Box::new(Some(MarkdownFileData {
 			title: DEFAULT_NOTE_TITLE.to_string(),
@@ -33,6 +37,6 @@ fn new_tab() {
 			path: document_path,
 		})),
 	};
-	TABS().insert(tab_id, newtab);
-	*CURRENT_TAB.write() = Some(tab_id);
+	TABS().insert(new_tab_index, newtab);
+	*CURRENT_TAB.write() = Some(new_tab_index);
 }

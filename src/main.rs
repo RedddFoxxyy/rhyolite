@@ -20,6 +20,7 @@ fn main() {
 			.with_title("Rhyolite")
 			.with_size(1280.0, 720.0)
 			.with_font("JetBrains Mono", JET_BRAINS_MONO)
+			.with_default_font("JetBrains Mono")
 			.with_min_size(400.0, 300.0)
 			// .with_decorations(false)
 			.with_icon(LaunchConfig::load_icon(APP_ICON)),

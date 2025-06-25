@@ -1,5 +1,7 @@
+use std::{default, os::unix::process::parent_id};
+
 use crate::{data::ui::THEME_STORE, view::bottom_bar::bottom_floating_bar};
-use freya::prelude::*;
+use freya::prelude::{dioxus_elements::attributes::padding, *};
 
 #[component]
 pub fn work_space() -> Element {
@@ -24,6 +26,36 @@ fn document_area() -> Element {
 fn document_title_box() -> Element {
 	let theme = THEME_STORE().current_theme.colors;
 
+	let mut editable = use_editable(
+		|| EditableConfig::new("Untitled".trim().to_string()).with_allow_tabs(true),
+		EditableMode::MultipleLinesSingleEditor,
+	);
+
+	let cursor_reference = editable.cursor_attr();
+	let highlights = editable.highlights_attr(0);
+	let editor = editable.editor().read();
+	let cursor_char = editor.cursor_pos();
+
+	let onmousedown = move |e: MouseEvent| {
+		editable.process_event(&EditableEvent::MouseDown(e.data, 0));
+	};
+
+	let onmousemove = move |e: MouseEvent| {
+		editable.process_event(&EditableEvent::MouseMove(e.data, 0));
+	};
+
+	let onclick = move |_: MouseEvent| {
+		editable.process_event(&EditableEvent::Click);
+	};
+
+	let onglobalkeydown = move |e: KeyboardEvent| {
+		editable.process_event(&EditableEvent::KeyDown(e.data));
+	};
+
+	let onglobalkeyup = move |e: KeyboardEvent| {
+		editable.process_event(&EditableEvent::KeyUp(e.data));
+	};
+
 	rsx!(rect{
 		width: "fill",
 		height: "18%",
@@ -42,11 +74,30 @@ fn document_title_box() -> Element {
 			corner_radius: "12",
 			main_align: "center",
 			padding: "4 12",
-			label {
-				color: "{theme.text}",
-				font_size: "46",
-				font_family: "JetBrains Mono",
-				"Untitled"
+
+			CursorArea {
+				icon: CursorIcon::Text,
+				paragraph {
+					width: "fill",
+					cursor_id: "0",
+					cursor_index: "{cursor_char}",
+					cursor_mode: "editable",
+					cursor_color: "{theme.text}",
+					highlights,
+					highlight_color: "{theme.subtext1}",
+					cursor_reference,
+					onclick,
+					onmousemove,
+					onmousedown,
+					onglobalkeydown,
+					onglobalkeyup,
+					color: "{theme.text}",
+					font_size: "46",
+					font_family: "JetBrains Mono",
+					text {
+						"{editable.editor()}"
+					}
+				}
 			}
 		}
 	})
