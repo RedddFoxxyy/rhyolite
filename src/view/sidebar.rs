@@ -10,10 +10,10 @@ pub fn side_bar() -> Element {
 	let theme = THEME_STORE().current_theme.colors;
 
 	rsx!(rect {
-		width: "60",
+		width: "50",
 		height: "fill",
 		background: "transparent",
-		border: "0 2 0 0 inner { theme.surface0 }",
+		border: "0 2 0 0 outer { theme.surface0 }",
 		side_bar_buttons{},
 		if *SHOW_SETTINGS_DROPUP.read() {
 			settings_drop_up {}
@@ -41,8 +41,8 @@ fn top_buttons() -> Element {
 		direction: "vertical",
 		width: "100%",
 		height: "auto",
-		spacing: "2",
-		margin: "6 0 0 0",
+		spacing: "1",
+		margin: "5 0 0 0",
 
 		// Command Pallete Toggle Button
 		sidebar_button {
@@ -76,8 +76,8 @@ fn bottom_buttons() -> Element {
 		direction: "vertical",
 		width: "100%",
 		height: "auto",
-		spacing: "2",
-		margin: "0 0 8 0",
+		spacing: "1",
+		margin: "0 0 6 0",
 
 		// Settings Toggle Button
 		sidebar_button {
@@ -113,19 +113,19 @@ fn sidebar_button(on_click: EventHandler<()>, children: Element) -> Element {
 			icon: CursorIcon::Pointer,
 			rect {
 				width: "100%",
-				height: "50",
-				padding: "3.5 9",
+				height: "40",
+				padding: "2 6",
 				main_align: "center",
 				cross_align: "center",
 				rect {
 					background: "{bg_color.read()}",
 					width: "100%",
 					height: "100%",
-					padding: "1.2",
+					padding: "1.3",
 					main_align: "center",
 					cross_align: "center",
 					background_opacity:"{hover_opacity.read()}",
-					corner_radius: "10",
+					corner_radius: "8",
 					onclick: move |_| on_click.call(()),
 					onmouseenter: move |_| animation.start(),
 					onmouseleave: move |_| animation.reverse(),

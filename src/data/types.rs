@@ -6,10 +6,10 @@
 use freya::prelude::Signal;
 use std::sync::Arc;
 use std::{collections::HashMap, future::Future, path::PathBuf, pin::Pin};
-use tokio::sync::{Mutex, RwLock};
-use uuid::Uuid;
+// use tokio::sync::{Mutex, RwLock};
+// use uuid::Uuid;
 
-use indexmap::IndexMap;
+// use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
 use crate::utils::themes::Theme;
@@ -52,9 +52,9 @@ pub struct MarkdownFileData {
 /// Has a unique identifier and a title(where title is the title of the Markdown File).
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Tab {
-	pub index: usize,  // Unique identifier for the tab (usually document Path)
+	// pub index: usize,  // Unique identifier for the tab ( removed it for now )
 	pub title: String, // Title of the Document
-	pub document: Box<Option<MarkdownFileData>>,
+	pub document_index: usize,
 }
 
 ///Userdata Struct, used to store the userdata, like last open tab and all the open tabs.

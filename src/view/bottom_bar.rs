@@ -5,8 +5,8 @@ use freya::prelude::*;
 pub fn bottom_floating_bar() -> Element {
 	let theme = THEME_STORE().current_theme.colors;
 
-	let bar_width = 300;
-	let bar_height = 35;
+	let bar_width = 250;
+	let bar_height = 30;
 
 	rsx!(rect {
 		width: "{ bar_width }",
@@ -37,7 +37,7 @@ fn word_count() -> Element {
 		main_align: "center",
 		label {
 			color: theme.text,
-			font_size: "18",
+			font_size: "15",
 			font_family: "JetBrains Mono",
 			"{ WORD_CHAR_COUNT().0 } Words"
 		}
@@ -52,7 +52,7 @@ fn char_count() -> Element {
 
 		label {
 			color: theme.text,
-			font_size: "18",
+			font_size: "15",
 			font_family: "JetBrains Mono",
 			"{ WORD_CHAR_COUNT().1 } Characters"
 		}

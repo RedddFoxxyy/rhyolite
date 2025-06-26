@@ -9,16 +9,13 @@ dependencies = [
  "dioxus",
  "dirs",
  "freya",
- "indexmap",
  "log",
  "pulldown-cmark",
  "regex",
  "sanitize-filename",
  "serde",
  "serde_json",
- "tokio",
  "toml",
- "uuid",
 ]
 
 [[package]]
@@ -4439,7 +4436,6 @@ checksum = "3cf4199d1e5d15ddd86a694e4d0dffa9c323ce759fea589f00fef9d81cc1931d"
 dependencies = [
  "getrandom 0.3.3",
  "js-sys",
- "serde",
  "wasm-bindgen",
 ]
 

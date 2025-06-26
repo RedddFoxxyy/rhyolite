@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use std::fs;
 
+use crate::data::types::{DEFAULT_NOTE_TITLE, DEFAULT_TROVE_DIR, MarkdownFileData};
+
 use super::types::APP_DATA_DIR;
 
 /// This function returns the path to the documents' directory.
@@ -70,4 +72,93 @@ pub fn generate_available_path(path: PathBuf) -> PathBuf {
 		}
 		num += 1;
 	}
+}
+
+pub fn open_doc_from_path(path: PathBuf) -> Option<MarkdownFileData> {
+	let markdown_file = fs::read_to_string(path.clone());
+
+	// TODO: Handle this gracefully
+	let file_name = path
+		.clone()
+		.file_stem()
+		.unwrap_or_else(|| panic!("Unable to read path: {}", path.display()))
+		.to_str()
+		.unwrap()
+		.to_string();
+
+	if let Ok(content) = markdown_file {
+		Some(MarkdownFileData {
+			path,
+			title: file_name,
+			content,
+		})
+	} else {
+		None
+	}
+}
+
+pub fn new_doc_from_path(path: PathBuf) -> MarkdownFileData {
+	// TODO: Handle this gracefully
+	let file_name = path
+		.clone()
+		.file_stem()
+		.unwrap_or_else(|| panic!("Unable to read path: {}", path.display()))
+		.to_str()
+		.unwrap()
+		.to_string();
+
+	MarkdownFileData {
+		path,
+		title: file_name,
+		content: String::new(),
+	}
+}
+
+pub fn load_files_from_trove(trove_path: PathBuf) -> Vec<MarkdownFileData> {
+	let mut markdown_files_data: Vec<MarkdownFileData> = Vec::new();
+
+	if let Ok(entries) = fs::read_dir(&trove_path) {
+		for entry in entries {
+			let Ok(entry) = entry else { continue };
+			let path = entry.path();
+
+			if path.is_file() {
+				if let Some(extension) = path.extension() {
+					if extension == "md" {
+						// Read the file content
+						let content = match fs::read_to_string(&path) {
+							Ok(c) => c,
+							Err(e) => {
+								eprintln!("Error reading file {:?}: {}", path, e);
+								// TODO: Handle the error
+								continue;
+							}
+						};
+
+						let title = path
+							.file_stem()
+							.and_then(|name| name.to_str())
+							.unwrap()
+							.to_string();
+
+						let file_data = MarkdownFileData {
+							path: path.clone(),
+							title,
+							content,
+						};
+
+						markdown_files_data.push(file_data);
+					}
+				}
+			}
+		}
+	} else {
+		eprintln!("Error reading directory: {:?}", trove_path);
+	}
+
+	markdown_files_data
+}
+
+pub fn load_default_trove() -> Vec<MarkdownFileData> {
+	load_files_from_trove(get_trove_dir(DEFAULT_TROVE_DIR))
 }

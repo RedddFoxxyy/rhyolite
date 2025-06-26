@@ -1,4 +1,7 @@
-use crate::{APP_ICON, data::ui::THEME_STORE};
+use crate::{
+	APP_ICON,
+	data::{tabs::TABS, ui::THEME_STORE},
+};
 use freya::prelude::*;
 
 #[component]
@@ -11,7 +14,7 @@ pub fn top_nav_bar() -> Element {
 		// WindowDragArea {}
 		rect {
 			width: "100%",
-			height: "50",
+			height: "40",
 			direction: "horizontal",
 			main_align: "space-between",
 			cross_align: "center",
@@ -35,7 +38,7 @@ fn ActiveTabs() -> Element {
 		rect {
 			direction: "horizontal",
 			cross_align: "center",
-			padding: "0 0 0 65",
+			padding: "0 0 0 60",
 			// spacing: "5",
 
 			// App Icon Section
@@ -51,20 +54,25 @@ fn ActiveTabs() -> Element {
 			// },
 
 			// Tabs Section
-			rect {
-				height: "fill",
-				width: "auto",
-				main_align: "center",
-				tab_button {
-					on_click: move |_| return,
+			for tab in TABS() {
+				rect {
+					height: "fill",
+					width: "auto",
+					main_align: "center",
+					margin: "0 2",
+					tab_button {
+						title: tab.title,
+						on_click: move |_| return,
+					}
 				}
 			}
+
 		}
 	)
 }
 
 #[component]
-fn tab_button(on_click: EventHandler<()>, children: Element) -> Element {
+fn tab_button(title: String, on_click: EventHandler<()>, children: Element) -> Element {
 	let theme = THEME_STORE().current_theme.colors;
 
 	let animation = use_animation(move |conf| {
@@ -80,7 +88,7 @@ fn tab_button(on_click: EventHandler<()>, children: Element) -> Element {
 			rect {
 				width: "160",
 				height: "75%",
-				padding: "2 18 2 20",
+				padding: "2 12 2 15",
 				direction: "horizontal",
 				main_align: "space-between",
 				cross_align: "center",
@@ -92,13 +100,13 @@ fn tab_button(on_click: EventHandler<()>, children: Element) -> Element {
 				onmouseleave: move |_| animation.reverse(),
 				label {
 					color: "{ theme.text }",
-					font_size: "22",
+					font_size: "15",
 					font_family: "JetBrains Mono",
-					"Untitled"
+					"{title}"
 				},
 				label {
 					color: "{ theme.text }",
-					font_size: "20",
+					font_size: "17",
 					font_family: "JetBrains Mono",
 					"×"
 				}

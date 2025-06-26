@@ -58,16 +58,16 @@ fn document_title_box() -> Element {
 
 	rsx!(rect{
 		width: "fill",
-		height: "18%",
-		min_height: "100",
+		height: "15%",
+		min_height: "80",
 		max_height: "120",
 		main_align: "center",
 		cross_align: "center",
 		padding: "7",
 		margin: "16 0 0 0",
 		rect {
-			width: "50%",
-			min_width: "300",
+			width: "40%",
+			min_width: "270",
 			height: "fill",
 			shadow: "5 8 8 2 rgb(0, 0, 0, 10)",
 			background: "{theme.base}",
@@ -92,7 +92,7 @@ fn document_title_box() -> Element {
 					onglobalkeydown,
 					onglobalkeyup,
 					color: "{theme.text}",
-					font_size: "46",
+					font_size: "42",
 					font_family: "JetBrains Mono",
 					text {
 						"{editable.editor()}"
