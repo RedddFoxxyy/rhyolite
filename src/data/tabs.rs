@@ -11,6 +11,7 @@ use crate::data::{
 	types::Tab,
 };
 use freya::prelude::{GlobalSignal, Readable, Signal};
+use crate::data::docspace::ACTIVE_DOCUMENT_TITLE;
 // use indexmap::IndexMap;
 // use uuid::Uuid;
 
@@ -26,7 +27,7 @@ pub static CURRENT_TAB: GlobalSignal<Option<usize>> = Signal::global(|| None);
 // Tab Methods:
 
 /// Creates a new tab with a new markdown file.
-fn new_tab() {
+pub(crate) fn new_tab() {
 	let document_path =
 		generate_available_path(get_trove_dir(DEFAULT_TROVE_DIR).join(DEFAULT_NOTE_TITLE));
 
@@ -50,27 +51,20 @@ fn new_tab() {
 	*CURRENT_TAB.write() = Some(new_tab_index);
 }
 
-fn add_tab(title: String, file_index: usize) {
+/// Adds a tab of given title and document index.
+pub(crate) fn add_tab(title: String, document_index: usize) {
 	let newtab = Tab {
-		// index: new_tab_index,
 		title,
-		document_index: file_index,
+		document_index,
 	};
 
 	TABS.write().push(newtab);
 }
 
-/// Loads last open tabs or all tabs in default trove.
-pub fn initialise_app() {
-	let markdownfiles = load_default_trove();
-
-	if markdownfiles.is_empty() {
-		new_tab();
-	} else {
-		for file in markdownfiles {
-			let insertion_index = DOCUMENT_DATA().len();
-			add_tab(file.title.clone(), insertion_index);
-			DOCUMENT_DATA.write().push(file);
-		}
-	}
+pub fn switch_tab(index: usize) {
+	*CURRENT_TAB.write() = Some(index);
+	// TODO: Handle unwrap
+	*ACTIVE_DOCUMENT_TITLE.write() = TABS().get(index).unwrap().title.clone();
 }
+
+

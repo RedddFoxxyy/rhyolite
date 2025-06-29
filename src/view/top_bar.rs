@@ -3,6 +3,7 @@ use crate::{
 	data::{tabs::TABS, ui::THEME_STORE},
 };
 use freya::prelude::*;
+use crate::data::tabs::{switch_tab, CURRENT_TAB};
 
 #[component]
 pub fn top_nav_bar() -> Element {
@@ -54,15 +55,15 @@ fn ActiveTabs() -> Element {
 			// },
 
 			// Tabs Section
-			for tab in TABS() {
+			for (index, _tab) in TABS().iter().enumerate() {
 				rect {
 					height: "fill",
 					width: "auto",
 					main_align: "center",
 					margin: "0 2",
 					tab_button {
-						title: tab.title,
-						on_click: move |_| return,
+						index: index,
+						on_click: move |_| switch_tab(index),
 					}
 				}
 			}
@@ -72,15 +73,22 @@ fn ActiveTabs() -> Element {
 }
 
 #[component]
-fn tab_button(title: String, on_click: EventHandler<()>, children: Element) -> Element {
+fn tab_button(index: usize, on_click: EventHandler<()>, children: Element) -> Element {
 	let theme = THEME_STORE().current_theme.colors;
+	// TODO: Handle Unwrap
+	let title = TABS().get(index).unwrap().title.clone();
 
-	let animation = use_animation(move |conf| {
+	let hover_animation = use_animation(move |conf| {
 		conf.auto_start(false);
-		AnimNum::new(0.6, 0.99999).time(150)
+		if CURRENT_TAB() == Some(index) {
+			AnimNum::new(0.5, 0.99999).time(150)
+		} else {
+			AnimNum::new(0.0, 0.99999).time(150)
+		}
 	});
 
-	let bg_hover_opacity = &*animation.get().read_unchecked();
+	let bg_hover_opacity = &*hover_animation.get().read_unchecked();
+
 
 	rsx!(
 		CursorArea {
@@ -96,8 +104,8 @@ fn tab_button(title: String, on_click: EventHandler<()>, children: Element) -> E
 				background_opacity:"{ bg_hover_opacity.read() }",
 				corner_radius: "50",
 				onclick: move |_| on_click.call(()),
-				onmouseenter: move |_| animation.start(),
-				onmouseleave: move |_| animation.reverse(),
+				onmouseenter: move |_| hover_animation.start(),
+				onmouseleave: move |_| hover_animation.reverse(),
 				label {
 					color: "{ theme.text }",
 					font_size: "15",

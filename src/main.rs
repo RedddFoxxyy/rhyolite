@@ -11,8 +11,6 @@ use data::ui::JET_BRAINS_MONO;
 use freya::prelude::*;
 use view::composite::app;
 
-use crate::data::tabs::initialise_app;
-
 const APP_ICON: &[u8] = include_bytes!("./static/icon.png");
 
 fn main() {
@@ -26,5 +24,5 @@ fn main() {
 			.with_min_size(400.0, 300.0)
 			// .with_decorations(false)
 			.with_icon(LaunchConfig::load_icon(APP_ICON)),
-	);
+	)
 }

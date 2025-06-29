@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
 use std::fs;
-
-use crate::data::types::{DEFAULT_NOTE_TITLE, DEFAULT_TROVE_DIR, MarkdownFileData};
+use crate::data::docspace::{DOCUMENT_DATA, USER_DATA};
+use crate::data::types::{DEFAULT_NOTE_TITLE, DEFAULT_TROVE_DIR, MarkdownFileData, USER_DATA_DIR, USER_DATA_FILE, UserData};
 
 use super::types::APP_DATA_DIR;
 
@@ -125,11 +125,10 @@ pub fn load_files_from_trove(trove_path: PathBuf) -> Vec<MarkdownFileData> {
 			if path.is_file() {
 				if let Some(extension) = path.extension() {
 					if extension == "md" {
-						// Read the file content
 						let content = match fs::read_to_string(&path) {
 							Ok(c) => c,
 							Err(e) => {
-								eprintln!("Error reading file {:?}: {}", path, e);
+								log::error!("Error reading file {:?}: {}", path, e);
 								// TODO: Handle the error
 								continue;
 							}
@@ -153,7 +152,7 @@ pub fn load_files_from_trove(trove_path: PathBuf) -> Vec<MarkdownFileData> {
 			}
 		}
 	} else {
-		eprintln!("Error reading directory: {:?}", trove_path);
+		log::error!("Error reading directory: {:?}", trove_path);
 	}
 
 	markdown_files_data
@@ -161,4 +160,77 @@ pub fn load_files_from_trove(trove_path: PathBuf) -> Vec<MarkdownFileData> {
 
 pub fn load_default_trove() -> Vec<MarkdownFileData> {
 	load_files_from_trove(get_trove_dir(DEFAULT_TROVE_DIR))
+}
+
+pub fn load_from_userdata() -> Vec<MarkdownFileData> {
+	let userdata_path = get_rhyolite_dir().join(USER_DATA_DIR).join(USER_DATA_FILE);
+	let userdata_string = fs::read_to_string(userdata_path).expect("Could not read user data file");
+	// TODO: Handle Unwrap
+	let userdata: UserData = toml::from_str(userdata_string.as_str()).unwrap();
+	let mut markdown_files_data: Vec<MarkdownFileData> = Vec::new();
+
+	*USER_DATA.write() = userdata;
+	for tab in USER_DATA().active_tabs {
+		if let Ok(entries) = fs::read_dir(get_trove_dir(DEFAULT_TROVE_DIR)) {
+			for entry in entries {
+				let Ok(entry) = entry else { continue };
+				let path = entry.path();
+
+				// NOTE: Wrote this half asleep, do not judge :(
+				if path.is_file() && path.file_name().unwrap().to_str().unwrap() == tab.title {
+    					if let Some(extension) = path.extension() {
+    						if extension == "md" {
+    							let content = match fs::read_to_string(&path) {
+    								Ok(c) => c,
+    								Err(e) => {
+    									log::error!("Error reading file {:?}: {}", path, e);
+    									// TODO: Handle the error
+    									continue;
+    								}
+    							};
+
+    							let title = path
+    								.file_stem()
+    								.and_then(|name| name.to_str())
+    								.unwrap()
+    								.to_string();
+
+    							let file_data = MarkdownFileData {
+    								path: path.clone(),
+    								title,
+    								content,
+    							};
+
+    							markdown_files_data.push(file_data);
+    						}
+    					}
+    				}
+			}
+		} else {
+			log::error!("Error reading directory.");
+		}
+
+	}
+	markdown_files_data
+}
+
+/// Loads last saved State of the App.
+pub fn initialise_app() {
+	let userdata_path = get_rhyolite_dir().join(USER_DATA_DIR).join(USER_DATA_FILE);
+
+	let markdownfiles = if !userdata_path.exists() {
+		load_default_trove()
+	} else {
+		load_from_userdata()
+	};
+
+	if markdownfiles.is_empty() {
+		crate::data::tabs::new_tab();
+	} else {
+		for file in markdownfiles {
+			let insertion_index = DOCUMENT_DATA().len();
+			crate::data::tabs::add_tab(file.title.clone(), insertion_index);
+			DOCUMENT_DATA.write().push(file);
+		}
+	}
 }

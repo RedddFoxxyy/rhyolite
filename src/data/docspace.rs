@@ -6,12 +6,16 @@
 use freya::prelude::{GlobalSignal, Readable, Signal};
 // use indexmap::IndexMap;
 
-use crate::data::types::MarkdownFileData;
+use crate::data::types::{FileInfo, MarkdownFileData, UserData};
+// TODO: Should each variable be stored seperate in a global signal or all should be grouped together in a struct and the struct be saved in a global sinal.
 
 // Document Counts Store:
 pub static WORD_CHAR_COUNT: GlobalSignal<(u32, u64)> = Signal::global(|| (0, 0));
 
 // Documents Store:
 pub static DOCUMENT_DATA: GlobalSignal<Vec<MarkdownFileData>> = Signal::global(Vec::new);
+pub static ACTIVE_DOCUMENT_TITLE: GlobalSignal<String> = Signal::global(String::new);
 
-pub static DOCUMENT_TITLE: GlobalSignal<String> = Signal::global(String::new);
+// IO Store:
+pub static RECENT_FILES: GlobalSignal<Vec<FileInfo>> = Signal::global(Vec::new);
+pub static USER_DATA: GlobalSignal<UserData> = Signal::global(UserData::default);

@@ -50,7 +50,7 @@ pub struct MarkdownFileData {
 
 /// Denotes a tab in the editor.
 /// Has a unique identifier and a title(where title is the title of the Markdown File).
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct Tab {
 	// pub index: usize,  // Unique identifier for the tab ( removed it for now )
 	pub title: String, // Title of the Document
@@ -58,7 +58,7 @@ pub struct Tab {
 }
 
 ///Userdata Struct, used to store the userdata, like last open tab and all the open tabs.
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct UserData {
 	pub active_tabs: Vec<Tab>, // Stores the list of last active tabs before the editor was closed
 	pub last_open_tab: String, // Stores the tab id of the last open tab
