@@ -54,7 +54,6 @@ pub fn side_bar() -> Element {
 						dropdown::button {
 							label: theme,
 							on_click: |theme| THEME_STORE.write().change_current_theme(theme),
-							icon: "",
 						}
 					}
 				}
