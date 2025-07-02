@@ -11,7 +11,7 @@ pub fn menu(children: Element) -> Element {
 		rect {
 			position: "global",
 			width: "205",
-			height: "150",
+			height: "132",
 			position_bottom: "10",
 			position_left: "55",
 			padding: "6 4",
