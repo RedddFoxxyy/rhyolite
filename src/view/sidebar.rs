@@ -1,13 +1,37 @@
 use crate::data::ui::{
-	SHOW_COMMAND_PALETTE, SHOW_RECENT_FILES, SHOW_SETTINGS_DROPUP, SHOW_THEMES_DROPUP, THEME_STORE,
-	toggle_command_palette, toggle_recent_files, toggle_settings_dropup,
+	SHOW_SETTINGS_DROPUP, SHOW_THEMES_DROPUP, THEME_STORE, toggle_command_palette,
+	toggle_recent_files, toggle_settings_dropup, toggle_themes_dropup,
 };
-use crate::view::settings_menu::settings_drop_up;
+use crate::view::dropdown;
 use freya::prelude::*;
 
 #[component]
 pub fn side_bar() -> Element {
 	let theme = THEME_STORE().current_theme.colors;
+	let themes_list = THEME_STORE().store;
+
+	let settings_list: [dropdown::ButtonProps; 4] = [
+		dropdown::ButtonProps {
+			label: "General Settings".to_string(),
+			on_click: |_| return,
+			icon: Some(include_str!("../static/svgs/sliders-horizontal.svg")),
+		},
+		dropdown::ButtonProps {
+			label: "Theme".to_string(),
+			on_click: |_| toggle_themes_dropup(),
+			icon: Some(include_str!("../static/svgs/palette.svg")),
+		},
+		dropdown::ButtonProps {
+			label: "Keyboard Shortcuts".to_string(),
+			on_click: |_| return,
+			icon: Some(include_str!("../static/svgs/keyboard.svg")),
+		},
+		dropdown::ButtonProps {
+			label: "About".to_string(),
+			on_click: |_| return,
+			icon: Some(include_str!("../static/svgs/info.svg")),
+		},
+	];
 
 	rsx!(rect {
 		width: "50",
@@ -16,7 +40,24 @@ pub fn side_bar() -> Element {
 		border: "0 2 0 0 outer { theme.surface0 }",
 		side_bar_buttons{},
 		if *SHOW_SETTINGS_DROPUP.read() {
-			settings_drop_up {}
+			dropdown::menu {
+				rect {
+					for setting in settings_list {
+						dropdown::button{..setting}
+					}
+				}
+			}
+
+			if *SHOW_THEMES_DROPUP.read() {
+				dropdown::submenu {
+					for theme in themes_list.keys().cloned() {
+						dropdown::button {
+							label: theme,
+							on_click: |theme| THEME_STORE.write().change_current_theme(theme),
+						}
+					}
+				}
+			}
 		}
 	})
 }
