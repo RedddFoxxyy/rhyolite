@@ -332,3 +332,4 @@ web_modules/
 /build
 /.idea
 /.vscode
+/src/build

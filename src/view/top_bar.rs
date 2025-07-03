@@ -1,9 +1,9 @@
+use crate::data::tabs::{CURRENT_TAB, switch_tab};
 use crate::{
 	APP_ICON,
 	data::{tabs::TABS, ui::THEME_STORE},
 };
 use freya::prelude::*;
-use crate::data::tabs::{switch_tab, CURRENT_TAB};
 
 #[component]
 pub fn top_nav_bar() -> Element {
@@ -79,7 +79,7 @@ fn tab_button(index: usize, on_click: EventHandler<()>, children: Element) -> El
 	let title = TABS().get(index).unwrap().title.clone();
 
 	let hover_animation = use_animation(move |conf| {
-		conf.auto_start(false);
+		// conf.auto_start(false);
 		if CURRENT_TAB() == Some(index) {
 			AnimNum::new(0.5, 0.99999).time(150)
 		} else {
@@ -88,7 +88,6 @@ fn tab_button(index: usize, on_click: EventHandler<()>, children: Element) -> El
 	});
 
 	let bg_hover_opacity = &*hover_animation.get().read_unchecked();
-
 
 	rsx!(
 		CursorArea {

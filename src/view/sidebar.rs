@@ -140,7 +140,7 @@ fn sidebar_button(on_click: EventHandler<()>, children: Element) -> Element {
 	// NOTE: Instead of using a hovered signal, we might hard code it
 	// into the on_mouse_enter and on_mouse_leave closures.
 	let animation = use_animation(move |conf| {
-		conf.auto_start(false);
+		// conf.auto_start(false);
 		(
 			AnimColor::new("transparent", &THEME_STORE().current_theme.colors.surface2).time(150),
 			AnimNum::new(0.0, 0.2).time(150),
