@@ -1,7 +1,9 @@
-use crate::data::tabs::{CURRENT_TAB, switch_tab};
 use crate::{
 	APP_ICON,
-	data::{tabs::TABS, ui::THEME_STORE},
+	data::stores::{
+		tabs::{CURRENT_TAB, TABS, close_tab, switch_tab},
+		ui::THEME_STORE,
+	},
 };
 use freya::prelude::*;
 
@@ -115,11 +117,11 @@ fn tab_button(index: usize, on_click: EventHandler<()>, children: Element) -> El
 					color: "{ theme.text }",
 					font_size: "17",
 					font_family: "JetBrains Mono",
+					onclick: move |_| close_tab(index),
 					"×"
 				}
 			}
 		}
-
 	)
 }
 

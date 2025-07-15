@@ -1,4 +1,4 @@
-use crate::data::ui::{
+use crate::data::stores::ui::{
 	SHOW_SETTINGS_DROPUP, SHOW_THEMES_DROPUP, THEME_STORE, toggle_command_palette,
 	toggle_recent_files, toggle_settings_dropup, toggle_themes_dropup,
 };

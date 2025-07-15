@@ -1,4 +1,4 @@
-use crate::data::ui::THEME_STORE;
+use crate::data::stores::ui::THEME_STORE;
 use freya::prelude::*;
 
 #[component]

@@ -4,10 +4,9 @@
 )]
 
 mod data;
-mod utils;
 mod view;
 
-use data::ui::JET_BRAINS_MONO;
+use data::stores::ui::JET_BRAINS_MONO;
 use freya::prelude::*;
 use view::composite::app;
 

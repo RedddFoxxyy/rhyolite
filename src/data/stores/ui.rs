@@ -3,11 +3,11 @@
 //! I made these global signals cause it was the easy way to share a component state between
 //! different components. While this might not be the best way to do it, it works.
 
-use crate::utils::themes::ThemesStore;
+use crate::data::themes::ThemesStore;
 use freya::prelude::{GlobalSignal, Readable, Signal};
 
 // Fonts:
-pub static JET_BRAINS_MONO: &[u8] = include_bytes!("../static/fonts/JetBrainsMono[wght].ttf");
+pub static JET_BRAINS_MONO: &[u8] = include_bytes!("../../static/fonts/JetBrainsMono[wght].ttf");
 
 // Stores the current App Theme
 pub static THEME_STORE: GlobalSignal<ThemesStore> = Signal::global(ThemesStore::default);

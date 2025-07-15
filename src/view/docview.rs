@@ -1,7 +1,5 @@
-use std::{default, os::unix::process::parent_id};
-
-use crate::{data::ui::THEME_STORE, view::bottom_bar::bottom_floating_bar};
-use freya::prelude::{dioxus_elements::attributes::padding, *};
+use crate::{data::stores::ui::THEME_STORE, view::bottom_bar::bottom_floating_bar};
+use freya::prelude::*;
 
 #[component]
 pub fn work_space() -> Element {

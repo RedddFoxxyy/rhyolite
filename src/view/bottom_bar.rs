@@ -1,4 +1,4 @@
-use crate::data::{docspace::WORD_CHAR_COUNT, ui::THEME_STORE};
+use crate::data::stores::{docspace::WORD_CHAR_COUNT, ui::THEME_STORE};
 use freya::prelude::*;
 
 #[component]

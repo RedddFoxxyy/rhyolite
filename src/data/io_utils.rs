@@ -1,10 +1,14 @@
+use crate::data::{
+	stores::{
+		docspace::{FILES_BUFFER, USER_DATA},
+		tabs::{new_tab, push_tab},
+	},
+	types::{DEFAULT_TROVE_DIR, MarkdownFile, USER_DATA_DIR, USER_DATA_FILE, UserData},
+};
+use std::fs;
 use std::path::PathBuf;
 
-use std::fs;
-use crate::data::docspace::{DOCUMENT_DATA, USER_DATA};
-use crate::data::types::{DEFAULT_NOTE_TITLE, DEFAULT_TROVE_DIR, MarkdownFileData, USER_DATA_DIR, USER_DATA_FILE, UserData};
-
-use super::types::APP_DATA_DIR;
+use super::{stores::tabs::CURRENT_TAB, types::APP_DATA_DIR};
 
 /// This function returns the path to the documents' directory.
 pub fn get_rhyolite_dir() -> PathBuf {
@@ -30,7 +34,7 @@ pub fn get_rhyolite_dir() -> PathBuf {
 }
 
 /// This function returns the path to the default trove directory.
-pub fn get_trove_dir(trove_name: &str) -> PathBuf {
+pub(crate) fn get_trove_dir(trove_name: &str) -> PathBuf {
 	//Get the path to documents/Rhyolite.
 	let documents_dir = get_rhyolite_dir();
 
@@ -44,8 +48,12 @@ pub fn get_trove_dir(trove_name: &str) -> PathBuf {
 	trove_dir
 }
 
+pub fn get_userdata_path() -> PathBuf {
+	get_rhyolite_dir().join(USER_DATA_DIR).join(USER_DATA_FILE)
+}
+
 /// Generate a path that is not conflicting by incrementing a counter at file end
-pub fn generate_available_path(path: PathBuf) -> PathBuf {
+pub(crate) fn generate_available_path(path: PathBuf) -> PathBuf {
 	if !path.exists() {
 		return path;
 	}
@@ -74,7 +82,8 @@ pub fn generate_available_path(path: PathBuf) -> PathBuf {
 	}
 }
 
-pub fn open_doc_from_path(path: PathBuf) -> Option<MarkdownFileData> {
+/// Opens the file from the given path.
+pub fn open_file_from_path(path: PathBuf) -> Option<MarkdownFile> {
 	let markdown_file = fs::read_to_string(path.clone());
 
 	// TODO: Handle this gracefully
@@ -87,7 +96,7 @@ pub fn open_doc_from_path(path: PathBuf) -> Option<MarkdownFileData> {
 		.to_string();
 
 	if let Ok(content) = markdown_file {
-		Some(MarkdownFileData {
+		Some(MarkdownFile {
 			path,
 			title: file_name,
 			content,
@@ -97,25 +106,28 @@ pub fn open_doc_from_path(path: PathBuf) -> Option<MarkdownFileData> {
 	}
 }
 
-pub fn new_doc_from_path(path: PathBuf) -> MarkdownFileData {
-	// TODO: Handle this gracefully
-	let file_name = path
-		.clone()
-		.file_stem()
-		.unwrap_or_else(|| panic!("Unable to read path: {}", path.display()))
-		.to_str()
-		.unwrap()
-		.to_string();
-
-	MarkdownFileData {
-		path,
-		title: file_name,
-		content: String::new(),
-	}
+/// Generates a new markdown file from the given path (does not save it)
+pub fn new_file_from_path(path: PathBuf) -> Option<MarkdownFile> {
+	let cloned_path = path.clone();
+	let file_name = cloned_path.file_stem();
+	match file_name {
+		Some(name) => {
+			return Some(MarkdownFile {
+				path,
+				title: name.to_string_lossy().into_owned(),
+				content: String::new(),
+			});
+		}
+		None => {
+			// TODO: Improve the error message.
+			log::error!("Unable to read path: {}", path.display());
+			return None;
+		}
+	};
 }
 
-pub fn load_files_from_trove(trove_path: PathBuf) -> Vec<MarkdownFileData> {
-	let mut markdown_files_data: Vec<MarkdownFileData> = Vec::new();
+pub fn load_files_from_trove(trove_path: PathBuf) -> Vec<MarkdownFile> {
+	let mut markdown_files_data: Vec<MarkdownFile> = Vec::new();
 
 	if let Ok(entries) = fs::read_dir(&trove_path) {
 		for entry in entries {
@@ -140,7 +152,7 @@ pub fn load_files_from_trove(trove_path: PathBuf) -> Vec<MarkdownFileData> {
 							.unwrap()
 							.to_string();
 
-						let file_data = MarkdownFileData {
+						let file_data = MarkdownFile {
 							path: path.clone(),
 							title,
 							content,
@@ -158,16 +170,21 @@ pub fn load_files_from_trove(trove_path: PathBuf) -> Vec<MarkdownFileData> {
 	markdown_files_data
 }
 
-pub fn load_default_trove() -> Vec<MarkdownFileData> {
+pub fn load_default_trove() -> Vec<MarkdownFile> {
 	load_files_from_trove(get_trove_dir(DEFAULT_TROVE_DIR))
 }
 
-pub fn load_from_userdata() -> Vec<MarkdownFileData> {
-	let userdata_path = get_rhyolite_dir().join(USER_DATA_DIR).join(USER_DATA_FILE);
-	let userdata_string = fs::read_to_string(userdata_path).expect("Could not read user data file");
-	// TODO: Handle Unwrap
-	let userdata: UserData = toml::from_str(userdata_string.as_str()).unwrap();
-	let mut markdown_files_data: Vec<MarkdownFileData> = Vec::new();
+pub fn load_from_userdata() -> Vec<MarkdownFile> {
+	let userdata_string =
+		fs::read_to_string(get_userdata_path()).expect("Could not read user data file");
+
+	let Ok(userdata) = toml::from_str::<UserData>(userdata_string.as_str()) else {
+		// TODO: Handle Error
+		let _ = fs::remove_file(get_userdata_path());
+		return load_default_trove();
+	};
+
+	let mut markdown_files_data: Vec<MarkdownFile> = Vec::new();
 
 	*USER_DATA.write() = userdata;
 	for tab in USER_DATA().active_tabs {
@@ -178,38 +195,37 @@ pub fn load_from_userdata() -> Vec<MarkdownFileData> {
 
 				// NOTE: Wrote this half asleep, do not judge :(
 				if path.is_file() && path.file_name().unwrap().to_str().unwrap() == tab.title {
-    					if let Some(extension) = path.extension() {
-    						if extension == "md" {
-    							let content = match fs::read_to_string(&path) {
-    								Ok(c) => c,
-    								Err(e) => {
-    									log::error!("Error reading file {:?}: {}", path, e);
-    									// TODO: Handle the error
-    									continue;
-    								}
-    							};
+					if let Some(extension) = path.extension() {
+						if extension == "md" {
+							let content = match fs::read_to_string(&path) {
+								Ok(c) => c,
+								Err(e) => {
+									log::error!("Error reading file {:?}: {}", path, e);
+									// TODO: Handle the error
+									continue;
+								}
+							};
 
-    							let title = path
-    								.file_stem()
-    								.and_then(|name| name.to_str())
-    								.unwrap()
-    								.to_string();
+							let title = path
+								.file_stem()
+								.and_then(|name| name.to_str())
+								.unwrap()
+								.to_string();
 
-    							let file_data = MarkdownFileData {
-    								path: path.clone(),
-    								title,
-    								content,
-    							};
+							let file_data = MarkdownFile {
+								path: path.clone(),
+								title,
+								content,
+							};
 
-    							markdown_files_data.push(file_data);
-    						}
-    					}
-    				}
+							markdown_files_data.push(file_data);
+						}
+					}
+				}
 			}
 		} else {
 			log::error!("Error reading directory.");
 		}
-
 	}
 	markdown_files_data
 }
@@ -225,12 +241,13 @@ pub fn initialise_app() {
 	};
 
 	if markdownfiles.is_empty() {
-		crate::data::tabs::new_tab();
+		new_tab();
 	} else {
 		for file in markdownfiles {
-			let insertion_index = DOCUMENT_DATA().len();
-			crate::data::tabs::add_tab(file.title.clone(), insertion_index);
-			DOCUMENT_DATA.write().push(file);
+			let insertion_index = FILES_BUFFER().len();
+			push_tab(file.title.clone(), insertion_index);
+			FILES_BUFFER.write().push(file);
 		}
+		*CURRENT_TAB.write() = Some(0);
 	}
 }

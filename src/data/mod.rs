@@ -1,5 +1,4 @@
-pub mod docspace;
 pub mod io_utils;
-pub mod tabs;
+pub mod stores;
+pub mod themes;
 pub mod types;
-pub mod ui;
