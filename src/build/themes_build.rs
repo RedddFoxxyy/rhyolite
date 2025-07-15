@@ -1,0 +1,15 @@
+pub const THEMES: &[(&str, &str)] = &[
+("crimsonNocturne.toml", include_str!("../.././app_themes/crimsonNocturne.toml")),
+("rosePineDawn.toml", include_str!("../.././app_themes/rosePineDawn.toml")),
+("gruvboxMaterialDark(Hard).toml", include_str!("../.././app_themes/gruvboxMaterialDark(Hard).toml")),
+("catppuccinLatte.toml", include_str!("../.././app_themes/catppuccinLatte.toml")),
+("coffee.toml", include_str!("../.././app_themes/coffee.toml")),
+("greenScreen.toml", include_str!("../.././app_themes/greenScreen.toml")),
+("catppuccinMocha.toml", include_str!("../.././app_themes/catppuccinMocha.toml")),
+("catppuccinMacchiato.toml", include_str!("../.././app_themes/catppuccinMacchiato.toml")),
+("tokyoNightDark.toml", include_str!("../.././app_themes/tokyoNightDark.toml")),
+("default.toml", include_str!("../.././app_themes/default.toml")),
+("rosePineMoon.toml", include_str!("../.././app_themes/rosePineMoon.toml")),
+("rosePineMain.toml", include_str!("../.././app_themes/rosePineMain.toml")),
+("gruvboxMaterialLight(Hard).toml", include_str!("../.././app_themes/gruvboxMaterialLight(Hard).toml")),
+];
