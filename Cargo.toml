@@ -26,14 +26,15 @@ icon = [
 name = "Rhyolite"
 assets = [
 	{ source = "target/release/Rhyolite", dest = "/usr/bin/Rhyolite", mode = "0755" },
-    { source = "LICENSE.txt", dest = "/usr/share/doc/Rhyolite/LICENSE", doc = true, mode = "0644" },
-    { source = "packaging/linux/Rhyolite.desktop", dest = "/usr/share/applications/Rhyolite.desktop", mode = "0644" },
-    { source = "src/static/icon.png", dest = "/usr/share/icons/hicolor/512x512/apps/Rhyolite.png", mode = "0644" },
-    { source = "packaging/linux/Rhyolite.metainfo.xml", dest = "/usr/share/metainfo/Rhyolite.metainfo.xml", mode = "0644" },
+	{ source = "LICENSE.txt", dest = "/usr/share/doc/Rhyolite/LICENSE", doc = true, mode = "0644" },
+	{ source = "packaging/linux/Rhyolite.desktop", dest = "/usr/share/applications/Rhyolite.desktop", mode = "0644" },
+	{ source = "src/static/icon.png", dest = "/usr/share/icons/hicolor/512x512/apps/Rhyolite.png", mode = "0644" },
+	{ source = "packaging/linux/Rhyolite.metainfo.xml", dest = "/usr/share/metainfo/Rhyolite.metainfo.xml", mode = "0644" },
 ]
 
 [dependencies]
-freya = { git = "https://github.com/marc2332/freya", branch = "main", features = [] }
+freya = { git = "https://github.com/marc2332/freya", branch = "main", features = [
+] }
 dioxus = { version = "0.6.3", default-features = false, features = [
 	"macro",
 	"signals",
@@ -46,7 +47,7 @@ dirs = "6.0.0"
 sanitize-filename = "0.6.0"
 # pulldown-cmark = "0.13.0"
 # uuid = { version = "1.17.0", features = ["v4", "serde"] }
-# indexmap = "2.9.0"
+indexmap = { version = "2.10.0", features = ["serde"] }
 # regex = "1.11.1"
 log = { version = "0.4.27" }
 # tokio = { version = "1.45.1", features = ["fs", "sync"] }
@@ -58,6 +59,6 @@ codegen-units = 256
 [profile.release]
 codegen-units = 1 # Allows LLVM to perform better optimization.
 lto = true        # Enables link-time-optimizations however is not stable.
-opt-level = 3 # Prioritizes speed. Use `z` if you prefer small binary size.
+opt-level = 3     # Prioritizes speed. Use `z` if you prefer small binary size.
 # panic = "abort" # Higher performance by disabling panic handlers.
 strip = true # Ensures debug symbols are removed.

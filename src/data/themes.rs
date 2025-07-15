@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 use serde::{Deserialize, Serialize};
 // use std::{
@@ -12,14 +12,19 @@ include!("../build/themes_build.rs");
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ThemesStore {
-	pub store: HashMap<String, Theme>,
+	pub store: IndexMap<String, Theme>,
 	pub current_theme: Theme,
 }
 impl ThemesStore {
 	pub fn default() -> ThemesStore {
-		let mut theme_map: HashMap<String, Theme> = HashMap::new();
+		let mut theme_map: IndexMap<String, Theme> = IndexMap::new();
 
-		for (file_name, toml_str) in THEMES {
+		let mut themes_vec: Vec<_> = THEMES.iter().collect();
+
+		// Sort the themes alphabetically by filename
+		themes_vec.sort_by(|a, b| a.0.cmp(b.0));
+
+		for (file_name, toml_str) in themes_vec {
 			let theme: Theme = toml::from_str(toml_str)
 				.unwrap_or_else(|e| panic!("Error parsing {}: {}", file_name, e));
 
@@ -30,14 +35,6 @@ impl ThemesStore {
 			store: theme_map,
 			current_theme: Theme::default(),
 		}
-	}
-
-	pub fn toggle_theme_test(&mut self) {
-		self.current_theme = self
-			.store
-			.get("Gruvbox Material Dark(Hard)")
-			.unwrap()
-			.clone();
 	}
 
 	pub fn change_current_theme(&mut self, theme_key: &String) {
