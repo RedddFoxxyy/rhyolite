@@ -20,7 +20,7 @@
 ### Changes Underway
 
 - The app is being migrated from Tauri(Svelte) to Freya(Rust) based UI.(WIP)
-- You can find the latest work on the app beind done in the freya-gui-migration branch.
+- You can find the latest work on the app being done in the freya-gui-migration branch.
 - The Master branch has the old code for the old tauri version of the app which will not be maintained anymore.
 
 ## For New Contributors
