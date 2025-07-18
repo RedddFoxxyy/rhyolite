@@ -31,6 +31,7 @@ pub(crate) fn new_tab() {
 		return;
 	};
 	push_tab(file.title.clone(), FILES_BUFFER().len());
+	*ACTIVE_DOCUMENT_TITLE.write() = file.title.clone();
 
 	FILES_BUFFER.write().push(file);
 	*CURRENT_TAB.write() = Some(TABS().len() - 1);

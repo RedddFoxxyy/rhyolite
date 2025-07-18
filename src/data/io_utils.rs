@@ -1,14 +1,17 @@
 use crate::data::{
 	stores::{
 		docspace::{FILES_BUFFER, USER_DATA},
-		tabs::{new_tab, push_tab},
+		tabs::{TABS, new_tab, push_tab},
 	},
 	types::{DEFAULT_TROVE_DIR, MarkdownFile, USER_DATA_DIR, USER_DATA_FILE, UserData},
 };
 use std::fs;
 use std::path::PathBuf;
 
-use super::{stores::tabs::CURRENT_TAB, types::APP_DATA_DIR};
+use super::{
+	stores::{docspace::ACTIVE_DOCUMENT_TITLE, tabs::CURRENT_TAB},
+	types::APP_DATA_DIR,
+};
 
 /// This function returns the path to the documents' directory.
 pub fn get_rhyolite_dir() -> PathBuf {
@@ -250,4 +253,7 @@ pub fn initialise_app() {
 		}
 		*CURRENT_TAB.write() = Some(0);
 	}
+
+	// TODO: yeah um handle the unwraps lol
+	*ACTIVE_DOCUMENT_TITLE.write() = TABS().get(CURRENT_TAB().unwrap()).unwrap().title.clone();
 }

@@ -1,4 +1,7 @@
-use crate::{data::stores::ui::THEME_STORE, view::bottom_bar::bottom_floating_bar};
+use crate::{
+	data::stores::{docspace::ACTIVE_DOCUMENT_TITLE, ui::THEME_STORE},
+	view::bottom_bar::bottom_floating_bar,
+};
 use freya::prelude::*;
 
 #[component]
@@ -18,16 +21,26 @@ fn document_area() -> Element {
 		height: "fill",
 		direction: "vertical",
 		document_title_box{}
+		document_editor{}
 	})
 }
 
 fn document_title_box() -> Element {
 	let theme = THEME_STORE().current_theme.colors;
 
+	let mut focus = use_focus();
+
 	let mut editable = use_editable(
 		|| EditableConfig::new("Untitled".trim().to_string()).with_allow_tabs(true),
 		EditableMode::MultipleLinesSingleEditor,
 	);
+
+	use_effect(move || {
+		editable
+			.editor_mut()
+			.write()
+			.set(ACTIVE_DOCUMENT_TITLE().as_str())
+	});
 
 	let cursor_reference = editable.cursor_attr();
 	let highlights = editable.highlights_attr(0);
@@ -43,14 +56,15 @@ fn document_title_box() -> Element {
 	};
 
 	let onclick = move |_: MouseEvent| {
+		focus.request_focus();
 		editable.process_event(&EditableEvent::Click);
 	};
 
-	let onglobalkeydown = move |e: KeyboardEvent| {
+	let onkeydown = move |e: KeyboardEvent| {
 		editable.process_event(&EditableEvent::KeyDown(e.data));
 	};
 
-	let onglobalkeyup = move |e: KeyboardEvent| {
+	let onkeyup = move |e: KeyboardEvent| {
 		editable.process_event(&EditableEvent::KeyUp(e.data));
 	};
 
@@ -87,14 +101,98 @@ fn document_title_box() -> Element {
 					onclick,
 					onmousemove,
 					onmousedown,
-					onglobalkeydown,
-					onglobalkeyup,
+					onkeydown,
+					onkeyup,
+					// onglobalkeydown,
+					// onglobalkeyup,
 					color: "{theme.text}",
 					font_size: "42",
 					font_family: "JetBrains Mono",
 					text {
 						"{editable.editor()}"
 					}
+
+				}
+			}
+		}
+	})
+}
+
+fn document_editor() -> Element {
+	let theme = THEME_STORE().current_theme.colors;
+
+	let mut focus = use_focus();
+
+	let mut editable = use_editable(
+		|| EditableConfig::new("Welcome to Rhyolite!".trim().to_string()).with_allow_tabs(true),
+		EditableMode::SingleLineMultipleEditors,
+	);
+
+	let cursor_reference = editable.cursor_attr();
+	let highlights = editable.highlights_attr(0);
+	let editor = editable.editor().read();
+	let cursor_char = editor.cursor_pos();
+
+	let onmousedown = move |e: MouseEvent| {
+		editable.process_event(&EditableEvent::MouseDown(e.data, 0));
+	};
+
+	let onmousemove = move |e: MouseEvent| {
+		editable.process_event(&EditableEvent::MouseMove(e.data, 0));
+	};
+
+	let onclick = move |_: MouseEvent| {
+		focus.request_focus();
+		editable.process_event(&EditableEvent::Click);
+	};
+
+	let onkeydown = move |e: KeyboardEvent| {
+		editable.process_event(&EditableEvent::KeyDown(e.data));
+	};
+
+	let onkeyup = move |e: KeyboardEvent| {
+		editable.process_event(&EditableEvent::KeyUp(e.data));
+	};
+
+	rsx!(rect{
+		width: "fill",
+		height: "fill",
+		// main_align: "center",
+		// cross_align: "center",
+		padding: "7",
+		margin: "16 0 0 0",
+		rect {
+			width: "fill",
+			height: "fill",
+			shadow: "5 8 8 2 rgb(0, 0, 0, 10)",
+			background: "transparent",
+			corner_radius: "12",
+			// main_align: "center",
+			padding: "4 12",
+
+			CursorArea {
+				icon: CursorIcon::Text,
+				paragraph {
+					width: "fill",
+					cursor_id: "0",
+					cursor_index: "{cursor_char}",
+					cursor_mode: "editable",
+					cursor_color: "{theme.text}",
+					highlights,
+					highlight_color: "{theme.subtext1}",
+					cursor_reference,
+					onclick,
+					onmousemove,
+					onmousedown,
+					onkeydown,
+					onkeyup,
+					color: "{theme.text}",
+					font_size: "16",
+					font_family: "JetBrains Mono",
+					text {
+						"{editable.editor()}"
+					}
+
 				}
 			}
 		}
