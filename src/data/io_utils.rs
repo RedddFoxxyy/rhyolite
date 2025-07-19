@@ -1,3 +1,7 @@
+// use freya::hooks::{UseEditable, use_platform};
+use freya::hooks::EditableConfig;
+use freya::prelude::*;
+
 use crate::data::{
 	stores::{
 		docspace::{FILES_ARENA, USER_DATA},
@@ -9,7 +13,10 @@ use std::fs;
 use std::path::PathBuf;
 
 use super::{
-	stores::{docspace::ACTIVE_DOCUMENT_TITLE, tabs::CURRENT_TAB},
+	stores::{
+		docspace::{ACTIVE_DOCUMENT_TITLE, CLIPBOARD, PLATFORM},
+		tabs::CURRENT_TAB,
+	},
 	types::APP_DATA_DIR,
 };
 
@@ -102,7 +109,12 @@ pub fn _open_file_from_path(path: PathBuf) -> Option<MarkdownFile> {
 		Some(MarkdownFile {
 			path,
 			title: file_name,
-			content,
+			editable: UseEditable::new_in_hook(
+				CLIPBOARD(),
+				PLATFORM(),
+				EditableConfig::new(content).with_allow_tabs(true),
+				EditableMode::SingleLineMultipleEditors,
+			),
 		})
 	} else {
 		None
@@ -118,7 +130,12 @@ pub fn new_file_from_path(path: PathBuf) -> Option<MarkdownFile> {
 			return Some(MarkdownFile {
 				path,
 				title: name.to_string_lossy().into_owned(),
-				content: String::new(),
+				editable: UseEditable::new_in_hook(
+					CLIPBOARD(),
+					PLATFORM(),
+					EditableConfig::new(String::new()).with_allow_tabs(true),
+					EditableMode::SingleLineMultipleEditors,
+				),
 			});
 		}
 		None => {
@@ -158,7 +175,12 @@ pub fn load_files_from_trove(trove_path: PathBuf) -> Vec<MarkdownFile> {
 						let file_data = MarkdownFile {
 							path: path.clone(),
 							title,
-							content,
+							editable: UseEditable::new_in_hook(
+								CLIPBOARD(),
+								PLATFORM(),
+								EditableConfig::new(content).with_allow_tabs(true),
+								EditableMode::SingleLineMultipleEditors,
+							),
 						};
 
 						markdown_files_data.push(file_data);
@@ -218,7 +240,12 @@ pub fn load_from_userdata() -> Vec<MarkdownFile> {
 							let file_data = MarkdownFile {
 								path: path.clone(),
 								title,
-								content,
+								editable: UseEditable::new_in_hook(
+									CLIPBOARD(),
+									PLATFORM(),
+									EditableConfig::new(content).with_allow_tabs(true),
+									EditableMode::SingleLineMultipleEditors,
+								),
 							};
 
 							markdown_files_data.push(file_data);

@@ -27,11 +27,11 @@ pub const DEFAULT_TROVE_DIR: &str = "Untitled_Trove";
 /// Name of the Default Note Title used by the app!
 pub const DEFAULT_NOTE_TITLE: &str = "Untitled";
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct MarkdownFile {
 	pub path: PathBuf,
 	pub title: String,
-	pub content: String,
+	pub editable: UseEditable,
 }
 
 /// Denotes a tab in the editor.

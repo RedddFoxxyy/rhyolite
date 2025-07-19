@@ -89,7 +89,7 @@ fn ActiveTabs() -> Element {
 			rect {
 				corner_radius: "100",
 				padding: "4 10",
-				margin: "1",
+				margin: "1 2",
 				background: "{ theme.surface1 }",
 				background_opacity:"{ bg_hover_opacity.read() }",
 				onmouseenter,

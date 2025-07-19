@@ -18,13 +18,10 @@ pub fn app() -> Element {
 		let current_tab_content = FILES_ARENA()
 			.get(TABS().get(CURRENT_TAB().unwrap()).unwrap().buffer_index)
 			.unwrap()
-			.content
+			.editable
 			.clone();
 
-		EDITOR_BUFFER()
-			.editor_mut()
-			.write()
-			.set(current_tab_content.as_str())
+		*EDITOR_BUFFER.write() = current_tab_content
 	});
 
 	rsx!(rect {

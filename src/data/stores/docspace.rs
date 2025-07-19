@@ -3,8 +3,9 @@
 //! I made these global signals because it was the easy way to share a component state between
 //! different components. While this might not be the best way to do it, it works.
 
+use dioxus_clipboard::hooks::{UseClipboard, use_clipboard};
 use freya::{
-	hooks::{EditableConfig, EditableMode, UseEditable, use_editable},
+	hooks::{EditableConfig, EditableMode, UseEditable, UsePlatform, use_editable, use_platform},
 	prelude::{GlobalSignal, Readable, Signal},
 };
 
@@ -27,3 +28,7 @@ pub static ACTIVE_DOCUMENT_TITLE: GlobalSignal<String> = Signal::global(String::
 // IO Store:
 pub static RECENT_FILES: GlobalSignal<Vec<FileInfo>> = Signal::global(Vec::new);
 pub static USER_DATA: GlobalSignal<UserData> = Signal::global(UserData::default);
+
+// Platform Stores:
+pub static PLATFORM: GlobalSignal<UsePlatform> = Signal::global(use_platform);
+pub static CLIPBOARD: GlobalSignal<UseClipboard> = Signal::global(use_clipboard);

@@ -40,6 +40,7 @@ dioxus = { version = "0.6.3", default-features = false, features = [
 	"signals",
 	"hooks",
 ] }
+dioxus-clipboard = "0.2.0"
 serde = { version = "1.0.219", features = ["derive"] }
 toml = "0.8.23"
 serde_json = "1.0.140"
