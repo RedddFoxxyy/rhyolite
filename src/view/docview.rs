@@ -3,6 +3,8 @@ use crate::{
 	view::bottom_bar::bottom_floating_bar,
 };
 use freya::prelude::*;
+use tokio::time::Duration;
+use tokio::time::sleep;
 
 #[component]
 pub fn work_space() -> Element {
@@ -46,8 +48,10 @@ fn document_title_box() -> Element {
 	let highlights = editable.highlights_attr(0);
 	let editor = editable.editor().read();
 	let cursor_char = editor.cursor_pos();
+	let mut is_cursor_blinking = use_signal(|| false);
 
 	let onmousedown = move |e: MouseEvent| {
+		focus.request_focus();
 		editable.process_event(&EditableEvent::MouseDown(e.data, 0));
 	};
 
@@ -56,7 +60,6 @@ fn document_title_box() -> Element {
 	};
 
 	let onclick = move |_: MouseEvent| {
-		focus.request_focus();
 		editable.process_event(&EditableEvent::Click);
 	};
 
@@ -66,6 +69,22 @@ fn document_title_box() -> Element {
 
 	let onkeyup = move |e: KeyboardEvent| {
 		editable.process_event(&EditableEvent::KeyUp(e.data));
+	};
+
+	// A future that runs a timer to toggle the blink signal
+	use_future(move || async move {
+		loop {
+			// Wait for 500ms
+			sleep(Duration::from_millis(500)).await;
+			// Toggle the signal to show/hide the cursor
+			is_cursor_blinking.toggle();
+		}
+	});
+
+	let cursor_color = if focus.is_focused() && *is_cursor_blinking.read() {
+		theme.text.as_str()
+	} else {
+		"transparent"
 	};
 
 	rsx!(rect{
@@ -94,17 +113,16 @@ fn document_title_box() -> Element {
 					cursor_id: "0",
 					cursor_index: "{cursor_char}",
 					cursor_mode: "editable",
-					cursor_color: "{theme.text}",
+					cursor_color: "{cursor_color}",
 					highlights,
 					highlight_color: "{theme.subtext1}",
+					a11y_id: focus.attribute(),
 					cursor_reference,
 					onclick,
 					onmousemove,
 					onmousedown,
 					onkeydown,
 					onkeyup,
-					// onglobalkeydown,
-					// onglobalkeyup,
 					color: "{theme.text}",
 					font_size: "42",
 					font_family: "JetBrains Mono",
@@ -132,8 +150,10 @@ fn document_editor() -> Element {
 	let highlights = editable.highlights_attr(0);
 	let editor = editable.editor().read();
 	let cursor_char = editor.cursor_pos();
+	let mut is_cursor_blinking = use_signal(|| false);
 
 	let onmousedown = move |e: MouseEvent| {
+		focus.request_focus();
 		editable.process_event(&EditableEvent::MouseDown(e.data, 0));
 	};
 
@@ -142,7 +162,6 @@ fn document_editor() -> Element {
 	};
 
 	let onclick = move |_: MouseEvent| {
-		focus.request_focus();
 		editable.process_event(&EditableEvent::Click);
 	};
 
@@ -154,32 +173,48 @@ fn document_editor() -> Element {
 		editable.process_event(&EditableEvent::KeyUp(e.data));
 	};
 
+	// A future that runs a timer to toggle the blink signal
+	use_future(move || async move {
+		loop {
+			// Wait for 500ms
+			sleep(Duration::from_millis(500)).await;
+			// Toggle the signal to show/hide the cursor
+			is_cursor_blinking.toggle();
+		}
+	});
+
+	let cursor_color = if focus.is_focused() && *is_cursor_blinking.read() {
+		theme.text.as_str()
+	} else {
+		"transparent"
+	};
+
 	rsx!(rect{
 		width: "fill",
 		height: "fill",
-		// main_align: "center",
-		// cross_align: "center",
+		cross_align: "center",
 		padding: "7",
 		margin: "16 0 0 0",
 		rect {
-			width: "fill",
+			width: "80%",
 			height: "fill",
 			shadow: "5 8 8 2 rgb(0, 0, 0, 10)",
 			background: "transparent",
 			corner_radius: "12",
-			// main_align: "center",
 			padding: "4 12",
 
 			CursorArea {
 				icon: CursorIcon::Text,
 				paragraph {
 					width: "fill",
+					height: "fill",
 					cursor_id: "0",
 					cursor_index: "{cursor_char}",
 					cursor_mode: "editable",
-					cursor_color: "{theme.text}",
+					cursor_color: "{cursor_color}",
 					highlights,
 					highlight_color: "{theme.subtext1}",
+					a11y_id: focus.attribute(),
 					cursor_reference,
 					onclick,
 					onmousemove,

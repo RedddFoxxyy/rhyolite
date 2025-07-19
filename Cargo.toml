@@ -50,7 +50,7 @@ sanitize-filename = "0.6.0"
 indexmap = { version = "2.10.0", features = ["serde"] }
 # regex = "1.11.1"
 log = { version = "0.4.27" }
-# tokio = { version = "1.45.1", features = ["fs", "sync"] }
+tokio = { version = "1.45.1", features = ["fs", "sync"] }
 
 [profile.dev]
 incremental = true  # Compile your binary in smaller steps.

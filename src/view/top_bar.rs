@@ -1,7 +1,7 @@
 use crate::{
 	APP_ICON,
 	data::stores::{
-		tabs::{CURRENT_TAB, TABS, close_tab, switch_tab},
+		tabs::{CURRENT_TAB, TABS, close_tab, new_tab, switch_tab},
 		ui::THEME_STORE,
 	},
 };
@@ -13,7 +13,7 @@ pub fn top_nav_bar() -> Element {
 	let theme = THEME_STORE().current_theme.colors;
 
 	rsx!(
-		// Will be used when this is fixed!
+		// NOTE: Will be used when this is fixed!
 		// WindowDragArea {}
 		rect {
 			width: "100%",
@@ -23,10 +23,8 @@ pub fn top_nav_bar() -> Element {
 			cross_align: "center",
 			background: "{ theme.base }",
 
-			// 1. First Child: Aligned to the LEFT
 			ActiveTabs {},
 
-			// 2. Second Child: Aligned to the RIGHT
 			// NavigationButtons {}
 		}
 	)
@@ -34,7 +32,26 @@ pub fn top_nav_bar() -> Element {
 
 #[component]
 fn ActiveTabs() -> Element {
-	// let text_color = use_memo(move || APP_THEME.read().colors.text.clone());
+	let theme = THEME_STORE().current_theme.colors;
+
+	let mut is_hovered = use_signal(|| false);
+
+	let hover_animation = use_animation(move |_conf| {
+		// conf.auto_start(false);
+		AnimNum::new(0.0, 0.99999).time(150)
+	});
+
+	let onmouseenter = move |_| {
+		*is_hovered.write() = true;
+		hover_animation.start();
+	};
+
+	let onmouseleave = move |_| {
+		*is_hovered.write() = false;
+		hover_animation.reverse();
+	};
+
+	let bg_hover_opacity = &*hover_animation.get().read_unchecked();
 
 	// let image_data = static_bytes(APP_ICON);
 	rsx!(
@@ -69,7 +86,22 @@ fn ActiveTabs() -> Element {
 					}
 				}
 			}
-
+			rect {
+				corner_radius: "100",
+				padding: "4 10",
+				margin: "1",
+				background: "{ theme.surface1 }",
+				background_opacity:"{ bg_hover_opacity.read() }",
+				onmouseenter,
+				onmouseleave,
+				label {
+					color: "{ theme.text }",
+					font_size: "17",
+					font_family: "JetBrains Mono",
+					onclick: move |_| new_tab(),
+					"+"
+				}
+			}
 		}
 	)
 }
@@ -80,7 +112,9 @@ fn tab_button(index: usize, on_click: EventHandler<()>, children: Element) -> El
 	// TODO: Handle Unwrap
 	let title = TABS().get(index).unwrap().title.clone();
 
-	let hover_animation = use_animation(move |conf| {
+	let mut is_hovered = use_signal(|| false);
+
+	let hover_animation = use_animation(move |_conf| {
 		// conf.auto_start(false);
 		if CURRENT_TAB() == Some(index) {
 			AnimNum::new(0.5, 0.99999).time(150)
@@ -88,6 +122,16 @@ fn tab_button(index: usize, on_click: EventHandler<()>, children: Element) -> El
 			AnimNum::new(0.0, 0.99999).time(150)
 		}
 	});
+
+	let onmouseenter = move |_| {
+		*is_hovered.write() = true;
+		hover_animation.start();
+	};
+
+	let onmouseleave = move |_| {
+		*is_hovered.write() = false;
+		hover_animation.reverse();
+	};
 
 	let bg_hover_opacity = &*hover_animation.get().read_unchecked();
 
@@ -105,20 +149,22 @@ fn tab_button(index: usize, on_click: EventHandler<()>, children: Element) -> El
 				background_opacity:"{ bg_hover_opacity.read() }",
 				corner_radius: "50",
 				onclick: move |_| on_click.call(()),
-				onmouseenter: move |_| hover_animation.start(),
-				onmouseleave: move |_| hover_animation.reverse(),
+				onmouseenter,
+				onmouseleave,
 				label {
 					color: "{ theme.text }",
 					font_size: "15",
 					font_family: "JetBrains Mono",
 					"{title}"
 				},
-				label {
-					color: "{ theme.text }",
-					font_size: "17",
-					font_family: "JetBrains Mono",
-					onclick: move |_| close_tab(index),
-					"×"
+				if CURRENT_TAB() == Some(index) || is_hovered() {
+					label {
+						color: "{ theme.text }",
+						font_size: "17",
+						font_family: "JetBrains Mono",
+						onclick: move |_| close_tab(index),
+						"×"
+					}
 				}
 			}
 		}
