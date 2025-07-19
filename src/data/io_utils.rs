@@ -1,6 +1,6 @@
 use crate::data::{
 	stores::{
-		docspace::{FILES_BUFFER, USER_DATA},
+		docspace::{FILES_ARENA, USER_DATA},
 		tabs::{TABS, new_tab, push_tab},
 	},
 	types::{DEFAULT_TROVE_DIR, MarkdownFile, USER_DATA_DIR, USER_DATA_FILE, UserData},
@@ -86,7 +86,7 @@ pub(crate) fn generate_available_path(path: PathBuf) -> PathBuf {
 }
 
 /// Opens the file from the given path.
-pub fn open_file_from_path(path: PathBuf) -> Option<MarkdownFile> {
+pub fn _open_file_from_path(path: PathBuf) -> Option<MarkdownFile> {
 	let markdown_file = fs::read_to_string(path.clone());
 
 	// TODO: Handle this gracefully
@@ -247,9 +247,9 @@ pub fn initialise_app() {
 		new_tab();
 	} else {
 		for file in markdownfiles {
-			let insertion_index = FILES_BUFFER().len();
+			let insertion_index = FILES_ARENA().len();
 			push_tab(file.title.clone(), insertion_index);
-			FILES_BUFFER.write().push(file);
+			FILES_ARENA.write().push(file);
 		}
 		*CURRENT_TAB.write() = Some(0);
 	}
@@ -257,3 +257,5 @@ pub fn initialise_app() {
 	// TODO: yeah um handle the unwraps lol
 	*ACTIVE_DOCUMENT_TITLE.write() = TABS().get(CURRENT_TAB().unwrap()).unwrap().title.clone();
 }
+
+pub fn _deinitialise_app() {}

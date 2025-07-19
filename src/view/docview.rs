@@ -1,5 +1,9 @@
 use crate::{
-	data::stores::{docspace::ACTIVE_DOCUMENT_TITLE, ui::THEME_STORE},
+	data::stores::{
+		docspace::{ACTIVE_DOCUMENT_TITLE, EDITOR_BUFFER, FILES_ARENA},
+		tabs::{CURRENT_TAB, TABS},
+		ui::THEME_STORE,
+	},
 	view::bottom_bar::bottom_floating_bar,
 };
 use freya::prelude::*;
@@ -74,10 +78,13 @@ fn document_title_box() -> Element {
 	// A future that runs a timer to toggle the blink signal
 	use_future(move || async move {
 		loop {
-			// Wait for 500ms
 			sleep(Duration::from_millis(500)).await;
-			// Toggle the signal to show/hide the cursor
-			is_cursor_blinking.toggle();
+
+			if focus.is_focused() {
+				is_cursor_blinking.toggle();
+			} else {
+				*is_cursor_blinking.write() = false
+			}
 		}
 	});
 
@@ -141,11 +148,7 @@ fn document_editor() -> Element {
 
 	let mut focus = use_focus();
 
-	let mut editable = use_editable(
-		|| EditableConfig::new("Welcome to Rhyolite!".trim().to_string()).with_allow_tabs(true),
-		EditableMode::SingleLineMultipleEditors,
-	);
-
+	let mut editable = EDITOR_BUFFER();
 	let cursor_reference = editable.cursor_attr();
 	let highlights = editable.highlights_attr(0);
 	let editor = editable.editor().read();
@@ -162,6 +165,7 @@ fn document_editor() -> Element {
 	};
 
 	let onclick = move |_: MouseEvent| {
+		*is_cursor_blinking.write() = true;
 		editable.process_event(&EditableEvent::Click);
 	};
 
@@ -173,13 +177,13 @@ fn document_editor() -> Element {
 		editable.process_event(&EditableEvent::KeyUp(e.data));
 	};
 
-	// A future that runs a timer to toggle the blink signal
 	use_future(move || async move {
 		loop {
-			// Wait for 500ms
 			sleep(Duration::from_millis(500)).await;
-			// Toggle the signal to show/hide the cursor
-			is_cursor_blinking.toggle();
+
+			if focus.is_focused() {
+				is_cursor_blinking.toggle();
+			}
 		}
 	});
 
@@ -198,7 +202,6 @@ fn document_editor() -> Element {
 		rect {
 			width: "80%",
 			height: "fill",
-			shadow: "5 8 8 2 rgb(0, 0, 0, 10)",
 			background: "transparent",
 			corner_radius: "12",
 			padding: "4 12",

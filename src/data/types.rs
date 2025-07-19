@@ -3,6 +3,7 @@
 //!
 //! All the required global statics/constants are declared in this module.
 
+use freya::hooks::UseEditable;
 use freya::prelude::Signal;
 use std::sync::Arc;
 use std::{collections::HashMap, path::PathBuf};
@@ -26,7 +27,7 @@ pub const DEFAULT_TROVE_DIR: &str = "Untitled_Trove";
 /// Name of the Default Note Title used by the app!
 pub const DEFAULT_NOTE_TITLE: &str = "Untitled";
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Clone)]
 pub struct MarkdownFile {
 	pub path: PathBuf,
 	pub title: String,

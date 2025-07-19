@@ -8,12 +8,8 @@
 use crate::data::io_utils::{generate_available_path, get_trove_dir};
 use crate::data::stores::docspace::ACTIVE_DOCUMENT_TITLE;
 use crate::data::types::{DEFAULT_NOTE_TITLE, DEFAULT_TROVE_DIR};
-use crate::data::{
-	io_utils::{load_default_trove, new_file_from_path, open_file_from_path},
-	stores::docspace::FILES_BUFFER,
-	types::Tab,
-};
-use freya::prelude::{GlobalSignal, Readable, Signal};
+use crate::data::{io_utils::new_file_from_path, stores::docspace::FILES_ARENA, types::Tab};
+use freya::prelude::{GlobalSignal, Signal};
 
 // Tabs Store:
 pub(crate) static TABS: GlobalSignal<Vec<Tab>> = Signal::global(Vec::new);
@@ -30,10 +26,10 @@ pub(crate) fn new_tab() {
 		log::error!("Failed to create a new tab, due to a previous error!");
 		return;
 	};
-	push_tab(file.title.clone(), FILES_BUFFER().len());
+	push_tab(file.title.clone(), FILES_ARENA().len());
 	*ACTIVE_DOCUMENT_TITLE.write() = file.title.clone();
 
-	FILES_BUFFER.write().push(file);
+	FILES_ARENA.write().push(file);
 	*CURRENT_TAB.write() = Some(TABS().len() - 1);
 }
 
@@ -46,7 +42,7 @@ pub fn close_tab(index: usize) {
 		}
 		// TODO: Trigger a file save before closing the tab.
 		TABS.write().remove(index);
-		FILES_BUFFER.write().remove(buffer_index);
+		FILES_ARENA.write().remove(buffer_index);
 	} else {
 		log::error!("Failed to switch to the tab: Invalid tab index! (out of bounds)")
 	}

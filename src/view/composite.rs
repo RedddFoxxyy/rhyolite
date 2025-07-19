@@ -1,4 +1,6 @@
 use crate::data::io_utils::initialise_app;
+use crate::data::stores::docspace::{EDITOR_BUFFER, FILES_ARENA};
+use crate::data::stores::tabs::{CURRENT_TAB, TABS};
 use crate::data::stores::ui::THEME_STORE;
 use crate::view::{docview::work_space, sidebar::side_bar, top_bar::top_nav_bar};
 use freya::prelude::*;
@@ -9,6 +11,20 @@ pub fn app() -> Element {
 
 	use_hook(move || {
 		initialise_app();
+	});
+
+	// TODO: Instead of changing the content of the editor, spawn an editor per tab and switch it.
+	use_effect(move || {
+		let current_tab_content = FILES_ARENA()
+			.get(TABS().get(CURRENT_TAB().unwrap()).unwrap().buffer_index)
+			.unwrap()
+			.content
+			.clone();
+
+		EDITOR_BUFFER()
+			.editor_mut()
+			.write()
+			.set(current_tab_content.as_str())
 	});
 
 	rsx!(rect {
