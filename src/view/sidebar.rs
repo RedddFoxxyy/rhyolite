@@ -1,4 +1,4 @@
-use crate::data::stores::ui::{
+use crate::data::stores::ui_store::{
 	SHOW_SETTINGS_DROPUP, SHOW_THEMES_DROPUP, THEME_STORE, toggle_command_palette,
 	toggle_recent_files, toggle_settings_dropup, toggle_themes_dropup,
 };
@@ -139,7 +139,7 @@ fn sidebar_button(on_click: EventHandler<()>, children: Element) -> Element {
 	//
 	// NOTE: Instead of using a hovered signal, we might hard code it
 	// into the on_mouse_enter and on_mouse_leave closures.
-	let animation = use_animation(move |conf| {
+	let animation = use_animation(move |_conf| {
 		// conf.auto_start(false);
 		(
 			AnimColor::new("transparent", &THEME_STORE().current_theme.colors.surface2).time(150),

@@ -1,8 +1,9 @@
+#![allow(unused_imports)]
 use crate::{
 	APP_ICON,
 	data::stores::{
-		tabs::{CURRENT_TAB, TABS, close_tab, new_tab, switch_tab},
-		ui::THEME_STORE,
+		tabs_store::{CURRENT_TAB, TABS, close_tab, new_tab, switch_tab},
+		ui_store::THEME_STORE,
 	},
 };
 use freya::prelude::*;
@@ -86,20 +87,23 @@ fn ActiveTabs() -> Element {
 					}
 				}
 			}
-			rect {
-				corner_radius: "100",
-				padding: "4 10",
-				margin: "1 2",
-				background: "{ theme.surface1 }",
-				background_opacity:"{ bg_hover_opacity.read() }",
-				onmouseenter,
-				onmouseleave,
-				label {
-					color: "{ theme.text }",
-					font_size: "17",
-					font_family: "JetBrains Mono",
+			CursorArea {
+				icon: CursorIcon::Pointer,
+				rect {
+					corner_radius: "100",
+					padding: "4 10",
+					margin: "1 2",
+					background: "{ theme.surface1 }",
+					background_opacity:"{ bg_hover_opacity.read() }",
+					onmouseenter,
+					onmouseleave,
 					onclick: move |_| new_tab(),
-					"+"
+					label {
+						color: "{ theme.text }",
+						font_size: "17",
+						font_family: "JetBrains Mono",
+						"+"
+					}
 				}
 			}
 		}

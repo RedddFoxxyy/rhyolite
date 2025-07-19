@@ -4,20 +4,21 @@
 //! different components. While this might not be the best way to do it, it works.
 
 use dioxus_clipboard::hooks::{UseClipboard, use_clipboard};
-use freya::{
-	hooks::{EditableConfig, EditableMode, UseEditable, UsePlatform, use_editable, use_platform},
-	prelude::{GlobalSignal, Readable, Signal},
-};
+use freya::prelude::*;
+use slab::Slab;
 
-use crate::data::types::{FileInfo, MarkdownFile, UserData};
+use crate::data::types::{MarkdownFile, RecentFileInfo, UserData};
+
 // TODO: Should each variable be stored seperate in a global signal or all should be grouped together in a struct and the struct be saved in a global sinal.
 
 // Document Counts Store:
-pub static WORD_CHAR_COUNT: GlobalSignal<(u32, u64)> = Signal::global(|| (0, 0));
+pub static WORD_CHAR_COUNT: GlobalSignal<(usize, usize)> = Signal::global(|| (0, 0));
 
 // Documents Store:
-pub static FILES_ARENA: GlobalSignal<Vec<MarkdownFile>> = Signal::global(Vec::new);
-pub static EDITOR_BUFFER: GlobalSignal<UseEditable> = Signal::global(|| {
+// NOTE: Using vector as a memory arena with random file push.
+pub static FILES_ARENA: GlobalSignal<Slab<MarkdownFile>> =
+	Signal::global(|| Slab::with_capacity(10));
+pub static CURRENT_EDITOR_BUFFER: GlobalSignal<UseEditable> = Signal::global(|| {
 	use_editable(
 		|| EditableConfig::new("Welcome to Rhyolite!".trim().to_string()).with_allow_tabs(true),
 		EditableMode::SingleLineMultipleEditors,
@@ -26,7 +27,7 @@ pub static EDITOR_BUFFER: GlobalSignal<UseEditable> = Signal::global(|| {
 pub static ACTIVE_DOCUMENT_TITLE: GlobalSignal<String> = Signal::global(String::new);
 
 // IO Store:
-pub static RECENT_FILES: GlobalSignal<Vec<FileInfo>> = Signal::global(Vec::new);
+pub static _RECENT_FILES: GlobalSignal<Vec<RecentFileInfo>> = Signal::global(Vec::new);
 pub static USER_DATA: GlobalSignal<UserData> = Signal::global(UserData::default);
 
 // Platform Stores:

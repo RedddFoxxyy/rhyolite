@@ -1,4 +1,4 @@
-use crate::data::stores::ui::THEME_STORE;
+use crate::data::stores::ui_store::THEME_STORE;
 use freya::prelude::*;
 
 #[component]
@@ -31,7 +31,7 @@ pub fn menu(children: Element) -> Element {
 #[component]
 pub fn submenu(children: Element) -> Element {
 	let theme = THEME_STORE().current_theme.colors;
-	// let themes_list = &THEME_STORE().store;
+
 	rsx!(
 		rect {
 			position: "global",
@@ -64,7 +64,7 @@ pub fn button(props: ButtonProps) -> Element {
 	let theme = THEME_STORE().current_theme.colors;
 	let mut hovered = use_signal(|| false); // required in future
 
-	let animation = use_animation(move |conf| {
+	let animation = use_animation(move |_conf| {
 		// conf.auto_start(false);
 
 		AnimColor::new(
@@ -87,7 +87,6 @@ pub fn button(props: ButtonProps) -> Element {
 				padding: "5 6",
 				direction: "horizontal",
 				spacing: "5",
-				// main_align: "space-between",
 				onclick: move |_| (props.on_click)(&props.label),
 				onmouseenter: move |_| {
 					hovered.set(true);

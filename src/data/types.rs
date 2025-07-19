@@ -3,15 +3,10 @@
 //!
 //! All the required global statics/constants are declared in this module.
 
-use freya::hooks::UseEditable;
-use freya::prelude::Signal;
-use std::sync::Arc;
-use std::{collections::HashMap, path::PathBuf};
-
-// use indexmap::IndexMap;
-use serde::{Deserialize, Serialize};
-
 use crate::data::themes::Theme;
+use freya::hooks::UseEditable;
+use serde::{Deserialize, Serialize};
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 /// Name of the Default Note Title used by the app!
 pub const APP_DATA_DIR: &str = "Rhyolite";
@@ -35,7 +30,6 @@ pub struct MarkdownFile {
 }
 
 /// Denotes a tab in the editor.
-/// Has a unique identifier and a title(where title is the title of the Markdown File).
 #[derive(Debug, Serialize, Deserialize, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct Tab {
 	// pub index: usize,  // Unique identifier for the tab ( removed it for now )
@@ -45,7 +39,7 @@ pub struct Tab {
 
 #[allow(dead_code)]
 #[derive(Debug)]
-pub struct Buffer {
+pub struct OpenFileData {
 	pub title: String,
 	pub contents: String,
 }
@@ -55,12 +49,12 @@ pub struct Buffer {
 pub struct UserData {
 	pub active_tabs: Vec<Tab>, // Stores the list of last active tabs before the editor was closed
 	pub last_open_tab: String, // Stores the tab id of the last open tab
-	pub recent_files: Vec<FileInfo>, // Stores the list of recently created files
+	pub recent_files: Vec<RecentFileInfo>, // Stores the list of recently created files
 	pub current_theme: Theme,  // Stores the current theme color palette
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct FileInfo {
+pub struct RecentFileInfo {
 	pub id: String,
 	pub title: String,
 	pub path: PathBuf,
@@ -69,13 +63,13 @@ pub struct FileInfo {
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct FileManager {
-	pub documents: HashMap<String, Arc<Buffer>>, // Used to store open documents in the editor (tabid, tabdocument)
-	pub recent_files: Vec<FileInfo>,             // Stores the list of recently created files
+	pub open_files: HashMap<String, Arc<OpenFileData>>, // Used to store open files in the editor
+	pub recent_files: Vec<RecentFileInfo>,              // Stores the list of recently created files
 }
 impl Default for FileManager {
 	fn default() -> Self {
 		Self {
-			documents: HashMap::new(),
+			open_files: HashMap::new(),
 			recent_files: Vec::new(),
 		}
 	}

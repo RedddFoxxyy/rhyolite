@@ -1,8 +1,7 @@
 use crate::{
 	data::stores::{
-		docspace::{ACTIVE_DOCUMENT_TITLE, EDITOR_BUFFER, FILES_ARENA},
-		tabs::{CURRENT_TAB, TABS},
-		ui::THEME_STORE,
+		doc_store::{ACTIVE_DOCUMENT_TITLE, CURRENT_EDITOR_BUFFER},
+		ui_store::THEME_STORE,
 	},
 	view::bottom_bar::bottom_floating_bar,
 };
@@ -148,7 +147,7 @@ fn document_editor() -> Element {
 
 	let mut focus = use_focus();
 
-	let mut editable = EDITOR_BUFFER();
+	let mut editable = CURRENT_EDITOR_BUFFER();
 	let cursor_reference = editable.cursor_attr();
 	let highlights = editable.highlights_attr(0);
 	let editor = editable.editor().read();

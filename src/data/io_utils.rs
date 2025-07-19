@@ -1,24 +1,15 @@
-// use freya::hooks::{UseEditable, use_platform};
-use freya::hooks::EditableConfig;
-use freya::prelude::*;
-
 use crate::data::{
 	stores::{
-		docspace::{FILES_ARENA, USER_DATA},
-		tabs::{TABS, new_tab, push_tab},
+		doc_store::{ACTIVE_DOCUMENT_TITLE, CLIPBOARD, FILES_ARENA, PLATFORM, USER_DATA},
+		tabs_store::{CURRENT_TAB, TABS, new_tab, push_tab},
 	},
-	types::{DEFAULT_TROVE_DIR, MarkdownFile, USER_DATA_DIR, USER_DATA_FILE, UserData},
-};
-use std::fs;
-use std::path::PathBuf;
-
-use super::{
-	stores::{
-		docspace::{ACTIVE_DOCUMENT_TITLE, CLIPBOARD, PLATFORM},
-		tabs::CURRENT_TAB,
+	types::{
+		APP_DATA_DIR, DEFAULT_TROVE_DIR, MarkdownFile, USER_DATA_DIR, USER_DATA_FILE, UserData,
 	},
-	types::APP_DATA_DIR,
 };
+use freya::prelude::*;
+use std::{fs, path::PathBuf};
+use tokio::{fs::File, io::AsyncWriteExt, runtime::Runtime};
 
 /// This function returns the path to the documents' directory.
 pub fn get_rhyolite_dir() -> PathBuf {
@@ -44,12 +35,12 @@ pub fn get_rhyolite_dir() -> PathBuf {
 }
 
 /// This function returns the path to the default trove directory.
-pub(crate) fn get_trove_dir(trove_name: &str) -> PathBuf {
+pub fn get_trove_dir(trove_name: &str) -> PathBuf {
 	//Get the path to documents/Rhyolite.
-	let documents_dir = get_rhyolite_dir();
+	let rhyolite_dir = get_rhyolite_dir();
 
 	//Append the default trove name to the 'documents/Rhyolite path'.
-	let trove_dir = documents_dir.join(trove_name);
+	let trove_dir = rhyolite_dir.join(trove_name);
 
 	//Then create the path 'documents/Rhyolite/trove_name' if it does not
 	fs::create_dir_all(&trove_dir).expect("Could not create Trove directory");
@@ -63,7 +54,7 @@ pub fn get_userdata_path() -> PathBuf {
 }
 
 /// Generate a path that is not conflicting by incrementing a counter at file end
-pub(crate) fn generate_available_path(path: PathBuf) -> PathBuf {
+pub fn generate_available_path(path: PathBuf) -> PathBuf {
 	if !path.exists() {
 		return path;
 	}
@@ -260,8 +251,30 @@ pub fn load_from_userdata() -> Vec<MarkdownFile> {
 	markdown_files_data
 }
 
+pub async fn save_file(markdownfile: MarkdownFile) {
+	if let Ok(mut file) = File::create(markdownfile.path.clone()).await {
+		if let Ok(_result) = file
+			.write_all(markdownfile.editable.editor().to_string().as_bytes())
+			.await
+		{
+			log::info!("Succesfully saved current file")
+		} else {
+			log::error!("Failed to save the file!")
+		}
+	}
+}
+
+pub async fn delete_file(markdownfile: MarkdownFile) {
+	if let Ok(_result) = tokio::fs::remove_file(markdownfile.path.clone()).await {
+		log::info!("Succesfully delted {}.", markdownfile.title)
+	} else {
+		log::error!("Failed to save the file!")
+	}
+}
+
 /// Loads last saved State of the App.
 pub fn initialise_app() {
+	let tokio = Runtime::new().unwrap();
 	let userdata_path = get_rhyolite_dir().join(USER_DATA_DIR).join(USER_DATA_FILE);
 
 	let markdownfiles = if !userdata_path.exists() {
@@ -271,12 +284,12 @@ pub fn initialise_app() {
 	};
 
 	if markdownfiles.is_empty() {
-		new_tab();
+		tokio.block_on(new_tab());
 	} else {
 		for file in markdownfiles {
-			let insertion_index = FILES_ARENA().len();
-			push_tab(file.title.clone(), insertion_index);
-			FILES_ARENA.write().push(file);
+			let title = file.title.clone();
+			let file_key = FILES_ARENA.write().insert(file);
+			tokio.block_on(push_tab(title, file_key));
 		}
 		*CURRENT_TAB.write() = Some(0);
 	}
@@ -285,4 +298,10 @@ pub fn initialise_app() {
 	*ACTIVE_DOCUMENT_TITLE.write() = TABS().get(CURRENT_TAB().unwrap()).unwrap().title.clone();
 }
 
-pub fn _deinitialise_app() {}
+pub fn deinitialise_app() {
+	let tokio = Runtime::new().unwrap();
+	for markdownfile in FILES_ARENA().into_iter() {
+		// NOTE: I think this can be handled better here? not sure if this will cause any performance issues as such.
+		tokio.block_on(save_file(markdownfile.1));
+	}
+}

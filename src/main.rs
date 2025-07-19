@@ -6,7 +6,7 @@
 mod data;
 mod view;
 
-use data::stores::ui::JET_BRAINS_MONO;
+use data::stores::ui_store::JET_BRAINS_MONO;
 use freya::prelude::*;
 use view::composite::app;
 
@@ -23,5 +23,5 @@ fn main() {
 			.with_min_size(400.0, 300.0)
 			// .with_decorations(false)
 			.with_icon(LaunchConfig::load_icon(APP_ICON)),
-	)
+	);
 }
