@@ -65,8 +65,6 @@ pub fn button(props: ButtonProps) -> Element {
 	let mut hovered = use_signal(|| false); // required in future
 
 	let animation = use_animation(move |_conf| {
-		// conf.auto_start(false);
-
 		AnimColor::new(
 			&THEME_STORE().current_theme.colors.base,
 			&THEME_STORE().current_theme.colors.surface1,

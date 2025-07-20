@@ -50,10 +50,10 @@ pub fn side_bar() -> Element {
 
 			if *SHOW_THEMES_DROPUP.read() {
 				dropdown::submenu {
-					for theme in themes_list.keys().cloned() {
+					for theme in themes_list.iter() {
 						dropdown::button {
-							label: theme,
-							on_click: |theme| THEME_STORE.write().change_current_theme(theme),
+							label: theme.info.name.clone(),
+							on_click: |theme_name| THEME_STORE.write().change_current_theme(theme_name),
 						}
 					}
 				}

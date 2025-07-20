@@ -1,5 +1,3 @@
-use indexmap::IndexMap;
-
 use serde::{Deserialize, Serialize};
 // use std::{
 // 	fs::{self, read_dir},
@@ -12,33 +10,40 @@ include!("../build/themes_build.rs");
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ThemesStore {
-	pub store: IndexMap<String, Theme>,
+	pub store: Vec<Theme>,
 	pub current_theme: Theme,
 }
 impl ThemesStore {
 	pub fn default() -> ThemesStore {
-		let mut theme_map: IndexMap<String, Theme> = IndexMap::new();
+		let mut theme_vec: Vec<Theme> = Vec::new();
 
-		let mut themes_vec: Vec<_> = THEMES.iter().collect();
+		let mut sorted_themes_vec: Vec<_> = THEMES.iter().collect();
 
 		// Sort the themes alphabetically by filename
-		themes_vec.sort_by(|a, b| a.0.cmp(b.0));
+		sorted_themes_vec.sort_by(|a, b| a.0.cmp(b.0));
 
-		for (file_name, toml_str) in themes_vec {
+		for (file_name, toml_str) in sorted_themes_vec {
 			let theme: Theme = toml::from_str(toml_str)
 				.unwrap_or_else(|e| panic!("Error parsing {}: {}", file_name, e));
 
-			theme_map.insert(theme.info.name.clone(), theme);
+			theme_vec.push(theme);
 		}
 
 		ThemesStore {
-			store: theme_map,
+			store: theme_vec,
 			current_theme: Theme::default(),
 		}
 	}
 
-	pub fn change_current_theme(&mut self, theme_key: &String) {
-		self.current_theme = self.store.get(theme_key).unwrap().clone();
+	pub fn change_current_theme(&mut self, theme_name: &String) {
+		// Had to do this workaround cause the button props on_click property only takes a &String.
+		if let Some(index) = self
+			.store
+			.iter()
+			.position(|theme| &theme.info.name == theme_name)
+		{
+			self.current_theme = self.store.get(index).unwrap().clone();
+		}
 	}
 }
 
@@ -50,7 +55,7 @@ pub struct Theme {
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct ThemeInfo {
-	name: String,
+	pub name: String,
 	author: String,
 	themetype: ThemeType,
 	colorscheme: ColorScheme,

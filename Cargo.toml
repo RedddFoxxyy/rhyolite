@@ -48,14 +48,14 @@ dirs = "6.0.0"
 sanitize-filename = "0.6.0"
 # pulldown-cmark = "0.13.0"
 # uuid = { version = "1.17.0", features = ["v4", "serde"] }
-indexmap = { version = "2.10.0", features = ["serde"] }
+# indexmap = { version = "2.10.0", features = ["serde"] }
 # regex = "1.11.1"
 log = { version = "0.4.27" }
 tokio = { version = "1.45.1", features = ["fs", "sync", "io-util", "io-std"] }
 slab = "0.4.10"
 
 [profile.dev]
-incremental = true  # Compile your binary in smaller steps.
+incremental = true
 codegen-units = 256
 
 [profile.release]
