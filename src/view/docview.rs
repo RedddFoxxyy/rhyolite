@@ -67,11 +67,19 @@ fn document_title_box() -> Element {
 	};
 
 	let onkeydown = move |e: KeyboardEvent| {
-		editable.process_event(&EditableEvent::KeyDown(e.data));
+		if !(e.data.modifiers.contains(Modifiers::CONTROL)
+			&& e.data.key == Key::Character("s".to_string()))
+		{
+			editable.process_event(&EditableEvent::KeyDown(e.data));
+		}
 	};
 
 	let onkeyup = move |e: KeyboardEvent| {
-		editable.process_event(&EditableEvent::KeyUp(e.data));
+		if !(e.data.modifiers.contains(Modifiers::CONTROL)
+			&& e.data.key == Key::Character("s".to_string()))
+		{
+			editable.process_event(&EditableEvent::KeyUp(e.data));
+		}
 	};
 
 	// A future that runs a timer to toggle the blink signal
@@ -142,12 +150,14 @@ fn document_title_box() -> Element {
 	})
 }
 
+// TODO: Handle multi line highlights by iterating through each editor and handling the highlight attribute
 fn document_editor() -> Element {
 	let theme = THEME_STORE().current_theme.colors;
 
 	let mut focus = use_focus();
 
 	let mut editable = CURRENT_EDITOR_BUFFER();
+
 	let cursor_reference = editable.cursor_attr();
 	let highlights = editable.highlights_attr(0);
 	let editor = editable.editor().read();
@@ -169,11 +179,19 @@ fn document_editor() -> Element {
 	};
 
 	let onkeydown = move |e: KeyboardEvent| {
-		editable.process_event(&EditableEvent::KeyDown(e.data));
+		if !(e.data.modifiers.contains(Modifiers::CONTROL)
+			&& e.data.key == Key::Character("s".to_string()))
+		{
+			editable.process_event(&EditableEvent::KeyDown(e.data));
+		}
 	};
 
 	let onkeyup = move |e: KeyboardEvent| {
-		editable.process_event(&EditableEvent::KeyUp(e.data));
+		if !(e.data.modifiers.contains(Modifiers::CONTROL)
+			&& e.data.key == Key::Character("s".to_string()))
+		{
+			editable.process_event(&EditableEvent::KeyUp(e.data));
+		}
 	};
 
 	use_future(move || async move {
@@ -228,8 +246,7 @@ fn document_editor() -> Element {
 					font_family: "JetBrains Mono",
 					text {
 						"{editable.editor()}"
-					}
-
+					},
 				}
 			}
 		}

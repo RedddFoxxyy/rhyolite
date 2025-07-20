@@ -52,7 +52,7 @@ pub fn app() -> Element {
 		// Check if the Control key is held down and the 's' key is pressed
 		if modifiers.contains(Modifiers::CONTROL) && *key == Key::Character("s".to_string()) {
 			// println!("Ctrl + S was pressed!");
-			e.prevent_default();
+			// e.prevent_default();
 			e.stop_propagation();
 			let current_tab_content = FILES_ARENA()
 				.get(TABS().get(CURRENT_TAB().unwrap()).unwrap().buffer_index)
@@ -62,7 +62,7 @@ pub fn app() -> Element {
 		} else if modifiers.contains(Modifiers::CONTROL) && *key == Key::Character("d".to_string())
 		{
 			// println!("Ctrl + d was pressed!");
-			e.prevent_default();
+			// e.prevent_default();
 			e.stop_propagation();
 			delete_tab(CURRENT_TAB().unwrap()).await;
 		}
