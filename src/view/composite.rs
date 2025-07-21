@@ -1,9 +1,10 @@
 use crate::{
 	data::{
-		io_utils::{deinitialise_app, initialise_app, save_file},
+		fn_utils::handle_global_keyboard_input,
+		io_utils::{deinitialise_app, initialise_app},
 		stores::{
 			doc_store::{CURRENT_EDITOR_BUFFER, FILES_ARENA, WORD_CHAR_COUNT},
-			tabs_store::{CURRENT_TAB, TABS, delete_tab},
+			tabs_store::{CURRENT_TAB, TABS},
 			ui_store::THEME_STORE,
 		},
 	},
@@ -44,36 +45,12 @@ pub fn app() -> Element {
 		deinitialise_app();
 	});
 
-	// TODO: Move this to a seprate file/function to handle various key events.
-	let onglobalkeydown = async move |e: KeyboardEvent| {
-		let key = &e.data.key;
-		let modifiers = e.data.modifiers;
-
-		// Check if the Control key is held down and the 's' key is pressed
-		if modifiers.contains(Modifiers::CONTROL) && *key == Key::Character("s".to_string()) {
-			// println!("Ctrl + S was pressed!");
-			// e.prevent_default();
-			e.stop_propagation();
-			let current_tab_content = FILES_ARENA()
-				.get(TABS().get(CURRENT_TAB().unwrap()).unwrap().buffer_index)
-				.unwrap()
-				.clone();
-			save_file(current_tab_content).await;
-		} else if modifiers.contains(Modifiers::CONTROL) && *key == Key::Character("d".to_string())
-		{
-			// println!("Ctrl + d was pressed!");
-			// e.prevent_default();
-			e.stop_propagation();
-			delete_tab(CURRENT_TAB().unwrap()).await;
-		}
-	};
-
 	rsx!(rect {
 		width: "fill",
 		height: "fill",
 		background: theme.crust,
 		direction: "vertical",
-		onglobalkeydown,
+		onglobalkeydown: handle_global_keyboard_input,
 
 		// Tabs Navigation Bar
 		top_nav_bar {}

@@ -31,14 +31,17 @@ pub(crate) async fn new_tab() {
 	let file_key = FILES_ARENA.write().insert(markdownfile.clone());
 	push_tab(markdownfile.title.clone(), file_key).await;
 	*ACTIVE_DOCUMENT_TITLE.write() = markdownfile.title.clone();
+	let log_title = markdownfile.title.clone();
 
 	*CURRENT_TAB.write() = Some(TABS().len() - 1);
-	save_file(markdownfile).await
+	save_file(markdownfile).await;
+	log::info!("Opened New Tab: {log_title}");
 }
 
 /// Closes the tab at given index also freeing the its buffer from FILES_BUFFER.
 pub async fn close_tab(index: usize) {
 	if let Some(tab) = TABS().get(index) {
+		let tab_title = tab.title.clone();
 		let buffer_index = tab.buffer_index;
 		if CURRENT_TAB() == Some(index) {
 			switch_tab(index - 1).await;
@@ -47,6 +50,7 @@ pub async fn close_tab(index: usize) {
 		save_file(FILES_ARENA().get(buffer_index).unwrap().clone()).await;
 		TABS.write().remove(index);
 		FILES_ARENA.write().remove(buffer_index);
+		log::info!("Closed the following tab: {tab_title}");
 	} else {
 		log::error!("Failed to close the tab: Invalid tab index! (out of bounds)")
 	}
@@ -55,6 +59,7 @@ pub async fn close_tab(index: usize) {
 /// Closes the tab at given index also freeing the its buffer from FILES_BUFFER, and deletes the file associated with it.
 pub async fn delete_tab(index: usize) {
 	if let Some(tab) = TABS().get(index) {
+		let tab_title = tab.title.clone();
 		let buffer_index = tab.buffer_index;
 		if CURRENT_TAB() == Some(index) {
 			switch_tab(index - 1).await;
@@ -63,6 +68,7 @@ pub async fn delete_tab(index: usize) {
 		TABS.write().remove(index);
 		delete_file(FILES_ARENA().get(buffer_index).unwrap().clone()).await;
 		FILES_ARENA.write().remove(buffer_index);
+		log::info!("Deleted the following tab and file: {tab_title}");
 	} else {
 		log::error!("Failed to delete the tab: Invalid tab index! (out of bounds)")
 	}
@@ -81,6 +87,7 @@ pub async fn switch_tab(index: usize) {
 	if let Some(tab) = TABS().get(index) {
 		*CURRENT_TAB.write() = Some(index);
 		*ACTIVE_DOCUMENT_TITLE.write() = tab.title.clone();
+		log::info!("Swiched to the follwoing tab: {}", tab.title.clone());
 	} else {
 		log::error!("Failed to switch to the tab: Invalid tab index! (out of bounds)")
 	}

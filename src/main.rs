@@ -13,6 +13,8 @@ use view::composite::app;
 const APP_ICON: &[u8] = include_bytes!("./static/icon.png");
 
 fn main() {
+	// NOTE: For some reason logs are not working on my machine : ( ?
+	log::info!("Rhyolite App started, initialising GUI");
 	launch_cfg(
 		app,
 		LaunchConfig::<()>::new()
