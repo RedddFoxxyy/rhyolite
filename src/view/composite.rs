@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use crate::{
 	data::{
 		fn_utils::handle_global_keyboard_input,
@@ -24,7 +25,7 @@ pub fn app() -> Element {
 	// NOTE: We can hardcode this logic in the switch tab function itself instead of using a use effect!
 	use_effect(move || {
 		let current_tab_content = FILES_ARENA()
-			.get(TABS().get(CURRENT_TAB().unwrap()).unwrap().buffer_index)
+			.get(TABS().get(CURRENT_TAB().unwrap()).unwrap().file_key)
 			.unwrap()
 			.editable
 			.clone();
@@ -41,9 +42,11 @@ pub fn app() -> Element {
 		*WORD_CHAR_COUNT.write() = (word_count, char_count);
 	});
 
-	use_drop(move || {
-		deinitialise_app();
-	});
+	// NOTE: Do not run this here, I am still figuring out how to deinitialise the app correctly,
+	// for not I am running this funciton in docview/document_editor.
+	// use_drop(move || {
+	// 	deinitialise_app();
+	// });
 
 	rsx!(rect {
 		width: "fill",

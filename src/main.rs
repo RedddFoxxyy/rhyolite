@@ -6,15 +6,16 @@
 mod data;
 mod view;
 
-use data::stores::ui_store::JET_BRAINS_MONO;
+use data::{io_utils::env_logger_init, stores::ui_store::JET_BRAINS_MONO};
 use freya::prelude::*;
 use view::composite::app;
 
 const APP_ICON: &[u8] = include_bytes!("./static/icon.png");
 
 fn main() {
-	// NOTE: For some reason logs are not working on my machine : ( ?
-	log::info!("Rhyolite App started, initialising GUI");
+	env_logger_init();
+
+	log::info!("Rhyolite App started, initialising GUI.");
 	launch_cfg(
 		app,
 		LaunchConfig::<()>::new()

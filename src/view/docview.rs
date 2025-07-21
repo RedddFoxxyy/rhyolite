@@ -1,7 +1,10 @@
 use crate::{
-	data::stores::{
-		doc_store::{ACTIVE_DOCUMENT_TITLE, CURRENT_EDITOR_BUFFER},
-		ui_store::THEME_STORE,
+	data::{
+		io_utils::deinitialise_app,
+		stores::{
+			doc_store::{ACTIVE_DOCUMENT_TITLE, CURRENT_EDITOR_BUFFER},
+			ui_store::THEME_STORE,
+		},
 	},
 	view::bottom_bar::bottom_floating_bar,
 };
@@ -202,6 +205,12 @@ fn document_editor() -> Element {
 				is_cursor_blinking.toggle();
 			}
 		}
+	});
+
+	// NOTE: This probably is not the correct place to run this function, however it works
+	// correctly here, so for now the deinitialise function run here.
+	use_drop(move || {
+		deinitialise_app();
 	});
 
 	let cursor_color = if focus.is_focused() && *is_cursor_blinking.read() {

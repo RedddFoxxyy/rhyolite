@@ -8,8 +8,16 @@ use crate::data::{
 	},
 };
 use freya::prelude::*;
+use log::LevelFilter;
 use std::{fs, path::PathBuf};
 use tokio::{fs::File, io::AsyncWriteExt, runtime::Runtime};
+
+pub fn env_logger_init() {
+	let mut builder = env_logger::Builder::new();
+	builder.filter(None, LevelFilter::Warn);
+	builder.filter_module("Rhyolite", LevelFilter::Trace);
+	builder.init();
+}
 
 /// This function returns the path to the documents' directory.
 pub fn get_rhyolite_dir() -> PathBuf {
@@ -266,7 +274,7 @@ pub async fn save_file(markdownfile: MarkdownFile) {
 
 pub async fn delete_file(markdownfile: MarkdownFile) {
 	if let Ok(_result) = tokio::fs::remove_file(markdownfile.path.clone()).await {
-		log::info!("Succesfully delted {}.", markdownfile.title)
+		// log::info!("Succesfully deleted {}.", markdownfile.title)
 	} else {
 		log::error!("Failed to save the file!")
 	}
@@ -300,8 +308,10 @@ pub fn initialise_app() {
 
 pub fn deinitialise_app() {
 	let tokio = Runtime::new().unwrap();
-	for markdownfile in FILES_ARENA().into_iter() {
-		// NOTE: I think this can be handled better here? not sure if this will cause any performance issues as such.
-		tokio.block_on(save_file(markdownfile.1));
+	for tab in TABS().iter() {
+		if let Some(markdownfile) = FILES_ARENA().get(tab.file_key) {
+			// NOTE: I think this can be handled better here? not sure if this will cause any performance issues as such.
+			tokio.block_on(save_file(markdownfile.clone()));
+		}
 	}
 }

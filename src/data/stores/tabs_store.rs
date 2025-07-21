@@ -42,9 +42,16 @@ pub(crate) async fn new_tab() {
 pub async fn close_tab(index: usize) {
 	if let Some(tab) = TABS().get(index) {
 		let tab_title = tab.title.clone();
-		let buffer_index = tab.buffer_index;
+		let buffer_index = tab.file_key;
+		let tab_count = TABS().len();
 		if CURRENT_TAB() == Some(index) {
-			switch_tab(index - 1).await;
+			if index != 0 {
+				switch_tab(index - 1).await;
+			} else if tab_count > 1 {
+				switch_tab(index + 1).await;
+			} else {
+				return;
+			}
 		}
 		// TODO: Trigger a file save before closing the tab.
 		save_file(FILES_ARENA().get(buffer_index).unwrap().clone()).await;
@@ -60,9 +67,16 @@ pub async fn close_tab(index: usize) {
 pub async fn delete_tab(index: usize) {
 	if let Some(tab) = TABS().get(index) {
 		let tab_title = tab.title.clone();
-		let buffer_index = tab.buffer_index;
+		let buffer_index = tab.file_key;
+		let tab_count = TABS().len();
 		if CURRENT_TAB() == Some(index) {
-			switch_tab(index - 1).await;
+			if index != 0 {
+				switch_tab(index - 1).await;
+			} else if tab_count > 1 {
+				switch_tab(index + 1).await;
+			} else {
+				return;
+			}
 		}
 		// TODO: Trigger a file save before closing the tab.
 		TABS.write().remove(index);
@@ -78,7 +92,7 @@ pub async fn delete_tab(index: usize) {
 pub async fn push_tab(title: String, document_index: usize) {
 	let newtab = Tab {
 		title,
-		buffer_index: document_index,
+		file_key: document_index,
 	};
 	TABS.write().push(newtab);
 }
@@ -87,7 +101,7 @@ pub async fn switch_tab(index: usize) {
 	if let Some(tab) = TABS().get(index) {
 		*CURRENT_TAB.write() = Some(index);
 		*ACTIVE_DOCUMENT_TITLE.write() = tab.title.clone();
-		log::info!("Swiched to the follwoing tab: {}", tab.title.clone());
+		log::info!("Swiched to the following tab: {}", tab.title.clone());
 	} else {
 		log::error!("Failed to switch to the tab: Invalid tab index! (out of bounds)")
 	}

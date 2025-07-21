@@ -33,8 +33,8 @@ pub struct MarkdownFile {
 #[derive(Debug, Serialize, Deserialize, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct Tab {
 	// pub index: usize,  // Unique identifier for the tab ( removed it for now )
-	pub title: String,       // Title of the Document
-	pub buffer_index: usize, // The reference to the document in the document vec.
+	pub title: String,   // Title of the Document
+	pub file_key: usize, // The reference to the document in the document vec.
 }
 
 #[allow(dead_code)]

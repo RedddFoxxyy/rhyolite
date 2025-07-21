@@ -25,7 +25,7 @@ pub(crate) async fn handle_global_keyboard_input(e: KeyboardEvent) {
 		Key::Character(c) if c == "s" => {
 			e.stop_propagation();
 			let current_tab_content = FILES_ARENA()
-				.get(TABS().get(CURRENT_TAB().unwrap()).unwrap().buffer_index)
+				.get(TABS().get(CURRENT_TAB().unwrap()).unwrap().file_key)
 				.unwrap()
 				.clone();
 			save_file(current_tab_content).await;
