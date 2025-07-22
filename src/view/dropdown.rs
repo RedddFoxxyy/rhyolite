@@ -16,6 +16,7 @@ pub fn menu(children: Element) -> Element {
 			position_left: "55",
 			padding: "6 4",
 			background: "{theme.base}",
+			layer: "overlay",
 			corner_radius: "12",
 			rect {
 				width: "fill",
@@ -41,11 +42,17 @@ pub fn submenu(children: Element) -> Element {
 			position_left: "265",
 			padding: "8 13 8 10",
 			background: "{theme.base}",
+			layer: "overlay",
 			corner_radius: "12",
 			ScrollView {
 				width: "fill",
 				direction: "vertical",
 				spacing: "6",
+				scrollbar_theme: theme_with!(
+					ScrollBarTheme {
+						background: cow_borrowed!("transparent")
+					}
+				),
 				{children}
 			}
 		}

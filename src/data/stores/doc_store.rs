@@ -7,7 +7,7 @@ use dioxus_clipboard::hooks::{UseClipboard, use_clipboard};
 use freya::prelude::*;
 use slab::Slab;
 
-use crate::data::types::{MarkdownFile, RecentFileInfo, UserData};
+use crate::data::types::{MarkdownFile, RecentFileInfo};
 
 // TODO: Should each variable be stored seperate in a global signal or all should be grouped together in a struct and the struct be saved in a global sinal.
 
@@ -27,8 +27,8 @@ pub static CURRENT_EDITOR_BUFFER: GlobalSignal<UseEditable> = Signal::global(|| 
 pub static ACTIVE_DOCUMENT_TITLE: GlobalSignal<String> = Signal::global(String::new);
 
 // IO Store:
-pub static _RECENT_FILES: GlobalSignal<Vec<RecentFileInfo>> = Signal::global(Vec::new);
-pub static USER_DATA: GlobalSignal<UserData> = Signal::global(UserData::default);
+pub static RECENT_FILES: GlobalSignal<Vec<RecentFileInfo>> = Signal::global(Vec::new);
+// pub static USER_DATA: GlobalSignal<UserData> = Signal::global(UserData::default);
 
 // Platform Stores:
 pub static PLATFORM: GlobalSignal<UsePlatform> = Signal::global(use_platform);

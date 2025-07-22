@@ -59,8 +59,7 @@ assets = [
 ]
 
 [dependencies]
-freya = { git = "https://github.com/marc2332/freya", branch = "main", features = [
-] }
+freya = { git = "https://github.com/marc2332/freya", branch = "main", features = [] }
 dioxus = { version = "0.6.3", default-features = false, features = [
 	"macro",
 	"signals",

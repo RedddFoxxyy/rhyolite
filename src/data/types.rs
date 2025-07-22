@@ -48,7 +48,7 @@ pub struct OpenFileData {
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct UserData {
 	pub active_tabs: Vec<Tab>, // Stores the list of last active tabs before the editor was closed
-	pub last_open_tab: String, // Stores the tab id of the last open tab
+	pub last_open_tab: usize,  // Stores the tab id of the last open tab
 	pub recent_files: Vec<RecentFileInfo>, // Stores the list of recently created files
 	pub current_theme: Theme,  // Stores the current theme color palette
 }

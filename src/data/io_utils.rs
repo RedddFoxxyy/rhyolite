@@ -1,6 +1,6 @@
 use crate::data::{
 	stores::{
-		doc_store::{ACTIVE_DOCUMENT_TITLE, CLIPBOARD, FILES_ARENA, PLATFORM, USER_DATA},
+		doc_store::{ACTIVE_DOCUMENT_TITLE, CLIPBOARD, FILES_ARENA, PLATFORM},
 		tabs_store::{CURRENT_TAB, TABS, new_tab, push_tab},
 	},
 	types::{
@@ -9,8 +9,10 @@ use crate::data::{
 };
 use freya::prelude::*;
 use log::LevelFilter;
-use std::{fs, path::PathBuf};
+use std::{fs, io::Write, path::PathBuf};
 use tokio::{fs::File, io::AsyncWriteExt, runtime::Runtime};
+
+use super::stores::{doc_store::RECENT_FILES, ui_store::THEME_STORE};
 
 pub fn env_logger_init() {
 	let mut builder = env_logger::Builder::new();
@@ -145,8 +147,25 @@ pub fn new_file_from_path(path: PathBuf) -> Option<MarkdownFile> {
 	};
 }
 
-pub fn load_files_from_trove(trove_path: PathBuf) -> Vec<MarkdownFile> {
-	let mut markdown_files_data: Vec<MarkdownFile> = Vec::new();
+pub fn save_userdata() {
+	let current_editor_state = UserData {
+		active_tabs: TABS(),
+		last_open_tab: CURRENT_TAB().unwrap(),
+		recent_files: RECENT_FILES(),
+		current_theme: THEME_STORE().current_theme.clone(),
+	};
+
+	if let Ok(toml_serialised_state) = toml::to_string::<UserData>(&current_editor_state) {
+		// let userdata_file = fs::File::write(&mut self, toml_serialised_state);
+		if let Ok(mut userdata_file) = fs::File::create(get_userdata_path()) {
+			// TODO: Handle Error for this operation and the parent operations.
+			let _op_result = userdata_file.write(toml_serialised_state.as_bytes());
+		}
+	}
+}
+
+pub fn load_files_from_trove(trove_path: PathBuf) {
+	let mut markdownfiles: Vec<MarkdownFile> = Vec::new();
 
 	if let Ok(entries) = fs::read_dir(&trove_path) {
 		for entry in entries {
@@ -182,7 +201,7 @@ pub fn load_files_from_trove(trove_path: PathBuf) -> Vec<MarkdownFile> {
 							),
 						};
 
-						markdown_files_data.push(file_data);
+						markdownfiles.push(file_data);
 					}
 				}
 			}
@@ -191,14 +210,25 @@ pub fn load_files_from_trove(trove_path: PathBuf) -> Vec<MarkdownFile> {
 		log::error!("Error reading directory: {:?}", trove_path);
 	}
 
-	markdown_files_data
+	let tokio = Runtime::new().unwrap();
+
+	if markdownfiles.is_empty() {
+		tokio.block_on(new_tab());
+	} else {
+		for file in markdownfiles {
+			let title = file.title.clone();
+			let file_key = FILES_ARENA.write().insert(file);
+			tokio.block_on(push_tab(title, file_key));
+		}
+		*CURRENT_TAB.write() = Some(0);
+	}
 }
 
-pub fn load_default_trove() -> Vec<MarkdownFile> {
+pub fn load_default_trove() {
 	load_files_from_trove(get_trove_dir(DEFAULT_TROVE_DIR))
 }
 
-pub fn load_from_userdata() -> Vec<MarkdownFile> {
+pub fn load_from_userdata() {
 	let userdata_string =
 		fs::read_to_string(get_userdata_path()).expect("Could not read user data file");
 
@@ -208,46 +238,49 @@ pub fn load_from_userdata() -> Vec<MarkdownFile> {
 		return load_default_trove();
 	};
 
-	let mut markdown_files_data: Vec<MarkdownFile> = Vec::new();
+	let mut markdownfiles: Vec<MarkdownFile> = Vec::new();
 
-	*USER_DATA.write() = userdata;
-	for tab in USER_DATA().active_tabs {
+	for tab in userdata.active_tabs {
 		if let Ok(entries) = fs::read_dir(get_trove_dir(DEFAULT_TROVE_DIR)) {
 			for entry in entries {
 				let Ok(entry) = entry else { continue };
 				let path = entry.path();
 
 				// NOTE: Wrote this half asleep, do not judge :(
-				if path.is_file() && path.file_name().unwrap().to_str().unwrap() == tab.title {
-					if let Some(extension) = path.extension() {
-						if extension == "md" {
-							let content = match fs::read_to_string(&path) {
-								Ok(c) => c,
-								Err(e) => {
-									log::error!("Error reading file {:?}: {}", path, e);
-									// TODO: Handle the error
-									continue;
+				if path.is_file() {
+					if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
+						if stem == tab.title {
+							if let Some(extension) = path.extension() {
+								if extension == "md" {
+									let content = match fs::read_to_string(&path) {
+										Ok(c) => c,
+										Err(e) => {
+											log::error!("Error reading file {:?}: {}", path, e);
+											// TODO: Handle the error
+											continue;
+										}
+									};
+
+									let title = path
+										.file_stem()
+										.and_then(|name| name.to_str())
+										.unwrap()
+										.to_string();
+
+									let file_data = MarkdownFile {
+										path: path.clone(),
+										title,
+										editable: UseEditable::new_in_hook(
+											CLIPBOARD(),
+											PLATFORM(),
+											EditableConfig::new(content).with_allow_tabs(true),
+											EditableMode::SingleLineMultipleEditors,
+										),
+									};
+
+									markdownfiles.push(file_data);
 								}
-							};
-
-							let title = path
-								.file_stem()
-								.and_then(|name| name.to_str())
-								.unwrap()
-								.to_string();
-
-							let file_data = MarkdownFile {
-								path: path.clone(),
-								title,
-								editable: UseEditable::new_in_hook(
-									CLIPBOARD(),
-									PLATFORM(),
-									EditableConfig::new(content).with_allow_tabs(true),
-									EditableMode::SingleLineMultipleEditors,
-								),
-							};
-
-							markdown_files_data.push(file_data);
+							}
 						}
 					}
 				}
@@ -256,7 +289,21 @@ pub fn load_from_userdata() -> Vec<MarkdownFile> {
 			log::error!("Error reading directory.");
 		}
 	}
-	markdown_files_data
+
+	let tokio = Runtime::new().unwrap();
+
+	if markdownfiles.is_empty() {
+		tokio.block_on(new_tab());
+	} else {
+		for file in markdownfiles {
+			let title = file.title.clone();
+			let file_key = FILES_ARENA.write().insert(file);
+			tokio.block_on(push_tab(title, file_key));
+		}
+		*CURRENT_TAB.write() = Some(userdata.last_open_tab);
+		THEME_STORE.write().current_theme = userdata.current_theme;
+		*RECENT_FILES.write() = userdata.recent_files;
+	}
 }
 
 pub async fn save_file(markdownfile: MarkdownFile) {
@@ -282,25 +329,13 @@ pub async fn delete_file(markdownfile: MarkdownFile) {
 
 /// Loads last saved State of the App.
 pub fn initialise_app() {
-	let tokio = Runtime::new().unwrap();
 	let userdata_path = get_rhyolite_dir().join(USER_DATA_DIR).join(USER_DATA_FILE);
 
-	let markdownfiles = if !userdata_path.exists() {
+	if !userdata_path.exists() {
 		load_default_trove()
 	} else {
 		load_from_userdata()
 	};
-
-	if markdownfiles.is_empty() {
-		tokio.block_on(new_tab());
-	} else {
-		for file in markdownfiles {
-			let title = file.title.clone();
-			let file_key = FILES_ARENA.write().insert(file);
-			tokio.block_on(push_tab(title, file_key));
-		}
-		*CURRENT_TAB.write() = Some(0);
-	}
 
 	// TODO: yeah um handle the unwraps lol
 	*ACTIVE_DOCUMENT_TITLE.write() = TABS().get(CURRENT_TAB().unwrap()).unwrap().title.clone();
@@ -314,4 +349,5 @@ pub fn deinitialise_app() {
 			tokio.block_on(save_file(markdownfile.clone()));
 		}
 	}
+	save_userdata();
 }
