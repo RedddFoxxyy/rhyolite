@@ -6,16 +6,14 @@ use crate::{
 		ui_store::THEME_STORE,
 	},
 };
+use freya::hooks::Window;
 use freya::prelude::*;
 
 #[component]
 pub fn top_nav_bar() -> Element {
-	// let background_color = &app_state_hook.workspace.current_theme.colors.base;
 	let theme = THEME_STORE().current_theme.colors;
 
 	rsx!(
-		// NOTE: Will be used when this is fixed!
-		// WindowDragArea {}
 		rect {
 			width: "100%",
 			height: "40",
@@ -23,10 +21,21 @@ pub fn top_nav_bar() -> Element {
 			main_align: "space-between",
 			cross_align: "center",
 			background: "{ theme.base }",
-
+			WindowDragArea {
+				rect {
+					width: "120",
+					height: "100%"
+				}
+			}
 			active_tabs {},
-
-			// NavigationButtons {}
+			// NOTE: Will be used when this is fixed!
+			WindowDragArea {
+				rect {
+					width: "100%",
+					height: "100%"
+				}
+			}
+			NavigationButtons {}
 		}
 	)
 }
@@ -59,7 +68,7 @@ fn active_tabs() -> Element {
 		rect {
 			direction: "horizontal",
 			cross_align: "center",
-			padding: "0 0 0 60",
+			// padding: "0 0 0 60",
 			// spacing: "5",
 
 			// App Icon Section
@@ -188,7 +197,7 @@ fn nav_button(on_click: EventHandler<()>, hover_color: String, children: Element
 	rsx!(
 		rect {
 			background: "{background}",
-			width: "62",
+			width: "60",
 			height: "100%",
 			padding: "3.5",
 			main_align: "center",
@@ -204,6 +213,15 @@ fn nav_button(on_click: EventHandler<()>, hover_color: String, children: Element
 #[component]
 fn NavigationButtons() -> Element {
 	let platform = use_platform();
+	let mut is_maximised = use_signal_sync(|| false);
+
+	// TODO: Trigger this whenever system resizes the window!
+	// use_effect(move || {
+	// 	platform.with_window(move |window| {
+	// 		*is_maximised.write() = window.is_maximized();
+	// 		println!("{}", is_maximised())
+	// 	})
+	// });
 
 	let theme = THEME_STORE().current_theme.colors;
 
@@ -212,7 +230,7 @@ fn NavigationButtons() -> Element {
 		width: "auto",
 		height: "100%",
 		nav_button {
-			on_click: move |_| platform.toggle_minimize_window(),
+			on_click: move |_| platform.set_minimize_window(true),
 			hover_color: "{ theme.surface2 }",
 			svg {
 				width: "100%",
@@ -223,14 +241,27 @@ fn NavigationButtons() -> Element {
 			}
 		},
 		nav_button {
-			on_click: move |_| platform.toggle_maximize_window(),
+			on_click: move |_| {
+				platform.toggle_maximize_window();
+				is_maximised.toggle();
+			},
 			hover_color: theme.surface2,
-			svg {
-				width: "90%",
-				height: "60%",
-				stroke: "{ theme.text }",
-				fill: "{ theme.text }",
-				svg_content: include_str!("../static/svgs/maximise.svg")
+			if is_maximised() {
+				svg {
+					width: "90%",
+					height: "60%",
+					stroke: "{ theme.text }",
+					fill: "{ theme.text }",
+					svg_content: include_str!("../static/svgs/restore.svg")
+				}
+			} else {
+				svg {
+					width: "90%",
+					height: "60%",
+					stroke: "{ theme.text }",
+					fill: "{ theme.text }",
+					svg_content: include_str!("../static/svgs/maximise.svg")
+				}
 			}
 		},
 		nav_button {

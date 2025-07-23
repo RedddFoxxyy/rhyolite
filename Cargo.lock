@@ -18,6 +18,7 @@ dependencies = [
  "slab",
  "tokio",
  "toml 0.9.2",
+ "winit",
 ]
 
 [[package]]

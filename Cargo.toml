@@ -15,6 +15,7 @@ dioxus = { version = "0.6.3", default-features = false, features = [
   "hooks",
 ] }
 dioxus-clipboard = "0.2.0"
+winit = "0.30.11"
 serde = { version = "1.0.219", features = ["derive"] }
 toml = "0.9.2"
 serde_json = "1.0.140"
