@@ -1,5 +1,6 @@
 use crate::{
 	data::{
+		fn_utils::handle_editor_key_input,
 		io_utils::deinitialise_app,
 		stores::{
 			doc_store::{ACTIVE_DOCUMENT_TITLE, CURRENT_EDITOR_BUFFER},
@@ -70,17 +71,13 @@ fn document_title_box() -> Element {
 	};
 
 	let onkeydown = move |e: KeyboardEvent| {
-		if !(e.data.modifiers.contains(Modifiers::CONTROL)
-			&& e.data.key == Key::Character("s".to_string()))
-		{
+		if handle_editor_key_input(&e) {
 			editable.process_event(&EditableEvent::KeyDown(e.data));
 		}
 	};
 
 	let onkeyup = move |e: KeyboardEvent| {
-		if !(e.data.modifiers.contains(Modifiers::CONTROL)
-			&& e.data.key == Key::Character("s".to_string()))
-		{
+		if handle_editor_key_input(&e) {
 			editable.process_event(&EditableEvent::KeyUp(e.data));
 		}
 	};
@@ -182,17 +179,13 @@ fn document_editor() -> Element {
 	};
 
 	let onkeydown = move |e: KeyboardEvent| {
-		if !(e.data.modifiers.contains(Modifiers::CONTROL)
-			&& e.data.key == Key::Character("s".to_string()))
-		{
+		if handle_editor_key_input(&e) {
 			editable.process_event(&EditableEvent::KeyDown(e.data));
 		}
 	};
 
 	let onkeyup = move |e: KeyboardEvent| {
-		if !(e.data.modifiers.contains(Modifiers::CONTROL)
-			&& e.data.key == Key::Character("s".to_string()))
-		{
+		if handle_editor_key_input(&e) {
 			editable.process_event(&EditableEvent::KeyUp(e.data));
 		}
 	};

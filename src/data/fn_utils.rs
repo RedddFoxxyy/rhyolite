@@ -30,10 +30,22 @@ pub(crate) async fn handle_global_keyboard_input(e: KeyboardEvent) {
 				.clone();
 			save_file(current_tab_content).await;
 		}
-		Key::Character(c) if c == "d" => {
+		Key::Character(c) if (c == "D" && modifiers.contains(Modifiers::SHIFT)) => {
 			e.stop_propagation();
 			delete_tab(CURRENT_TAB().unwrap()).await;
 		}
 		_ => (),
 	}
+}
+
+pub(crate) fn handle_editor_key_input(e: &KeyboardEvent) -> bool {
+	// TODO: Improve the logic and code here.
+	let is_save =
+		e.data.modifiers.contains(Modifiers::CONTROL) && e.data.key == Key::Character("s".into());
+
+	let is_delete = e.data.modifiers.contains(Modifiers::CONTROL)
+		&& e.data.modifiers.contains(Modifiers::SHIFT)
+		&& e.data.key == Key::Character("D".into());
+
+	return !is_save && !is_delete;
 }

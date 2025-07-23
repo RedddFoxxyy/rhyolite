@@ -6,7 +6,7 @@
 use crate::data::themes::Theme;
 use freya::hooks::UseEditable;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use std::path::PathBuf;
 
 /// Name of the Default Note Title used by the app!
 pub const APP_DATA_DIR: &str = "Rhyolite";
@@ -33,7 +33,8 @@ pub struct MarkdownFile {
 #[derive(Debug, Serialize, Deserialize, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct Tab {
 	// pub index: usize,  // Unique identifier for the tab ( removed it for now )
-	pub title: String,   // Title of the Document
+	pub title: String, // Title of the Document
+	pub file_path: PathBuf,
 	pub file_key: usize, // The reference to the document in the document vec.
 }
 
@@ -58,19 +59,4 @@ pub struct RecentFileInfo {
 	pub id: String,
 	pub title: String,
 	pub path: PathBuf,
-}
-
-#[allow(dead_code)]
-#[derive(Debug)]
-pub struct FileManager {
-	pub open_files: HashMap<String, Arc<OpenFileData>>, // Used to store open files in the editor
-	pub recent_files: Vec<RecentFileInfo>,              // Stores the list of recently created files
-}
-impl Default for FileManager {
-	fn default() -> Self {
-		Self {
-			open_files: HashMap::new(),
-			recent_files: Vec::new(),
-		}
-	}
 }

@@ -34,11 +34,9 @@ pub fn get_rhyolite_dir() -> PathBuf {
 
 	#[cfg(not(target_os = "android"))]
 	{
-		// Original desktop behavior
 		let mut path = dirs::document_dir().expect("Could not find Documents directory");
 		// TODO: Use a const for this name.
 		path.push(APP_DATA_DIR);
-		// Create the directory if it doesn't exist
 		fs::create_dir_all(&path).expect("Could not create Rhyolite directory");
 		path
 	}
@@ -125,26 +123,22 @@ pub fn _open_file_from_path(path: PathBuf) -> Option<MarkdownFile> {
 /// Generates a new markdown file from the given path (does not save it)
 pub fn new_file_from_path(path: PathBuf) -> Option<MarkdownFile> {
 	let cloned_path = path.clone();
-	let file_name = cloned_path.file_stem();
-	match file_name {
-		Some(name) => {
-			return Some(MarkdownFile {
-				path,
-				title: name.to_string_lossy().into_owned(),
-				editable: UseEditable::new_in_hook(
-					CLIPBOARD(),
-					PLATFORM(),
-					EditableConfig::new(String::new()).with_allow_tabs(true),
-					EditableMode::SingleLineMultipleEditors,
-				),
-			});
-		}
-		None => {
-			// TODO: Improve the error message.
-			log::error!("Unable to read path: {}", path.display());
-			return None;
-		}
+
+	let Some(file_name) = cloned_path.file_stem() else {
+		// TODO: Improve the error message.
+		log::error!("Unable to read path: {}", path.display());
+		return None;
 	};
+	Some(MarkdownFile {
+		path,
+		title: file_name.to_string_lossy().into_owned(),
+		editable: UseEditable::new_in_hook(
+			CLIPBOARD(),
+			PLATFORM(),
+			EditableConfig::new(String::new()).with_allow_tabs(true),
+			EditableMode::SingleLineMultipleEditors,
+		),
+	})
 }
 
 pub fn save_userdata() {
@@ -167,44 +161,53 @@ pub fn save_userdata() {
 pub fn load_files_from_trove(trove_path: PathBuf) {
 	let mut markdownfiles: Vec<MarkdownFile> = Vec::new();
 
+	// NOTE: Wrote this half asleep, do not judge :(
 	if let Ok(entries) = fs::read_dir(&trove_path) {
 		for entry in entries {
 			let Ok(entry) = entry else { continue };
 			let path = entry.path();
 
-			if path.is_file() {
-				if let Some(extension) = path.extension() {
-					if extension == "md" {
-						let content = match fs::read_to_string(&path) {
-							Ok(c) => c,
-							Err(e) => {
-								log::error!("Error reading file {:?}: {}", path, e);
-								// TODO: Handle the error
-								continue;
-							}
-						};
-
-						let title = path
-							.file_stem()
-							.and_then(|name| name.to_str())
-							.unwrap()
-							.to_string();
-
-						let file_data = MarkdownFile {
-							path: path.clone(),
-							title,
-							editable: UseEditable::new_in_hook(
-								CLIPBOARD(),
-								PLATFORM(),
-								EditableConfig::new(content).with_allow_tabs(true),
-								EditableMode::SingleLineMultipleEditors,
-							),
-						};
-
-						markdownfiles.push(file_data);
-					}
-				}
+			if !path.is_file() {
+				continue;
 			}
+
+			let Some(extension) = path.extension() else {
+				log::error!("Failed to get the file extention, did not load {path:?}");
+				continue;
+			};
+
+			if extension != "md" {
+				log::error!("{path:?} is not a markdown file, skipped loading it.");
+				continue;
+			}
+
+			let content = match fs::read_to_string(&path) {
+				Ok(c) => c,
+				Err(e) => {
+					log::error!("Error reading file {:?}: {}", path, e);
+					// TODO: Handle the error
+					continue;
+				}
+			};
+
+			let title = path
+				.file_stem()
+				.and_then(|name| name.to_str())
+				.unwrap()
+				.to_string();
+
+			let file_data = MarkdownFile {
+				path: path.clone(),
+				title,
+				editable: UseEditable::new_in_hook(
+					CLIPBOARD(),
+					PLATFORM(),
+					EditableConfig::new(content).with_allow_tabs(true),
+					EditableMode::SingleLineMultipleEditors,
+				),
+			};
+
+			markdownfiles.push(file_data);
 		}
 	} else {
 		log::error!("Error reading directory: {:?}", trove_path);
@@ -233,61 +236,64 @@ pub fn load_from_userdata() {
 		fs::read_to_string(get_userdata_path()).expect("Could not read user data file");
 
 	let Ok(userdata) = toml::from_str::<UserData>(userdata_string.as_str()) else {
+		log::warn!("Failed to load the userdata, corrupted userdata file.");
 		// TODO: Handle Error
 		let _ = fs::remove_file(get_userdata_path());
+		log::info!("Loading all files from the default trove.");
 		return load_default_trove();
 	};
 
 	let mut markdownfiles: Vec<MarkdownFile> = Vec::new();
 
+	// NOTE: Wrote this half asleep, do not judge :(
 	for tab in userdata.active_tabs {
-		if let Ok(entries) = fs::read_dir(get_trove_dir(DEFAULT_TROVE_DIR)) {
-			for entry in entries {
-				let Ok(entry) = entry else { continue };
-				let path = entry.path();
+		let path = tab.file_path;
 
-				// NOTE: Wrote this half asleep, do not judge :(
-				if path.is_file() {
-					if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
-						if stem == tab.title {
-							if let Some(extension) = path.extension() {
-								if extension == "md" {
-									let content = match fs::read_to_string(&path) {
-										Ok(c) => c,
-										Err(e) => {
-											log::error!("Error reading file {:?}: {}", path, e);
-											// TODO: Handle the error
-											continue;
-										}
-									};
-
-									let title = path
-										.file_stem()
-										.and_then(|name| name.to_str())
-										.unwrap()
-										.to_string();
-
-									let file_data = MarkdownFile {
-										path: path.clone(),
-										title,
-										editable: UseEditable::new_in_hook(
-											CLIPBOARD(),
-											PLATFORM(),
-											EditableConfig::new(content).with_allow_tabs(true),
-											EditableMode::SingleLineMultipleEditors,
-										),
-									};
-
-									markdownfiles.push(file_data);
-								}
-							}
-						}
-					}
-				}
-			}
-		} else {
-			log::error!("Error reading directory.");
+		if !path.is_file() {
+			log::error!("{path:?} is not a valid file!!!");
+			continue;
 		}
+
+		let Some(stem) = path.file_stem().and_then(|s| s.to_str()) else {
+			log::error!("Failed to get the name of the file {path:?}");
+			continue;
+		};
+
+		if !(stem == tab.title) {
+			log::error!(
+				"File name does not match the title of the tab in userdata, did not load {path:?}"
+			);
+			continue;
+		}
+
+		let Some(extension) = path.extension() else {
+			log::error!("Failed to get the file extention, did not load {path:?}");
+			continue;
+		};
+
+		if extension != "md" {
+			log::error!("{path:?} is not a markdown file, skipped loading it.");
+			continue;
+		}
+
+		let Ok(content) = fs::read_to_string(&path) else {
+			log::error!("Error reading file {path:?}");
+			// TODO: Handle the error
+			continue;
+		};
+
+		let file_data = MarkdownFile {
+			path,
+			title: tab.title,
+			editable: UseEditable::new_in_hook(
+				CLIPBOARD(),
+				PLATFORM(),
+				EditableConfig::new(content).with_allow_tabs(true),
+				EditableMode::SingleLineMultipleEditors,
+			),
+		};
+
+		markdownfiles.push(file_data);
 	}
 
 	let tokio = Runtime::new().unwrap();
@@ -332,20 +338,30 @@ pub fn initialise_app() {
 	let userdata_path = get_rhyolite_dir().join(USER_DATA_DIR).join(USER_DATA_FILE);
 
 	if !userdata_path.exists() {
+		log::warn!("No UserData file found!!! Proceeding to load files from default trove!");
 		load_default_trove()
 	} else {
+		log::info!("Loading last app state.");
 		load_from_userdata()
 	};
 
 	// TODO: yeah um handle the unwraps lol
-	*ACTIVE_DOCUMENT_TITLE.write() = TABS().get(CURRENT_TAB().unwrap()).unwrap().title.clone();
+	let Some(title) = TABS()
+		.get(CURRENT_TAB().unwrap())
+		.and_then(|tab| Some(tab.title.clone()))
+	else {
+		log::error!("Failed to set the document title of the current file.");
+		return;
+	};
+
+	*ACTIVE_DOCUMENT_TITLE.write() = title;
 }
 
 pub fn deinitialise_app() {
 	let tokio = Runtime::new().unwrap();
+	log::info!("Saving all open files.");
 	for tab in TABS().iter() {
 		if let Some(markdownfile) = FILES_ARENA().get(tab.file_key) {
-			// NOTE: I think this can be handled better here? not sure if this will cause any performance issues as such.
 			tokio.block_on(save_file(markdownfile.clone()));
 		}
 	}

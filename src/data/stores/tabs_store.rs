@@ -57,7 +57,7 @@ pub async fn close_tab(index: usize) {
 		save_file(FILES_ARENA().get(buffer_index).unwrap().clone()).await;
 		TABS.write().remove(index);
 		FILES_ARENA.write().remove(buffer_index);
-		log::info!("Closed the following tab: {tab_title}");
+		log::info!("Closed tab: {tab_title}");
 	} else {
 		log::error!("Failed to close the tab: Invalid tab index! (out of bounds)")
 	}
@@ -82,17 +82,19 @@ pub async fn delete_tab(index: usize) {
 		TABS.write().remove(index);
 		delete_file(FILES_ARENA().get(buffer_index).unwrap().clone()).await;
 		FILES_ARENA.write().remove(buffer_index);
-		log::info!("Deleted the following tab and file: {tab_title}");
+		log::info!("Deleted file: {tab_title}");
 	} else {
 		log::error!("Failed to delete the tab: Invalid tab index! (out of bounds)")
 	}
 }
 
 /// Appends a tab of given title and document index to the TABS vec.
-pub async fn push_tab(title: String, document_index: usize) {
+pub async fn push_tab(title: String, file_key: usize) {
+	let file_path = FILES_ARENA().get(file_key).unwrap().path.clone();
 	let newtab = Tab {
 		title,
-		file_key: document_index,
+		file_path,
+		file_key,
 	};
 	TABS.write().push(newtab);
 }
@@ -101,7 +103,7 @@ pub async fn switch_tab(index: usize) {
 	if let Some(tab) = TABS().get(index) {
 		*CURRENT_TAB.write() = Some(index);
 		*ACTIVE_DOCUMENT_TITLE.write() = tab.title.clone();
-		log::info!("Swiched to the following tab: {}", tab.title.clone());
+		log::info!("Swiched to tab: {}", tab.title.clone());
 	} else {
 		log::error!("Failed to switch to the tab: Invalid tab index! (out of bounds)")
 	}

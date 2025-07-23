@@ -24,7 +24,7 @@ pub fn top_nav_bar() -> Element {
 			cross_align: "center",
 			background: "{ theme.base }",
 
-			ActiveTabs {},
+			active_tabs {},
 
 			// NavigationButtons {}
 		}
@@ -32,7 +32,7 @@ pub fn top_nav_bar() -> Element {
 }
 
 #[component]
-fn ActiveTabs() -> Element {
+fn active_tabs() -> Element {
 	let theme = THEME_STORE().current_theme.colors;
 
 	let mut is_hovered = use_signal(|| false);
@@ -176,7 +176,7 @@ fn tab_button(index: usize, on_click: EventHandler<()>, children: Element) -> El
 }
 
 #[component]
-fn NavButton(on_click: EventHandler<()>, hover_color: String, children: Element) -> Element {
+fn nav_button(on_click: EventHandler<()>, hover_color: String, children: Element) -> Element {
 	let mut hovered = use_signal(|| false);
 
 	let background = if *hovered.read() {
@@ -211,7 +211,7 @@ fn NavigationButtons() -> Element {
 		direction: "horizontal",
 		width: "auto",
 		height: "100%",
-		NavButton {
+		nav_button {
 			on_click: move |_| platform.toggle_minimize_window(),
 			hover_color: "{ theme.surface2 }",
 			svg {
@@ -222,7 +222,7 @@ fn NavigationButtons() -> Element {
 				svg_content: include_str!("../static/svgs/minimise.svg")
 			}
 		},
-		NavButton {
+		nav_button {
 			on_click: move |_| platform.toggle_maximize_window(),
 			hover_color: theme.surface2,
 			svg {
@@ -233,7 +233,7 @@ fn NavigationButtons() -> Element {
 				svg_content: include_str!("../static/svgs/maximise.svg")
 			}
 		},
-		NavButton {
+		nav_button {
 			on_click: move |_| platform.exit(),
 			hover_color: "red",
 			svg {
