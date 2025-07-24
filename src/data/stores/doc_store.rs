@@ -9,7 +9,7 @@ use slab::Slab;
 
 use crate::data::types::{MarkdownFile, RecentFileInfo};
 
-// TODO: Should each variable be stored seperate in a global signal or all should be grouped together in a struct and the struct be saved in a global sinal.
+// TODO: Use Dioxus Radio for Global state Management.
 
 // Document Counts Store:
 pub static WORD_CHAR_COUNT: GlobalSignal<(usize, usize)> = Signal::global(|| (0, 0));
@@ -27,7 +27,6 @@ pub static ACTIVE_DOCUMENT_TITLE: GlobalSignal<String> = Signal::global(String::
 
 // IO Store:
 pub static RECENT_FILES: GlobalSignal<Vec<RecentFileInfo>> = Signal::global(Vec::new);
-// pub static USER_DATA: GlobalSignal<UserData> = Signal::global(UserData::default);
 
 // Platform Stores:
 pub static PLATFORM: GlobalSignal<UsePlatform> = Signal::global(use_platform);

@@ -18,6 +18,7 @@ pub fn bottom_floating_bar() -> Element {
 		shadow: "4 4 8 1 rgb(0, 0, 0, 10)",
 		corner_radius: "100",
 		padding: "1",
+		layer: "overlay",
 		rect {
 			height: "fill",
 			width: "fill",

@@ -146,26 +146,10 @@ fn document_title_box() -> Element {
 
 // TODO: Handle multi line highlights by iterating through each editor and handling the highlight attribute
 fn document_editor() -> Element {
-	let theme = THEME_STORE().current_theme.colors;
-
 	let mut focus = use_focus();
-
 	let mut editable = CURRENT_EDITOR_BUFFER();
-
-	let cursor_reference = editable.cursor_attr();
-	let highlights = editable.highlights_attr(0);
 	let editor = editable.editor().read();
-	let cursor_char = editor.cursor_pos();
 	let mut is_cursor_blinking = use_signal(|| false);
-
-	let onmousedown = move |e: MouseEvent| {
-		focus.request_focus();
-		editable.process_event(&EditableEvent::MouseDown(e.data, 0));
-	};
-
-	let onmousemove = move |e: MouseEvent| {
-		editable.process_event(&EditableEvent::MouseMove(e.data, 0));
-	};
 
 	let onclick = move |_: MouseEvent| {
 		*is_cursor_blinking.write() = true;
@@ -200,49 +184,110 @@ fn document_editor() -> Element {
 		deinitialise_app();
 	});
 
-	let cursor_color = if focus.is_focused() && *is_cursor_blinking.read() {
-		theme.text.as_str()
-	} else {
-		"transparent"
-	};
-
 	rsx!(rect{
 		width: "fill",
 		height: "fill",
 		cross_align: "center",
 		padding: "7",
 		margin: "16 0 0 0",
-		rect {
-			width: "80%",
-			height: "fill",
-			background: "transparent",
-			corner_radius: "12",
-			padding: "4 12",
+		overflow: "none",
+		CursorArea {
+			icon: CursorIcon::Text,
+			rect {
+				width: "80%",
+				height: "fill",
+				background: "transparent",
+				padding: "4 0",
+				onkeydown,
+				onkeyup,
+				a11y_id: focus.attribute(),
+				onclick,
+				VirtualScrollView {
+					width: "100%",
+					height: "100%",
+					length: editor.len_lines(),
+					item_size: 25.0,
+					scroll_with_arrows: false,
+					cache_elements: false,
+					builder: move |line_index, _: &Option<()>| {
+						let theme = THEME_STORE().current_theme.colors;
+						let editor = editable.editor().read();
+						let line = editor.line(line_index).unwrap();
+						let is_line_selected = editor.cursor_row() == line_index;
+						// Only show the cursor in the active line
+						let character_index = if is_line_selected {
+							editor.cursor_col().to_string()
+						} else {
+							"none".to_string()
+						};
+						let cursor_color = if focus.is_focused() && *is_cursor_blinking.read() {
+							theme.text.as_str()
+						} else {
+							"transparent"
+						};
 
-			CursorArea {
-				icon: CursorIcon::Text,
-				paragraph {
-					width: "fill",
-					height: "fill",
-					cursor_id: "0",
-					cursor_index: "{cursor_char}",
-					cursor_mode: "editable",
-					cursor_color: "{cursor_color}",
-					highlights,
-					highlight_color: "{theme.subtext1}",
-					a11y_id: focus.attribute(),
-					cursor_reference,
-					onclick,
-					onmousemove,
-					onmousedown,
-					onkeydown,
-					onkeyup,
-					color: "{theme.text}",
-					font_size: "16",
-					font_family: "JetBrains Mono",
-					text {
-						"{editable.editor()}"
-					},
+						// Only highlight the active line
+						// let line_background = if is_line_selected {
+						// 	theme.subtext1.as_str()
+						// } else {
+						// 	"none"
+						// };
+
+						let line_background = "none";
+
+						let onmousedown = move |e: MouseEvent| {
+							focus.request_focus();
+							editable.process_event(&EditableEvent::MouseDown(e.data, line_index));
+						};
+
+						let onmousemove = move |e: MouseEvent| {
+							editable.process_event(&EditableEvent::MouseMove(e.data, line_index));
+						};
+
+						let highlights = editable.highlights_attr(line_index);
+
+						rsx! {
+							rect {
+								key: "{line_index}",
+								width: "100%",
+								height: "23",
+								// content: "fit",
+								direction: "horizontal",
+								background: "{line_background}",
+								// Uncomment this for line numbers like that in codemirror.
+								// label {
+								// 	main_align: "center",
+								// 	width: "30",
+								// 	height: "100%",
+								// 	text_align: "center",
+								// 	font_size: "15",
+								// 	color: "rgb(200, 200, 200)",
+								// 	"{line_index + 1} "
+								// }
+								paragraph {
+									cursor_reference: editable.cursor_attr(),
+									main_align: "center",
+									height: "100%",
+									width: "100%",
+									cursor_index: "{character_index}",
+									cursor_color: "{cursor_color}",
+									highlight_color: "{theme.subtext1}",
+									max_lines: "1",
+									cursor_mode: "editable",
+									cursor_id: "{line_index}",
+									onmousedown,
+									onmousemove,
+									highlights,
+									text {
+										color: "{theme.text}",
+										font_size: "16",
+										font_family: "JetBrains Mono",
+										"{line}"
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 		}

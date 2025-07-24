@@ -55,7 +55,7 @@ pub fn app() -> Element {
 		direction: "vertical",
 		onglobalkeydown: handle_global_keyboard_input,
 
-				drag_resize_area {}
+		drag_resize_area {}
 
 		// Tabs Navigation Bar
 		top_nav_bar {}
@@ -68,8 +68,6 @@ pub fn app() -> Element {
 			side_bar{},
 			work_space{}
 		}
-
-
 	})
 }
 
