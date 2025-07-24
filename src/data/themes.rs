@@ -23,8 +23,7 @@ impl ThemesStore {
 		sorted_themes_vec.sort_by(|a, b| a.0.cmp(b.0));
 
 		for (file_name, toml_str) in sorted_themes_vec {
-			let theme: Theme = toml::from_str(toml_str)
-				.unwrap_or_else(|e| panic!("Error parsing {}: {}", file_name, e));
+			let theme: Theme = toml::from_str(toml_str).unwrap_or_else(|e| panic!("Error parsing {file_name}: {e}"));
 
 			theme_vec.push(theme);
 		}
@@ -37,11 +36,7 @@ impl ThemesStore {
 
 	pub fn change_current_theme(&mut self, theme_name: &String) {
 		// Had to do this workaround cause the button props on_click property only takes a &String.
-		if let Some(index) = self
-			.store
-			.iter()
-			.position(|theme| &theme.info.name == theme_name)
-		{
+		if let Some(index) = self.store.iter().position(|theme| &theme.info.name == theme_name) {
 			self.current_theme = self.store.get(index).unwrap().clone();
 		}
 	}

@@ -1,6 +1,6 @@
 use crate::data::stores::ui_store::{
-	SHOW_SETTINGS_DROPUP, SHOW_THEMES_DROPUP, THEME_STORE, toggle_command_palette,
-	toggle_recent_files, toggle_settings_dropup, toggle_themes_dropup,
+	SHOW_SETTINGS_DROPUP, SHOW_THEMES_DROPUP, THEME_STORE, toggle_command_palette, toggle_recent_files, toggle_settings_dropup,
+	toggle_themes_dropup,
 };
 use crate::view::dropdown;
 use freya::prelude::*;
@@ -13,7 +13,7 @@ pub fn side_bar() -> Element {
 	let settings_list: [dropdown::ButtonProps; 4] = [
 		dropdown::ButtonProps {
 			label: "General Settings".to_string(),
-			on_click: |_| return,
+			on_click: |_| {},
 			icon: Some(include_str!("../static/svgs/sliders-horizontal.svg")),
 		},
 		dropdown::ButtonProps {
@@ -23,12 +23,12 @@ pub fn side_bar() -> Element {
 		},
 		dropdown::ButtonProps {
 			label: "Keyboard Shortcuts".to_string(),
-			on_click: |_| return,
+			on_click: |_| {},
 			icon: Some(include_str!("../static/svgs/keyboard.svg")),
 		},
 		dropdown::ButtonProps {
 			label: "About".to_string(),
-			on_click: |_| return,
+			on_click: |_| {},
 			icon: Some(include_str!("../static/svgs/info.svg")),
 		},
 	];

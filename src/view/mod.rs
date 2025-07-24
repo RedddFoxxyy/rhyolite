@@ -1,5 +1,5 @@
 pub mod bottom_bar;
-pub(self) mod components;
+mod components;
 pub mod composite;
 pub mod docview;
 pub mod dropdown;

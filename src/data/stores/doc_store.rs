@@ -16,8 +16,7 @@ pub static WORD_CHAR_COUNT: GlobalSignal<(usize, usize)> = Signal::global(|| (0,
 
 // Documents Store:
 // NOTE: Using slab as a memory arena with random file push.
-pub static FILES_ARENA: GlobalSignal<Slab<MarkdownFile>> =
-	Signal::global(|| Slab::with_capacity(10));
+pub static FILES_ARENA: GlobalSignal<Slab<MarkdownFile>> = Signal::global(|| Slab::with_capacity(10));
 pub static CURRENT_EDITOR_BUFFER: GlobalSignal<UseEditable> = Signal::global(|| {
 	use_editable(
 		|| EditableConfig::new("Welcome to Rhyolite!".trim().to_string()).with_allow_tabs(true),

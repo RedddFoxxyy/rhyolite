@@ -19,9 +19,7 @@ pub(crate) static CURRENT_TAB: GlobalSignal<Option<usize>> = Signal::global(|| N
 
 /// Creates a new tab with a new markdown file.
 pub(crate) async fn new_tab() {
-	let document_path = generate_available_path(
-		get_trove_dir(DEFAULT_TROVE_DIR).join(String::from(DEFAULT_NOTE_TITLE) + ".md"),
-	);
+	let document_path = generate_available_path(get_trove_dir(DEFAULT_TROVE_DIR).join(String::from(DEFAULT_NOTE_TITLE) + ".md"));
 
 	let Some(markdownfile) = new_file_from_path(document_path) else {
 		log::error!("Failed to create a new tab, due to a previous error!");

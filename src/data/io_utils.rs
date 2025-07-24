@@ -3,9 +3,7 @@ use crate::data::{
 		doc_store::{ACTIVE_DOCUMENT_TITLE, CLIPBOARD, FILES_ARENA, PLATFORM},
 		tabs_store::{CURRENT_TAB, TABS, new_tab, push_tab},
 	},
-	types::{
-		APP_DATA_DIR, DEFAULT_TROVE_DIR, MarkdownFile, USER_DATA_DIR, USER_DATA_FILE, UserData,
-	},
+	types::{APP_DATA_DIR, DEFAULT_TROVE_DIR, MarkdownFile, USER_DATA_DIR, USER_DATA_FILE, UserData},
 };
 use freya::prelude::*;
 use log::LevelFilter;
@@ -83,7 +81,7 @@ pub fn generate_available_path(path: PathBuf) -> PathBuf {
 	}
 	let mut num = 1;
 	loop {
-		let new_path = path.with_file_name(format!("{} {}{}", prefix_without_num, num, suffix));
+		let new_path = path.with_file_name(format!("{prefix_without_num} {num}{suffix}"));
 		if !new_path.exists() {
 			return new_path;
 		}
@@ -184,17 +182,13 @@ pub fn load_files_from_trove(trove_path: PathBuf) {
 			let content = match fs::read_to_string(&path) {
 				Ok(c) => c,
 				Err(e) => {
-					log::error!("Error reading file {:?}: {}", path, e);
+					log::error!("Error reading file {path:?}: {e}");
 					// TODO: Handle the error
 					continue;
 				}
 			};
 
-			let title = path
-				.file_stem()
-				.and_then(|name| name.to_str())
-				.unwrap()
-				.to_string();
+			let title = path.file_stem().and_then(|name| name.to_str()).unwrap().to_string();
 
 			let file_data = MarkdownFile {
 				path: path.clone(),
@@ -210,7 +204,7 @@ pub fn load_files_from_trove(trove_path: PathBuf) {
 			markdownfiles.push(file_data);
 		}
 	} else {
-		log::error!("Error reading directory: {:?}", trove_path);
+		log::error!("Error reading directory: {trove_path:?}");
 	}
 
 	let tokio = Runtime::new().unwrap();
@@ -232,8 +226,7 @@ pub fn load_default_trove() {
 }
 
 pub fn load_from_userdata() {
-	let userdata_string =
-		fs::read_to_string(get_userdata_path()).expect("Could not read user data file");
+	let userdata_string = fs::read_to_string(get_userdata_path()).expect("Could not read user data file");
 
 	let Ok(userdata) = toml::from_str::<UserData>(userdata_string.as_str()) else {
 		log::warn!("Failed to load the userdata, corrupted userdata file.");
@@ -259,10 +252,8 @@ pub fn load_from_userdata() {
 			continue;
 		};
 
-		if !(stem == tab.title) {
-			log::error!(
-				"File name does not match the title of the tab in userdata, did not load {path:?}"
-			);
+		if stem != tab.title {
+			log::error!("File name does not match the title of the tab in userdata, did not load {path:?}");
 			continue;
 		}
 
@@ -314,10 +305,7 @@ pub fn load_from_userdata() {
 
 pub async fn save_file(markdownfile: MarkdownFile) {
 	if let Ok(mut file) = File::create(markdownfile.path.clone()).await {
-		if let Ok(_result) = file
-			.write_all(markdownfile.editable.editor().to_string().as_bytes())
-			.await
-		{
+		if let Ok(_result) = file.write_all(markdownfile.editable.editor().to_string().as_bytes()).await {
 			log::info!("Succesfully saved current file")
 		} else {
 			log::error!("Failed to save the file!")
@@ -346,10 +334,7 @@ pub fn initialise_app() {
 	};
 
 	// TODO: yeah um handle the unwraps lol
-	let Some(title) = TABS()
-		.get(CURRENT_TAB().unwrap())
-		.and_then(|tab| Some(tab.title.clone()))
-	else {
+	let Some(title) = TABS().get(CURRENT_TAB().unwrap()).map(|tab| tab.title.clone()) else {
 		log::error!("Failed to set the document title of the current file.");
 		return;
 	};

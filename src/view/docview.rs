@@ -44,12 +44,7 @@ fn document_title_box() -> Element {
 		EditableMode::MultipleLinesSingleEditor,
 	);
 
-	use_effect(move || {
-		editable
-			.editor_mut()
-			.write()
-			.set(ACTIVE_DOCUMENT_TITLE().as_str())
-	});
+	use_effect(move || editable.editor_mut().write().set(ACTIVE_DOCUMENT_TITLE().as_str()));
 
 	let cursor_reference = editable.cursor_attr();
 	let highlights = editable.highlights_attr(0);
@@ -143,7 +138,6 @@ fn document_title_box() -> Element {
 					text {
 						"{editable.editor()}"
 					}
-
 				}
 			}
 		}

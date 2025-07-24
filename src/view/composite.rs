@@ -28,8 +28,7 @@ pub fn app() -> Element {
 		let current_tab_content = FILES_ARENA()
 			.get(TABS().get(CURRENT_TAB().unwrap()).unwrap().file_key)
 			.unwrap()
-			.editable
-			.clone();
+			.editable;
 
 		*CURRENT_EDITOR_BUFFER.write() = current_tab_content
 	});

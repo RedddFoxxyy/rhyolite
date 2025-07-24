@@ -188,11 +188,7 @@ fn tab_button(index: usize, on_click: EventHandler<()>, children: Element) -> El
 fn nav_button(on_click: EventHandler<()>, hover_color: String, children: Element) -> Element {
 	let mut hovered = use_signal(|| false);
 
-	let background = if *hovered.read() {
-		hover_color
-	} else {
-		"transparent".to_string()
-	};
+	let background = if *hovered.read() { hover_color } else { "transparent".to_string() };
 
 	rsx!(
 		rect {
