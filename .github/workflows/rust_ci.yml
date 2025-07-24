@@ -37,7 +37,9 @@ jobs:
                     libegl1-mesa-dev \
                     libgl1-mesa-dev \
                     libwayland-egl1-mesa \
-                    libgles2-mesa-dev
+                    libgles2-mesa-dev \
+                    libwayland-egl-backend-dev \
+                    libwayland-dev
 
             - name: Build project
               run: cargo build --verbose
