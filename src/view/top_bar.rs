@@ -197,7 +197,7 @@ fn nav_button(on_click: EventHandler<()>, hover_color: String, children: Element
 	rsx!(
 		rect {
 			background: "{background}",
-			width: "60",
+			width: "55",
 			height: "100%",
 			padding: "3.5",
 			main_align: "center",
@@ -213,15 +213,7 @@ fn nav_button(on_click: EventHandler<()>, hover_color: String, children: Element
 #[component]
 fn NavigationButtons() -> Element {
 	let platform = use_platform();
-	let mut is_maximised = use_signal_sync(|| false);
-
-	// TODO: Trigger this whenever system resizes the window!
-	// use_effect(move || {
-	// 	platform.with_window(move |window| {
-	// 		*is_maximised.write() = window.is_maximized();
-	// 		println!("{}", is_maximised())
-	// 	})
-	// });
+	let platform_information = use_platform_information();
 
 	let theme = THEME_STORE().current_theme.colors;
 
@@ -243,10 +235,9 @@ fn NavigationButtons() -> Element {
 		nav_button {
 			on_click: move |_| {
 				platform.toggle_maximize_window();
-				is_maximised.toggle();
 			},
 			hover_color: theme.surface2,
-			if is_maximised() {
+			if platform_information().is_maximized {
 				svg {
 					width: "90%",
 					height: "60%",

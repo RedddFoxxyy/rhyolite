@@ -44,7 +44,7 @@ pub fn app() -> Element {
 	});
 
 	// NOTE: Do not run this here, I am still figuring out how to deinitialise the app correctly,
-	// for not I am running this funciton in docview/document_editor.
+	// for now I am running this funciton in docview/document_editor.
 	// use_drop(move || {
 	// 	deinitialise_app();
 	// });
