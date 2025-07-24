@@ -31,7 +31,13 @@ jobs:
                   sudo apt-get install -y \
                     libegl1 libgl1 libx11-6 libxcb1 libxau6 libxdmcp6 \
                     libfontconfig1 libfreetype6 libpng16-16 libexpat1 \
-                    zlib1g libbrotli1 libstdc++6 libgcc-s1
+                    zlib1g libbrotli1 libstdc++6 libgcc-s1 \
+                    libfreetype6-dev \
+                    libfontconfig1-dev \
+                    libegl1-mesa-dev \
+                    libgl1-mesa-dev \
+                    libwayland-egl1-mesa \
+                    libgles2-mesa-dev
 
             - name: Build project
               run: cargo build --verbose
