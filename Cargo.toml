@@ -28,6 +28,8 @@ slab = "0.4.10"
 
 [profile.dev]
 incremental = true
+lto = false
+opt-level = 0
 codegen-units = 256
 
 [profile.release]

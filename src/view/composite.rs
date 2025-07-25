@@ -74,237 +74,106 @@ pub fn app() -> Element {
 #[component]
 fn drag_resize_area() -> Element {
 	let platform = use_platform();
+	// NOTE: Adjust this value for resizing handles.
+	const BORDER_SIZE: u8 = 8;
 
-	// --- Resize Handlers ---
+	let create_resize_handler = |direction: ResizeDirection| {
+		move |_| {
+			platform.with_window(move |window| {
+				let _ = window.drag_resize_window(direction);
+			});
+		}
+	};
 
-	let resize_right = move |_| {
-		platform.with_window(|window| {
-			let _ = window.drag_resize_window(ResizeDirection::East);
-		});
+	let create_set_cursor_handler = |cursor: CursorIcon| {
+		move |_| {
+			platform.set_cursor(cursor);
+		}
 	};
-	let resize_left = move |_| {
-		platform.with_window(|window| {
-			let _ = window.drag_resize_window(ResizeDirection::West);
-		});
-	};
-	let resize_top = move |_| {
-		platform.with_window(|window| {
-			let _ = window.drag_resize_window(ResizeDirection::North);
-		});
-	};
-	let resize_bottom = move |_| {
-		platform.with_window(|window| {
-			let _ = window.drag_resize_window(ResizeDirection::South);
-		});
-	};
-	let resize_top_left = move |_| {
-		platform.with_window(|window| {
-			let _ = window.drag_resize_window(ResizeDirection::NorthWest);
-		});
-	};
-	let resize_top_right = move |_| {
-		platform.with_window(|window| {
-			let _ = window.drag_resize_window(ResizeDirection::NorthEast);
-		});
-	};
-	let resize_bottom_left = move |_| {
-		platform.with_window(|window| {
-			let _ = window.drag_resize_window(ResizeDirection::SouthWest);
-		});
-	};
-	let resize_bottom_right = move |_| {
-		platform.with_window(|window| {
-			let _ = window.drag_resize_window(ResizeDirection::SouthEast);
-		});
+
+	let reset_cursor_handler = move |_| {
+		platform.set_cursor(CursorIcon::Default);
 	};
 
 	rsx! {
+		// window corners
+		// Top-Left
+		rect {
+			position: "absolute", layer: "overlay",
+			position_top: "0", position_left: "0",
+			width: "{BORDER_SIZE}", height: "{BORDER_SIZE}",
+			onmousedown: create_resize_handler(ResizeDirection::NorthWest),
+			onmouseenter: create_set_cursor_handler(CursorIcon::NwResize),
+			onmouseleave: reset_cursor_handler,
+		}
+		// Top-Right
+		rect {
+			position: "absolute", layer: "overlay",
+			position_top: "0", position_right: "0",
+			width: "{BORDER_SIZE}", height: "{BORDER_SIZE}",
+			onmousedown: create_resize_handler(ResizeDirection::NorthEast),
+			onmouseenter: create_set_cursor_handler(CursorIcon::NeResize),
+			onmouseleave: reset_cursor_handler,
+		}
+		// Bottom-Left
+		rect {
+			position: "absolute", layer: "overlay",
+			position_bottom: "0", position_left: "0",
+			width: "{BORDER_SIZE}", height: "{BORDER_SIZE}",
+			onmousedown: create_resize_handler(ResizeDirection::SouthWest),
+			onmouseenter: create_set_cursor_handler(CursorIcon::SwResize),
+			onmouseleave: reset_cursor_handler,
+		}
+		// Bottom-Right
+		rect {
+			position: "absolute", layer: "overlay",
+			position_bottom: "0", position_right: "0",
+			width: "{BORDER_SIZE}", height: "{BORDER_SIZE}",
+			onmousedown: create_resize_handler(ResizeDirection::SouthEast),
+			onmouseenter: create_set_cursor_handler(CursorIcon::SeResize),
+			onmouseleave: reset_cursor_handler,
+		}
 
-
-		// Top-Left Corner
-		CursorArea {
-			icon: CursorIcon::NwResize,
-			rect {
-				position: "global",
-				position_left: "0",
-				position_top: "0",
-				height: "12",
-				width: "12",
-				layer: "overlay",
-				onmousedown: resize_top_left,
-				onmouseenter: move |_| {
-					platform.with_window(move |window| {
-							window.set_cursor(CursorIcon::NwResize);
-					})
-				},
-				onmouseleave: move |_| {
-					platform.with_window(move |window| {
-							window.set_cursor(CursorIcon::Default);
-					})
-				},
-			}
-		},
-		// Top-Right Corner
-		CursorArea {
-			icon: CursorIcon::NeResize,
-			rect {
-				position: "global",
-				position_right: "0",
-				position_top: "0",
-				height: "8",
-				width: "8",
-				layer: "overlay",
-				// background: "black", //for debugging
-				onmousedown: resize_top_right,
-				onmouseenter: move |_| {
-					platform.with_window(move |window| {
-							window.set_cursor(CursorIcon::NeResize);
-					})
-				},
-				onmouseleave: move |_| {
-					platform.with_window(move |window| {
-							window.set_cursor(CursorIcon::Default);
-					})
-				},
-			}
-		},
-		// Bottom-Left Corner
-		CursorArea {
-			icon: CursorIcon::SwResize,
-			rect {
-				position: "global",
-				position_left: "0",
-				position_bottom: "0",
-				height: "12",
-				width: "12",
-				layer: "overlay",
-				onmousedown: resize_bottom_left,
-				onmouseenter: move |_| {
-					platform.with_window(move |window| {
-							window.set_cursor(CursorIcon::SwResize);
-					})
-				},
-				onmouseleave: move |_| {
-					platform.with_window(move |window| {
-							window.set_cursor(CursorIcon::Default);
-					})
-				},
-			}
-		},
-		// Bottom-Right Corner
-		CursorArea {
-			icon: CursorIcon::SeResize,
-			rect {
-				position: "global",
-				position_right: "0",
-				position_bottom: "0",
-				height: "12",
-				width: "12",
-				layer: "overlay",
-				onmousedown: resize_bottom_right,
-				onmouseenter: move |_| {
-					platform.with_window(move |window| {
-							window.set_cursor(CursorIcon::SeResize);
-					})
-				},
-				onmouseleave: move |_| {
-					platform.with_window(move |window| {
-							window.set_cursor(CursorIcon::Default);
-					})
-				},
-			}
-		},
-		// Right Edge
-		CursorArea {
-			icon: CursorIcon::EResize,
-			rect {
-				position: "global",
-				position_right: "0",
-				position_top: "0",
-				height: "fill",
-				width: "3",
-				layer: "overlay",
-				onmousedown: resize_right,
-				onmouseenter: move |_| {
-					platform.with_window(move |window| {
-							window.set_cursor(CursorIcon::EResize);
-					})
-				},
-				onmouseleave: move |_| {
-					platform.with_window(move |window| {
-							window.set_cursor(CursorIcon::Default);
-					})
-				},
-			}
-		},
-		// Left Edge
-		CursorArea {
-			icon: CursorIcon::WResize,
-			rect {
-				position: "global",
-				position_left: "0",
-				position_top: "0",
-				height: "fill",
-				width: "3",
-				layer: "overlay",
-				onmousedown: resize_left,
-				onmouseenter: move |_| {
-					platform.with_window(move |window| {
-							window.set_cursor(CursorIcon::WResize);
-					})
-				},
-				onmouseleave: move |_| {
-					platform.with_window(move |window| {
-							window.set_cursor(CursorIcon::Default);
-					})
-				},
-			}
-		},
-		// Top Edge
-		CursorArea {
-			icon: CursorIcon::NResize,
-			rect {
-				position: "global",
-				position_right: "0",
-				position_top: "0",
-				height: "4",
-				width: "fill",
-				layer: "overlay",
-				onmousedown: resize_top,
-				onmouseenter: move |_| {
-					platform.with_window(move |window| {
-							window.set_cursor(CursorIcon::NResize);
-					})
-				},
-				onmouseleave: move |_| {
-					platform.with_window(move |window| {
-							window.set_cursor(CursorIcon::Default);
-					})
-				},
-			}
-		},
-		// Bottom Edge
-		CursorArea {
-			icon: CursorIcon::SResize,
-			rect {
-				position: "global",
-				position_right: "0",
-				position_bottom: "0",
-				height: "5",
-				width: "fill",
-				layer: "overlay",
-				onmousedown: resize_bottom,
-				onmouseenter: move |_| {
-					platform.with_window(move |window| {
-							window.set_cursor(CursorIcon::SResize);
-					})
-				},
-				onmouseleave: move |_| {
-					platform.with_window(move |window| {
-							window.set_cursor(CursorIcon::Default);
-					})
-				},
-			}
-		},
+		// Window edges
+		// Top
+		rect {
+			position: "absolute", layer: "overlay",
+			position_top: "0", position_left: "{BORDER_SIZE}",
+			height: "{BORDER_SIZE}",
+			width: "calc(100% - {2 * BORDER_SIZE}px)",
+			onmousedown: create_resize_handler(ResizeDirection::North),
+			onmouseenter: create_set_cursor_handler(CursorIcon::NResize),
+			onmouseleave: reset_cursor_handler,
+		}
+		// Bottom
+		rect {
+			position: "absolute", layer: "overlay",
+			position_bottom: "0", position_left: "{BORDER_SIZE}",
+			height: "{BORDER_SIZE}",
+			width: "calc(100% - {2 * BORDER_SIZE}px)",
+			onmousedown: create_resize_handler(ResizeDirection::South),
+			onmouseenter: create_set_cursor_handler(CursorIcon::SResize),
+			onmouseleave: reset_cursor_handler,
+		}
+		// Left
+		rect {
+			position: "absolute", layer: "overlay",
+			position_top: "{BORDER_SIZE}", position_left: "0",
+			width: "{BORDER_SIZE}",
+			height: "calc(100% - {2 * BORDER_SIZE}px)",
+			onmousedown: create_resize_handler(ResizeDirection::West),
+			onmouseenter: create_set_cursor_handler(CursorIcon::WResize),
+			onmouseleave: reset_cursor_handler,
+		}
+		// Right
+		rect {
+			position: "absolute", layer: "overlay",
+			position_top: "{BORDER_SIZE}", position_right: "0",
+			width: "{BORDER_SIZE}",
+			height: "calc(100% - {2 * BORDER_SIZE}px)",
+			onmousedown: create_resize_handler(ResizeDirection::East),
+			onmouseenter: create_set_cursor_handler(CursorIcon::EResize),
+			onmouseleave: reset_cursor_handler,
+		}
 	}
 }
