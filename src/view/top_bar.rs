@@ -23,7 +23,7 @@ pub fn top_nav_bar() -> Element {
 			background: "{ theme.base }",
 			WindowDragArea {
 				rect {
-					width: "120",
+					width: "110",
 					height: "100%"
 				}
 			}
