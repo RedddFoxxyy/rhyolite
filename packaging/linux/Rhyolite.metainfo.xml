@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<component type="desktop">
+  <id>Rhyolite.desktop</id>
+  <name>Rhyolite</name>
+  <summary>A simple markdown editor written in Rust.</summary>
+  <description>
+  Rhyolite is a simple markdown editor build using tauri framework that allows user to edit and work on markdown files.
+  </description>
+  <project_license>GPL-3.0</project_license>
+  <url type="homepage">https://github.com/rhyolite-org/rhyolite</url>
+  <launchable type="desktop-id">Rhyolite.desktop</launchable>
+  <icon type="cached">Rhyolite</icon>
+</component>

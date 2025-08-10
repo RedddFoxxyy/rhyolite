@@ -2,15 +2,15 @@ name: Rust CI Pipeline
 
 on:
     push:
-        branches:
-            - master
-        paths:
-            - "src-tauri/src/**"
+        # branches:
+        #     - master
+        # paths:
+        #     - "src-tauri/src/**"
     pull_request:
-        branches:
-            - master
-        paths:
-            - "src-tauri/src/**"
+        # branches:
+        #     - master
+        # paths:
+        #     - "src-tauri/src/**"
 
 jobs:
     build:
@@ -28,25 +28,33 @@ jobs:
             - name: install dependencies (ubuntu only)
               run: |
                   sudo apt-get update
-                  sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-              # webkitgtk 4.0 is for Tauri v1 - webkitgtk 4.1 is for Tauri v2.
-              # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
-
-            - name: install frontend dependencies
-              run: npm install # change this to npm, pnpm or bun depending on which one you use.
+                  sudo apt-get install -y \
+                    libegl1 libgl1 libx11-6 libxcb1 libxau6 libxdmcp6 \
+                    libfontconfig1 libfreetype6 libpng16-16 libexpat1 \
+                    zlib1g libbrotli1 libstdc++6 libgcc-s1 \
+                    libfreetype6-dev \
+                    libfontconfig1-dev \
+                    libegl1-mesa-dev \
+                    libgl1-mesa-dev \
+                    libwayland-egl1-mesa \
+                    libgles2-mesa-dev \
+                    libwayland-egl-backend-dev \
+                    libwayland-dev
 
             - name: Build project
               run: cargo build --verbose
-              working-directory: src-tauri
+              working-directory: .
 
-            - name: Run tests
-              run: cargo test
-              working-directory: src-tauri
+            # TODO: Enable this after tests are added to the source code.
+            # - name: Run tests
+            #   run: cargo test
+            #   working-directory: .
 
             - name: Run linter
               run: cargo clippy -- -D warnings
-              working-directory: src-tauri
+              working-directory: .
 
-            - name: Generate documentation
-              run: cargo doc --no-deps --document-private-items
-              working-directory: src-tauri
+            # NOTE: Not required as of now.
+            # - name: Generate documentation
+            #   run: cargo doc --no-deps --document-private-items
+            #   working-directory: .

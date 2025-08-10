@@ -22,6 +22,8 @@ jobs:
                       args: "--target x86_64-apple-darwin"
                     - platform: "ubuntu-22.04"
                       args: ""
+                    - platform: "ubuntu-24.04-arm" # New ARM64 Linux runner
+                      args: "--target aarch64-unknown-linux-gnu"
                     - platform: "windows-latest" # Windows x64
                       args: "--target x86_64-pc-windows-msvc"
                     - platform: "windows-latest" # Windows x86 (32-bit)
@@ -85,7 +87,6 @@ jobs:
                   token: ${{ secrets.GITHUB_TOKEN }}
                   tag: v${{ env.version }}
 
-            # Step 2: Generate "What's Changed" block from commits
             # Step 2: Generate "What's Changed" block from commits
             - name: Generate "What's Changed" block
               id: whats_changed

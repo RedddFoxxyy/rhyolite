@@ -330,10 +330,6 @@ web_modules/
 
 # Build and Development directories
 /build
-/src-tauri/gen/android
 /.idea
 /.vscode
-package-lock.json
-bun.lockb
-src-tauri/Cargo.lock
-bun.lock
+/src/build
