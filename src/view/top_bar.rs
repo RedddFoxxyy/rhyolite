@@ -252,7 +252,7 @@ fn NavigationButtons() -> Element {
 			}
 		},
 		nav_button {
-			on_click: move |_| platform.exit(),
+			on_click: move |_| platform.close_window(),
 			hover_color: "red",
 			svg {
 				width: "90%",

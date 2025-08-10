@@ -190,7 +190,6 @@ fn document_editor() -> Element {
 		cross_align: "center",
 		padding: "7",
 		margin: "16 0 0 0",
-		overflow: "none",
 		CursorArea {
 			icon: CursorIcon::Text,
 			rect {

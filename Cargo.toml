@@ -10,21 +10,21 @@ edition = "2024"
 freya = { git = "https://github.com/marc2332/freya", branch = "main", features = [
 ] }
 dioxus = { version = "0.6.3", default-features = false, features = [
-  "macro",
-  "signals",
-  "hooks",
+	"macro",
+	"signals",
+	"hooks",
 ] }
 dioxus-clipboard = "0.2.0"
-winit = "0.30.11"
+winit = "0.30.12"
 serde = { version = "1.0.219", features = ["derive"] }
-toml = "0.9.2"
-serde_json = "1.0.140"
+toml = "0.9.5"
+serde_json = "1.0.142"
 dirs = "6.0.0"
 sanitize-filename = "0.6.0"
 env_logger = "0.11.8"
 log = { version = "0.4.27" }
-tokio = { version = "1.45.1", features = ["fs", "sync", "io-util", "io-std"] }
-slab = "0.4.10"
+tokio = { version = "1.47.1", features = ["fs", "sync", "io-util", "io-std"] }
+slab = "0.4.11"
 
 [profile.dev]
 incremental = true
@@ -50,62 +50,62 @@ license_file = "LICENSE.txt"
 before-packaging-command = "cargo build --release"
 # resources = ["packaging/linux/Rhyolite.desktop", "src/static/icons/icon.png"]
 icons = [
-  "./src/static/icons/icon.png",
-  "./src/static/icons/icon.ico",
-  # "./src/static/icons/icon.svg",
-  "./src/static/icons/32x32.png",
-  "./src/static/icons/64x64.png",
-  "./src/static/icons/128x128.png",
-  "./src/static/icons/128x128@2x.png",
-  "./src/static/icons/Square284x284Logo.png",
-  "./src/static/icons/Square310x310Logo.png",
-  "./src/static/icons/Square30x30Logo.png",
+	"./src/static/icons/icon.png",
+	"./src/static/icons/icon.ico",
+	# "./src/static/icons/icon.svg",
+	"./src/static/icons/32x32.png",
+	"./src/static/icons/64x64.png",
+	"./src/static/icons/128x128.png",
+	"./src/static/icons/128x128@2x.png",
+	"./src/static/icons/Square284x284Logo.png",
+	"./src/static/icons/Square310x310Logo.png",
+	"./src/static/icons/Square30x30Logo.png",
 ]
 [package.metadata.packager.appimage]
 libs = [
-  "libEGL.so.1",
-  "libGL.so.1",
-  "libGLdispatch.so.0",
-  "libGLX.so.0",
-  "libX11.so.6",
-  "libxcb.so.1",
-  "libXau.so.6",
-  "libXdmcp.so.6",
-  "libfontconfig.so.1",
-  "libfreetype.so.6",
-  "libpng16.so.16",
-  "libexpat.so.1",
-  "libz.so.1",
-  "libbrotlidec.so.1",
-  "libbrotlicommon.so.1",
-  "libstdc++.so.6",
-  "libgcc_s.so.1",
+	"libEGL.so.1",
+	"libGL.so.1",
+	"libGLdispatch.so.0",
+	"libGLX.so.0",
+	"libX11.so.6",
+	"libxcb.so.1",
+	"libXau.so.6",
+	"libXdmcp.so.6",
+	"libfontconfig.so.1",
+	"libfreetype.so.6",
+	"libpng16.so.16",
+	"libexpat.so.1",
+	"libz.so.1",
+	"libbrotlidec.so.1",
+	"libbrotlicommon.so.1",
+	"libstdc++.so.6",
+	"libgcc_s.so.1",
 ]
 [package.metadata.packager.deb]
 depends = [
-  "libegl1",
-  "libgl1",
-  "libx11-6",
-  "libxcb1",
-  "libxau6",
-  "libxdmcp6",
-  "libfontconfig1",
-  "libfreetype6",
-  "libpng16-16",
-  "libexpat1",
-  "zlib1g",
-  "libbrotli1",
-  "libstdc++6",
-  "libgcc-s1",
+	"libegl1",
+	"libgl1",
+	"libx11-6",
+	"libxcb1",
+	"libxau6",
+	"libxdmcp6",
+	"libfontconfig1",
+	"libfreetype6",
+	"libpng16-16",
+	"libexpat1",
+	"zlib1g",
+	"libbrotli1",
+	"libstdc++6",
+	"libgcc-s1",
 ]
 section = "utils"
 
 [package.metadata.generate-rpm]
 name = "Rhyolite"
 assets = [
-  { source = "target/release/Rhyolite", dest = "/usr/bin/Rhyolite", mode = "0755" },
-  { source = "LICENSE.txt", dest = "/usr/share/doc/Rhyolite/LICENSE", doc = true, mode = "0644" },
-  { source = "packaging/linux/Rhyolite.desktop", dest = "/usr/share/applications/Rhyolite.desktop", mode = "0644" },
-  { source = "src/static/icon.png", dest = "/usr/share/icons/hicolor/512x512/apps/Rhyolite.png", mode = "0644" },
-  { source = "packaging/linux/Rhyolite.metainfo.xml", dest = "/usr/share/metainfo/Rhyolite.metainfo.xml", mode = "0644" },
+	{ source = "target/release/Rhyolite", dest = "/usr/bin/Rhyolite", mode = "0755" },
+	{ source = "LICENSE.txt", dest = "/usr/share/doc/Rhyolite/LICENSE", doc = true, mode = "0644" },
+	{ source = "packaging/linux/Rhyolite.desktop", dest = "/usr/share/applications/Rhyolite.desktop", mode = "0644" },
+	{ source = "src/static/icon.png", dest = "/usr/share/icons/hicolor/512x512/apps/Rhyolite.png", mode = "0644" },
+	{ source = "packaging/linux/Rhyolite.metainfo.xml", dest = "/usr/share/metainfo/Rhyolite.metainfo.xml", mode = "0644" },
 ]

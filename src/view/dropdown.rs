@@ -59,6 +59,7 @@ pub fn submenu(children: Element) -> Element {
 	)
 }
 
+/// This whole thing is shit and needs to be rewritten correctly/or atleast rewritten better.
 #[derive(PartialEq, Clone, Props)]
 pub struct ButtonProps {
 	pub label: String,

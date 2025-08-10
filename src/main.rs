@@ -14,14 +14,18 @@ fn main() {
 
 	log::info!("Rhyolite App started, initialising GUI.");
 	launch_cfg(
-		app,
-		LaunchConfig::<()>::new()
-			.with_title("Rhyolite")
-			.with_size(1280.0, 720.0)
+		LaunchConfig::new()
 			.with_font("JetBrains Mono", JET_BRAINS_MONO)
 			.with_default_font("JetBrains Mono")
-			.with_min_size(400.0, 300.0)
-			.with_decorations(false)
-			.with_icon(LaunchConfig::load_icon(APP_ICON)),
+			.with_window(
+				WindowConfig::new(app)
+					.with_size(1284.0, 724.0)
+					.with_title("Rhyolite")
+					.with_min_size(400.0, 300.0)
+					.with_decorations(false)
+					.with_transparency(true)
+					.with_background("transparent")
+					.with_icon(LaunchConfig::load_icon(APP_ICON)),
+			),
 	);
 }
