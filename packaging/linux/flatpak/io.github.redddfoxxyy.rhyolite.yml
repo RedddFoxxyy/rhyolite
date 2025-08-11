@@ -10,9 +10,8 @@ finish-args:
     - --share=ipc
     - --socket=wayland
     - --socket=fallback-x11
-    - --socket
     - --device=dri
-    - --xdg-documents:create
+    - --filesystem=xdg-documents:create
 
 modules:
     - name: rhyolite

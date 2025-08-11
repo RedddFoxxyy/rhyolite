@@ -338,3 +338,5 @@ web_modules/
 *.AppImage
 /packaging/linux/flatpak/build-dir
 /packaging/linux/flatpak/.flatpak-builder
+/packaging/linux/flatpak/repo
+/packaging/linux/flatpak/*.flatpak
