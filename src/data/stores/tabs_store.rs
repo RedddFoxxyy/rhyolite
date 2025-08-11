@@ -1,6 +1,6 @@
 //! All global signals go here that store the state of the Tabs.
 //!
-//! I made these global signals cause it was the easy way to share a component state between
+//! I made these global signals because it was the easy way to share a component state between
 //! different components. While this might not be the best way to do it, it works.
 
 // NOTE: file, doc, and document all are the same things, MarkdownFileData.
@@ -36,7 +36,7 @@ pub(crate) async fn new_tab() {
 	log::info!("Opened New Tab: {log_title}");
 }
 
-/// Closes the tab at given index also freeing the its buffer from FILES_BUFFER.
+/// Closes the tab at given index also freeing its buffer from FILES_BUFFER.
 pub async fn close_tab(index: usize) {
 	if let Some(tab) = TABS().get(index) {
 		let tab_title = tab.title.clone();
@@ -61,7 +61,7 @@ pub async fn close_tab(index: usize) {
 	}
 }
 
-/// Closes the tab at given index also freeing the its buffer from FILES_BUFFER, and deletes the file associated with it.
+/// Closes the tab at given index also freeing its buffer from FILES_BUFFER, and deletes the file associated with it.
 pub async fn delete_tab(index: usize) {
 	if let Some(tab) = TABS().get(index) {
 		let tab_title = tab.title.clone();

@@ -9,7 +9,6 @@ use freya::prelude::*;
 use log::LevelFilter;
 use std::{fs, io::Write, path::PathBuf};
 use tokio::{fs::File, io::AsyncWriteExt, runtime::Runtime};
-
 use super::stores::{doc_store::RECENT_FILES, ui_store::THEME_STORE};
 
 pub fn env_logger_init() {
@@ -149,10 +148,12 @@ pub fn save_userdata() {
 		current_theme: THEME_STORE().current_theme.clone(),
 	};
 
-	if let Ok(toml_serialised_state) = toml::to_string::<UserData>(&current_editor_state) {
-		if let Ok(mut userdata_file) = fs::File::create(get_userdata_path()) {
-			// TODO: Handle Error for this operation and the parent operations.
-			let _op_result = userdata_file.write(toml_serialised_state.as_bytes());
+	if let Ok(toml_serialised_state) = toml::to_string::<UserData>(&current_editor_state)
+		&& let Ok(mut userdata_file) = fs::File::create(get_userdata_path()) {
+        // TODO: Handle Error for this operation and the parent operations.
+		let io_result = userdata_file.write(toml_serialised_state.as_bytes());
+		if io_result.is_err() {
+			log::info!("Unable to write userdata file: {}", io_result.unwrap_err());
 		}
 	}
 }
@@ -316,7 +317,7 @@ pub async fn save_file(markdownfile: MarkdownFile) {
 
 pub async fn delete_file(markdownfile: MarkdownFile) {
 	if let Ok(_result) = tokio::fs::remove_file(markdownfile.path.clone()).await {
-		// log::info!("Succesfully deleted {}.", markdownfile.title)
+		// log::info!("Successfully deleted {}.", markdownfile.title)
 	} else {
 		log::error!("Failed to save the file!")
 	}

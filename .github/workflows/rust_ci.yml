@@ -4,8 +4,8 @@ on:
     push:
         # branches:
         #     - master
-        # paths:
-        #     - "src-tauri/src/**"
+        paths:
+            - "src/**"
     pull_request:
         # branches:
         #     - master

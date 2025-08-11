@@ -2,29 +2,30 @@
 name = "Rhyolite"
 version = "0.2.0"
 description = "A simple markdown editor written in Rust, inspired by Obsidian."
-authors = ["Suyog Tandel(RedddFoxxyy)"]
+authors = ["Suyog Tandel(RedddFoxxyy)<suyogtandel@proton.me>"]
 license = "GPL-3.0"
 edition = "2024"
 
 [dependencies]
 freya = { git = "https://github.com/marc2332/freya", branch = "main", features = [
 ] }
-dioxus = { version = "0.6.3", default-features = false, features = [
-	"macro",
-	"signals",
-	"hooks",
-] }
+#dioxus = { version = "0.6.3", default-features = false, features = [
+#	"macro",
+#	"signals",
+#	"hooks",
+#] }
 dioxus-clipboard = "0.2.0"
 winit = "0.30.12"
 serde = { version = "1.0.219", features = ["derive"] }
 toml = "0.9.5"
-serde_json = "1.0.142"
+#serde_json = "1.0.142"
 dirs = "6.0.0"
-sanitize-filename = "0.6.0"
+#sanitize-filename = "0.6.0"
 env_logger = "0.11.8"
 log = { version = "0.4.27" }
 tokio = { version = "1.47.1", features = ["fs", "sync", "io-util", "io-std"] }
 slab = "0.4.11"
+syntect = "5.2.0"
 
 [profile.dev]
 incremental = true
@@ -45,14 +46,12 @@ description = "A simple markdown editor written in Rust, inspired by Obsidian."
 category = "Utility"
 version = "0.2.0"
 authors = ["Suyog Tandel(RedddFoxxyy)"]
-identifier = "xyz.rhyolite.dev"
+identifier = "io.github.redddfoxxyy.rhyolite"
 license_file = "LICENSE.txt"
 before-packaging-command = "cargo build --release"
-# resources = ["packaging/linux/Rhyolite.desktop", "src/static/icons/icon.png"]
 icons = [
 	"./src/static/icons/icon.png",
 	"./src/static/icons/icon.ico",
-	# "./src/static/icons/icon.svg",
 	"./src/static/icons/32x32.png",
 	"./src/static/icons/64x64.png",
 	"./src/static/icons/128x128.png",

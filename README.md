@@ -1,10 +1,9 @@
 <div align="center">
-    <img src="./src/static/icon.png" width=256 alt="Rhyolite">
+    <img src="./src/static/svgs/icon.svg" width=256 alt="Rhyolite">
 </div>
 
 <h1 align="center">An Open Source Markdown Editor Inspired by Obsidian!</h1>
 
-![Rhyolite Editor Preview GIF](assets/readme_gif.gif)
 ![Rhyolite Editor Preview](assets/Rhyolite_is_Cool!.png)
 ![Rhyolite Editor Preview Command Palette](assets/rhyolite_command_preview.png)
 

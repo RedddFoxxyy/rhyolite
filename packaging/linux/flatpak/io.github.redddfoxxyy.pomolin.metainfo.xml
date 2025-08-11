@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+	<id>io.github.redddfoxxyy.rhyolite</id>
+
+	<name>Rhyolite</name>
+	<summary>Elevate Your Notes.</summary>
+	<metadata_license>CC0-1.0</metadata_license>
+	<project_license>GPL-3.0</project_license>
+	<developer_name>Suyog Tandel</developer_name>
+
+	<description>
+		<p>Open-source Markdown editor to connect your ideas.</p>
+	</description>
+
+	<launchable type="desktop-id">io.github.redddfoxxyy.rhyolite.desktop</launchable>
+
+	<requires>
+		<control>keyboard</control>
+		<control>pointing</control>
+		<display_length compare="ge">768</display_length>
+	</requires>
+
+	<keywords>
+		<keyword>Productivity</keyword>
+		<keyword>Markdown</keyword>
+		<keyword>Editor</keyword>
+		<keyword>Knowledge-Base</keyword>
+	</keywords>
+
+<!--	<releases>-->
+<!--		<release date="2025-08-10" version="1.1.7">-->
+<!--			<description>-->
+<!--				<p>In this update:</p>-->
+<!--			</description>-->
+<!--		</release>-->
+<!--	</releases>-->
+
+	<content_rating type="oars-1.1" />
+
+	<url type="homepage">https://rhyolite.xyz/</url>
+	<url type="bugtracker">https://github.com/RedddFoxxyy/rhyolite/issues</url>
+	<url type="vcs-browser">https://github.com/RedddFoxxyy/rhyolite</url>
+</component>

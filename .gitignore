@@ -333,3 +333,8 @@ web_modules/
 /.idea
 /.vscode
 /src/build
+/packaging/linux/appimage/AppDir
+*.appimage
+*.AppImage
+/packaging/linux/flatpak/build-dir
+/packaging/linux/flatpak/.flatpak-builder

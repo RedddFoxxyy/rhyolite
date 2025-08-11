@@ -1,0 +1,36 @@
+app-id: io.github.redddfoxxyy.rhyolite
+runtime: org.freedesktop.Platform
+runtime-version: "24.08"
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+    - org.freedesktop.Sdk.Extension.rust-stable
+
+command: Rhyolite
+finish-args:
+    - --share=ipc
+    - --socket=wayland
+    - --socket=fallback-x11
+    - --socket
+    - --device=dri
+    - --xdg-documents:create
+
+modules:
+    - name: rhyolite
+      buildsystem: simple
+      build-options:
+          append-path: /usr/lib/sdk/rust-stable/bin
+          build-args:
+              - --share=network
+      sources:
+          - type: git
+            url: https://github.com/RedddFoxxyy/rhyolite.git
+            branch: master
+
+      build-commands:
+          - cargo build --release
+          - mkdir -p /app/bin/
+          - cp -r target/release/Rhyolite /app/bin/
+
+          - install -Dm644 packaging/linux/flatpak/io.github.redddfoxxyy.rhyolite.desktop /app/share/applications/io.github.redddfoxxyy.rhyolite.desktop
+          - install -Dm644 packaging/linux/flatpak/io.github.redddfoxxyy.rhyolite.svg /app/share/icons/hicolor/scalable/apps/io.github.redddfoxxyy.rhyolite.svg
+          - install -Dm644 packaging/linux/flatpak/io.github.redddfoxxyy.rhyolite.metainfo.xml /app/share/metainfo/io.github.redddfoxxyy.rhyolite.metainfo.xml
