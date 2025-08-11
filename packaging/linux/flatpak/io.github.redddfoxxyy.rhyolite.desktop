@@ -3,6 +3,6 @@ Categories=Utility;TextEditor;
 Name=Rhyolite
 Comment=A simple markdown editor written in Rust.
 Exec=Rhyolite
-Icon=Rhyolite
+Icon=io.github.redddfoxxyy.rhyolite
 Terminal=false
 Type=Application
