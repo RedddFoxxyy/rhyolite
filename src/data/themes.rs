@@ -34,10 +34,24 @@ impl ThemesStore {
 		}
 	}
 
-	pub fn change_current_theme(&mut self, theme_name: &String) {
-		// Had to do this workaround cause the button props on_click property only takes a &String.
-		if let Some(index) = self.store.iter().position(|theme| &theme.info.name == theme_name) {
-			self.current_theme = self.store.get(index).unwrap().clone();
+	pub fn change_current_theme(&mut self, index: usize) {
+		self.current_theme = self.store.get(index).unwrap().clone();
+	}
+
+	pub fn _preview_theme(&mut self, preview: bool, theme_index: usize, original_theme: &Option<Theme>) {
+		if preview {
+			if original_theme.is_none() {
+				// This is the first preview, store current and switch to preview
+				self.current_theme = self.store.get(theme_index).unwrap().clone();
+			} else {
+				// Already previewing, just switch to new preview theme
+				self.current_theme = self.store.get(theme_index).unwrap().clone();
+			}
+		} else {
+			// Restore original theme
+			if let Some(original) = original_theme {
+				self.current_theme = original.clone();
+			}
 		}
 	}
 }

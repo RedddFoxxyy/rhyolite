@@ -28,7 +28,6 @@ pub fn top_nav_bar() -> Element {
 				}
 			}
 			active_tabs {},
-			// NOTE: Will be used when this is fixed!
 			WindowDragArea {
 				rect {
 					width: "100%",

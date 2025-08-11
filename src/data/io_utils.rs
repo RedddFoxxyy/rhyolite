@@ -56,6 +56,8 @@ pub fn get_trove_dir(trove_name: &str) -> PathBuf {
 }
 
 pub fn get_userdata_path() -> PathBuf {
+	let userdata_dir = get_rhyolite_dir().join(USER_DATA_DIR);
+	fs::create_dir_all(&userdata_dir).expect("Could not create Rhyolite appdata directory");
 	get_rhyolite_dir().join(USER_DATA_DIR).join(USER_DATA_FILE)
 }
 
@@ -148,7 +150,6 @@ pub fn save_userdata() {
 	};
 
 	if let Ok(toml_serialised_state) = toml::to_string::<UserData>(&current_editor_state) {
-		// let userdata_file = fs::File::write(&mut self, toml_serialised_state);
 		if let Ok(mut userdata_file) = fs::File::create(get_userdata_path()) {
 			// TODO: Handle Error for this operation and the parent operations.
 			let _op_result = userdata_file.write(toml_serialised_state.as_bytes());
@@ -306,9 +307,9 @@ pub fn load_from_userdata() {
 pub async fn save_file(markdownfile: MarkdownFile) {
 	if let Ok(mut file) = File::create(markdownfile.path.clone()).await {
 		if let Ok(_result) = file.write_all(markdownfile.editable.editor().to_string().as_bytes()).await {
-			log::info!("Succesfully saved current file")
+			log::info!("Succesfully saved {} at {:#?}", markdownfile.title, markdownfile.path)
 		} else {
-			log::error!("Failed to save the file!")
+			log::error!("Failed to save {} at {:#?}!", markdownfile.title, markdownfile.path)
 		}
 	}
 }
@@ -344,7 +345,6 @@ pub fn initialise_app() {
 
 pub fn deinitialise_app() {
 	let tokio = Runtime::new().unwrap();
-	log::info!("Saving all open files.");
 	for tab in TABS().iter() {
 		if let Some(markdownfile) = FILES_ARENA().get(tab.file_key) {
 			tokio.block_on(save_file(markdownfile.clone()));

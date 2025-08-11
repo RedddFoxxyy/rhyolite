@@ -2,6 +2,7 @@ use crate::data::stores::ui_store::{
 	SHOW_SETTINGS_DROPUP, SHOW_THEMES_DROPUP, THEME_STORE, toggle_command_palette, toggle_recent_files, toggle_settings_dropup,
 	toggle_themes_dropup,
 };
+use crate::view::components::buttons;
 use crate::view::dropdown;
 use freya::prelude::*;
 
@@ -10,26 +11,32 @@ pub fn side_bar() -> Element {
 	let theme = THEME_STORE().current_theme.colors;
 	let themes_list = THEME_STORE().store;
 
-	let settings_list: [dropdown::ButtonProps; 4] = [
-		dropdown::ButtonProps {
+	let settings_list: [buttons::DropDownButtonProps; 4] = [
+		buttons::DropDownButtonProps {
 			label: "General Settings".to_string(),
-			on_click: |_| {},
+			on_click: EventHandler::new(|_| {}),
 			icon: Some(include_str!("../static/svgs/sliders-horizontal.svg")),
+			..Default::default()
 		},
-		dropdown::ButtonProps {
+		buttons::DropDownButtonProps {
 			label: "Theme".to_string(),
-			on_click: |_| toggle_themes_dropup(),
+			on_click: EventHandler::new(|_| {
+				toggle_themes_dropup();
+			}),
 			icon: Some(include_str!("../static/svgs/palette.svg")),
+			..Default::default()
 		},
-		dropdown::ButtonProps {
+		buttons::DropDownButtonProps {
 			label: "Keyboard Shortcuts".to_string(),
-			on_click: |_| {},
+			on_click: EventHandler::new(|_| {}),
 			icon: Some(include_str!("../static/svgs/keyboard.svg")),
+			..Default::default()
 		},
-		dropdown::ButtonProps {
+		buttons::DropDownButtonProps {
 			label: "About".to_string(),
-			on_click: |_| {},
+			on_click: EventHandler::new(|_| {}),
 			icon: Some(include_str!("../static/svgs/info.svg")),
+			..Default::default()
 		},
 	];
 
@@ -43,17 +50,19 @@ pub fn side_bar() -> Element {
 			dropdown::menu {
 				rect {
 					for setting in settings_list {
-						dropdown::button{..setting}
+						buttons::DropDownButton{..setting}
 					}
 				}
 			}
 
 			if *SHOW_THEMES_DROPUP.read() {
 				dropdown::submenu {
-					for theme in themes_list.iter() {
-						dropdown::button {
+					for (i,theme) in themes_list.iter().enumerate() {
+						buttons::DropDownButton {
 							label: theme.info.name.clone(),
-							on_click: |theme_name| THEME_STORE.write().change_current_theme(theme_name),
+							on_click: move |_| {
+								THEME_STORE.write().change_current_theme(i);
+							},
 						}
 					}
 				}

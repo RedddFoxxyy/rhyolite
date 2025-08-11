@@ -16,10 +16,9 @@ use tokio::time::sleep;
 #[component]
 pub fn work_space() -> Element {
 	rsx!(rect {
-		// Take the entire window width and height
 		width: "fill",
 		height: "fill",
-		document_area{},
+		document_area{}
 		bottom_floating_bar {  }
 	})
 }
@@ -151,6 +150,10 @@ fn document_editor() -> Element {
 	let editor = editable.editor().read();
 	let mut is_cursor_blinking = use_signal(|| false);
 
+	let onmousedown = move |_e: MouseEvent| {
+		focus.request_focus();
+	};
+
 	let onclick = move |_: MouseEvent| {
 		*is_cursor_blinking.write() = true;
 		editable.process_event(&EditableEvent::Click);
@@ -189,31 +192,39 @@ fn document_editor() -> Element {
 		height: "fill",
 		cross_align: "center",
 		padding: "7",
-		margin: "16 0 0 0",
+		margin: "16 0 10 0",
+		overflow: "none",
 		CursorArea {
 			icon: CursorIcon::Text,
-			rect {
-				width: "80%",
-				height: "fill",
-				background: "transparent",
-				padding: "4 0",
-				onkeydown,
-				onkeyup,
-				a11y_id: focus.attribute(),
-				onclick,
-				VirtualScrollView {
-					width: "100%",
-					height: "100%",
-					length: editor.len_lines(),
-					item_size: 25.0,
-					scroll_with_arrows: false,
-					cache_elements: false,
-					builder: move |line_index, _: &Option<()>| {
+		rect {
+			width: "85%",
+			height: "fill",
+			background: "transparent",
+			padding: "4 0",
+			onmousedown,
+			onkeydown,
+			onkeyup,
+			a11y_id: focus.attribute(),
+			onclick,
+			overflow: "scroll",
+			// NOTE: I know VirtualScrollView is more efficient, but I need text wrapping.
+			ScrollView {
+				width: "100%",
+				height: "100%",
+				show_scrollbar: true,
+				scrollbar_theme: theme_with!(
+					ScrollBarTheme {
+						background: cow_borrowed!("transparent")
+					}
+				),
+
+				for line_index in 0..editor.len_lines() {
+					{
 						let theme = THEME_STORE().current_theme.colors;
 						let editor = editable.editor().read();
 						let line = editor.line(line_index).unwrap();
 						let is_line_selected = editor.cursor_row() == line_index;
-						// Only show the cursor in the active line
+
 						let character_index = if is_line_selected {
 							editor.cursor_col().to_string()
 						} else {
@@ -225,17 +236,10 @@ fn document_editor() -> Element {
 							"transparent"
 						};
 
-						// Only highlight the active line
-						// let line_background = if is_line_selected {
-						// 	theme.subtext1.as_str()
-						// } else {
-						// 	"none"
-						// };
-
 						let line_background = "none";
 
 						let onmousedown = move |e: MouseEvent| {
-							focus.request_focus();
+							// focus.request_focus();
 							editable.process_event(&EditableEvent::MouseDown(e.data, line_index));
 						};
 
@@ -246,42 +250,37 @@ fn document_editor() -> Element {
 						let highlights = editable.highlights_attr(line_index);
 
 						rsx! {
-							rect {
-								key: "{line_index}",
-								width: "100%",
-								height: "23",
-								// content: "fit",
-								direction: "horizontal",
-								background: "{line_background}",
-								// Uncomment this for line numbers like that in codemirror.
-								// label {
-								// 	main_align: "center",
-								// 	width: "30",
-								// 	height: "100%",
-								// 	text_align: "center",
-								// 	font_size: "15",
-								// 	color: "rgb(200, 200, 200)",
-								// 	"{line_index + 1} "
-								// }
-								paragraph {
-									cursor_reference: editable.cursor_attr(),
-									main_align: "center",
-									height: "100%",
+
+								rect {
+									key: "{line_index}",
 									width: "100%",
-									cursor_index: "{character_index}",
-									cursor_color: "{cursor_color}",
-									highlight_color: "{theme.subtext1}",
-									max_lines: "1",
-									cursor_mode: "editable",
-									cursor_id: "{line_index}",
-									onmousedown,
-									onmousemove,
-									highlights,
-									text {
-										color: "{theme.text}",
-										font_size: "16",
-										font_family: "JetBrains Mono",
-										"{line}"
+									height: "auto",
+									// min_height: "12",
+									// margin: "0",
+									overflow: "none",
+									content: "fit",
+									direction: "horizontal",
+									background: "{line_background}",
+									paragraph {
+										cursor_reference: editable.cursor_attr(),
+										main_align: "center",
+										height: "auto",
+										width: "100%",
+										cursor_index: "{character_index}",
+										cursor_color: "{cursor_color}",
+										highlight_color: "{theme.subtext1}",
+										cursor_mode: "editable",
+										cursor_id: "{line_index}",
+										onmousedown,
+										onmousemove,
+										highlights,
+										text {
+											color: "{theme.text}",
+											font_size: "16",
+											// line_height: "0.5",
+											font_family: "JetBrains Mono",
+											"{line}"
+										}
 									}
 								}
 							}
