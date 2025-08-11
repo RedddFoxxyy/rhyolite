@@ -340,3 +340,5 @@ web_modules/
 /packaging/linux/flatpak/.flatpak-builder
 /packaging/linux/flatpak/repo
 /packaging/linux/flatpak/*.flatpak
+/packaging/cargoPackager
+.cargo-packager

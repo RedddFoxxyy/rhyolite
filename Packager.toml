@@ -1,0 +1,44 @@
+name = "Rhyolite"
+productName = "Rhyolite"
+description = "A simple markdown editor written in Rust, inspired by Obsidian."
+category = "Utility"
+version = "0.2.0"
+authors = ["Suyog Tandel(RedddFoxxyy)"]
+identifier = "io.github.redddfoxxyy.rhyolite"
+license_file = "LICENSE.txt"
+icons = [
+	"./src/static/icons/icon.png",
+	"./src/static/icons/icon.ico",
+	"./src/static/icons/32x32.png",
+	"./src/static/icons/64x64.png",
+	"./src/static/icons/128x128.png",
+	"./src/static/icons/128x128@2x.png",
+	"./src/static/icons/Square284x284Logo.png",
+	"./src/static/icons/Square310x310Logo.png",
+	"./src/static/icons/Square30x30Logo.png",
+]
+beforePackagingCommand = "cargo build --release"
+binaries = [
+    { main = true, path = "../../target/release/Rhyolite" }
+]
+outDir = "packaging/cargoPackager"
+
+
+[deb]
+depends = [
+	"libegl1",
+	"libgl1",
+	"libx11-6",
+	"libxcb1",
+	"libxau6",
+	"libxdmcp6",
+	"libfontconfig1",
+	"libfreetype6",
+	"libpng16-16",
+	"libexpat1",
+	"zlib1g",
+	"libbrotli1",
+	"libstdc++6",
+	"libgcc-s1",
+]
+section = "utils"

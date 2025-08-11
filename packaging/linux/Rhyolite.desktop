@@ -6,3 +6,4 @@ Exec=Rhyolite
 Icon=Rhyolite
 Terminal=false
 Type=Application
+StartupWMClass=Rhyolite
