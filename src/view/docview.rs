@@ -101,14 +101,14 @@ fn document_title_box() -> Element {
 		width: "fill",
 		height: "15%",
 		min_height: "80",
-		max_height: "120",
+		max_height: "100",
 		main_align: "center",
 		cross_align: "center",
 		padding: "7",
 		margin: "16 0 0 0",
 		rect {
 			width: "40%",
-			min_width: "270",
+			min_width: "280",
 			height: "fill",
 			shadow: "5 8 8 2 rgb(0, 0, 0, 10)",
 			background: "{theme.base}",
@@ -134,8 +134,10 @@ fn document_title_box() -> Element {
 					onkeydown,
 					onkeyup,
 					color: "{theme.text}",
-					font_size: "42",
+					font_size: "40",
 					font_family: "JetBrains Mono",
+					text_overflow: "ellipsis",
+					max_lines: "1",
 					text {
 						"{editable.editor()}"
 					}
@@ -451,6 +453,7 @@ fn document_editor_dynamic_virtualised() -> Element {
 	let editor_length = editable.editor().read().len_lines();
 
 	let onclick = move |_: MouseEvent| {
+		focus.request_focus();
 		*is_cursor_blinking.write() = true;
 		editable.process_event(&EditableEvent::Click);
 	};
@@ -480,6 +483,8 @@ fn document_editor_dynamic_virtualised() -> Element {
 		}
 	});
 
+	// NOTE: This probably is not the correct place to run this function, however it works
+	// correctly here, so for now the deinitialise function run here.
 	use_drop(move || {
 		deinitialise_app();
 	});
@@ -489,7 +494,7 @@ fn document_editor_dynamic_virtualised() -> Element {
 		height: "fill",
 		cross_align: "center",
 		padding: "7",
-		margin: "16 0 0 0",
+		margin: "16 0 40 0",
 		CursorArea {
 			icon: CursorIcon::Text,
 			rect {
@@ -506,7 +511,7 @@ fn document_editor_dynamic_virtualised() -> Element {
 					height: "100%",
 					length: editor_length,
 					overscan: 5,
-					scroll_with_arrows: false,
+					scroll_with_arrows: true,
 					scrollbar_theme: theme_with!(
 						ScrollBarTheme {
 							background: cow_borrowed!("transparent")
@@ -535,16 +540,12 @@ fn document_editor_dynamic_virtualised() -> Element {
 							};
 							let line_background = "none";
 
-							let mut editable_for_mousedown = editable;
-							let mut editable_for_mousemove = editable;
-
 							let onmousedown = move |e: MouseEvent| {
-								focus.request_focus();
-								editable_for_mousedown.process_event(&EditableEvent::MouseDown(e.data, line_index));
+								editable.process_event(&EditableEvent::MouseDown(e.data, line_index));
 							};
 
 							let onmousemove = move |e: MouseEvent| {
-								editable_for_mousemove.process_event(&EditableEvent::MouseMove(e.data, line_index));
+								editable.process_event(&EditableEvent::MouseMove(e.data, line_index));
 							};
 
 							let highlights = editable.highlights_attr(line_index);
@@ -561,7 +562,7 @@ fn document_editor_dynamic_virtualised() -> Element {
 										cursor_reference: editable.cursor_attr(),
 										main_align: "center",
 										height: "auto",
-										width: "100%",
+										width: "98.5%",
 										cursor_index: "{character_index}",
 										cursor_color: "{cursor_color}",
 										highlight_color: "{theme.subtext1}",
