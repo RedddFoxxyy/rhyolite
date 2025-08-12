@@ -1,3 +1,4 @@
+use super::stores::{doc_store::RECENT_FILES, ui_store::THEME_STORE};
 use crate::data::{
 	stores::{
 		doc_store::{ACTIVE_DOCUMENT_TITLE, CLIPBOARD, FILES_ARENA, PLATFORM},
@@ -9,8 +10,8 @@ use freya::prelude::*;
 use log::LevelFilter;
 use std::{fs, io::Write, path::PathBuf};
 use tokio::{fs::File, io::AsyncWriteExt, runtime::Runtime};
-use super::stores::{doc_store::RECENT_FILES, ui_store::THEME_STORE};
 
+#[allow(dead_code)]
 pub fn env_logger_init() {
 	let mut builder = env_logger::Builder::new();
 	builder.filter(None, LevelFilter::Warn);
@@ -149,8 +150,9 @@ pub fn save_userdata() {
 	};
 
 	if let Ok(toml_serialised_state) = toml::to_string::<UserData>(&current_editor_state)
-		&& let Ok(mut userdata_file) = fs::File::create(get_userdata_path()) {
-        // TODO: Handle Error for this operation and the parent operations.
+		&& let Ok(mut userdata_file) = fs::File::create(get_userdata_path())
+	{
+		// TODO: Handle Error for this operation and the parent operations.
 		let io_result = userdata_file.write(toml_serialised_state.as_bytes());
 		if io_result.is_err() {
 			log::info!("Unable to write userdata file: {}", io_result.unwrap_err());
