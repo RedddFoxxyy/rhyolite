@@ -494,10 +494,7 @@ fn document_editor_dynamic_virtualised() -> Element {
 	let editor = editable.editor().read();
 	let item_keys: Vec<u64> = (0..editor.len_lines())
 		.map(|i| {
-			// Use the standard library's default hasher.
 			let mut hasher = DefaultHasher::new();
-			// Get the line text as a &str, which implements Hash.
-			// If the line doesn't exist, hash an empty string.
 			if let Some(line) = editor.line(i) {
 				line.text.hash(&mut hasher);
 			}
@@ -534,68 +531,67 @@ fn document_editor_dynamic_virtualised() -> Element {
 						}
 					),
 					builder: move |line_index| {
-							let theme = THEME_STORE().current_theme.colors;
-							let editor = editable.editor().read();
+						let theme = THEME_STORE().current_theme.colors;
+						let editor = editable.editor().read();
 
-							let line = match editor.line(line_index) {
-								Some(line) => line,
-								None => return rsx! { rect {} }
-							};
+						let line = match editor.line(line_index) {
+							Some(line) => line,
+							None => return rsx! { rect {} }
+						};
 
-							let is_line_selected = editor.cursor_row() == line_index;
-							let character_index = if is_line_selected {
-								editor.cursor_col().to_string()
-							} else {
-								"none".to_string()
-							};
-							let cursor_color = if focus.is_focused() && *is_cursor_blinking.read() {
-								theme.text.as_str()
-							} else {
-								"transparent"
-							};
-							let line_background = "none";
+						let is_line_selected = editor.cursor_row() == line_index;
+						let character_index = if is_line_selected {
+							editor.cursor_col().to_string()
+						} else {
+							"none".to_string()
+						};
+						let cursor_color = if focus.is_focused() && *is_cursor_blinking.read() {
+							theme.text.as_str()
+						} else {
+							"transparent"
+						};
+						let line_background = "none";
 
-							let onmousedown = move |e: MouseEvent| {
-								editable.process_event(&EditableEvent::MouseDown(e.data, line_index));
-							};
+						let onmousedown = move |e: MouseEvent| {
+							editable.process_event(&EditableEvent::MouseDown(e.data, line_index));
+						};
 
-							let onmousemove = move |e: MouseEvent| {
-								editable.process_event(&EditableEvent::MouseMove(e.data, line_index));
-							};
+						let onmousemove = move |e: MouseEvent| {
+							editable.process_event(&EditableEvent::MouseMove(e.data, line_index));
+						};
 
-							let highlights = editable.highlights_attr(line_index);
+						let highlights = editable.highlights_attr(line_index);
 
-							rsx! {
-								rect {
-									key: "{line_index}",
-									width: "100%",
+						rsx! {
+							rect {
+								key: "{line_index}",
+								width: "100%",
+								height: "auto",
+								content: "fit",
+								direction: "horizontal",
+								background: "{line_background}",
+								paragraph {
+									cursor_reference: editable.cursor_attr(),
+									main_align: "center",
 									height: "auto",
-									content: "fit",
-									direction: "horizontal",
-									background: "{line_background}",
-									paragraph {
-										cursor_reference: editable.cursor_attr(),
-										main_align: "center",
-										height: "auto",
-										width: "98.5%",
-										cursor_index: "{character_index}",
-										cursor_color: "{cursor_color}",
-										highlight_color: "{theme.subtext1}",
-										cursor_mode: "editable",
-										cursor_id: "{line_index}",
-										onmousedown,
-										onmousemove,
-										highlights,
-										text {
-											color: "{theme.text}",
-											font_size: "16",
-											font_family: "JetBrains Mono",
-											"{line}"
-										}
+									width: "98.5%",
+									cursor_index: "{character_index}",
+									cursor_color: "{cursor_color}",
+									highlight_color: "{theme.subtext1}",
+									cursor_mode: "editable",
+									cursor_id: "{line_index}",
+									onmousedown,
+									onmousemove,
+									highlights,
+									text {
+										color: "{theme.text}",
+										font_size: "16",
+										font_family: "JetBrains Mono",
+										"{line}"
 									}
 								}
 							}
-
+						}
 					}
 				}
 			}
