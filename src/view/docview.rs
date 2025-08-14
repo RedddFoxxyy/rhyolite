@@ -510,15 +510,14 @@ fn document_editor_dynamic_virtualised() -> Element {
 					width: "100%",
 					height: "100%",
 					length: editor_length,
-					overscan: 5,
+					overscan: 3,
 					scroll_with_arrows: true,
 					scrollbar_theme: theme_with!(
 						ScrollBarTheme {
 							background: cow_borrowed!("transparent")
 						}
 					),
-					builder: {
-						move |line_index| {
+					builder: move |line_index, _: &Option<()>| {
 							let theme = THEME_STORE().current_theme.colors;
 							let editor = editable.editor().read();
 
@@ -584,6 +583,6 @@ fn document_editor_dynamic_virtualised() -> Element {
 					}
 				}
 			}
-		}
+
 	})
 }

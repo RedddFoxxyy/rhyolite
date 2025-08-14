@@ -67,7 +67,7 @@ fn active_tabs() -> Element {
 		rect {
 			direction: "horizontal",
 			cross_align: "center",
-			// padding: "0 0 0 60",
+			padding: "0 165 0 0",
 			// spacing: "5",
 
 			// App Icon Section
@@ -83,16 +83,24 @@ fn active_tabs() -> Element {
 			// },
 
 			// Tabs Section
-			for (index, _tab) in TABS().iter().enumerate() {
-				rect {
-					height: "fill",
-					width: "auto",
-					main_align: "center",
-					margin: "0 2",
-					tab_button {
-						index: index,
-						on_click: move |_| switch_tab(index),
-					}
+			// ScrollView{
+			// 	direction: "horizontal",
+			// 	scrollbar_theme: theme_with!(
+			// 		ScrollBarTheme {
+			// 			background: cow_borrowed!("transparent")
+			// 		}
+			// 	),
+				for (index, _tab) in TABS().iter().enumerate() {
+					rect {
+						height: "fill",
+						width: "auto",
+						main_align: "center",
+						margin: "0 2",
+						tab_button {
+							index: index,
+							on_click: move |_| switch_tab(index),
+						}
+					// }
 				}
 			}
 			CursorArea {

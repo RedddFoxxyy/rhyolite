@@ -7,9 +7,9 @@ license = "GPL-3.0"
 edition = "2024"
 
 [dependencies]
-freya = { git = "https://github.com/RedddFoxxyy/freya.git", branch = "dynamic-scroll-view", features = [
-] }
-# freya = { path = "../freya/crates/freya", features = [] }
+# freya = { git = "https://github.com/RedddFoxxyy/freya.git", branch = "feat/dynamic-scroll-view", features = [
+# ] }
+freya = { path = "../freya/crates/freya", features = [] }
 #dioxus = { version = "0.6.3", default-features = false, features = [
 #	"macro",
 #	"signals",
