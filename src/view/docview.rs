@@ -1,3 +1,5 @@
+use std::hash::{DefaultHasher, Hash, Hasher};
+
 use crate::{
 	data::{
 		fn_utils::handle_editor_key_input,
@@ -450,7 +452,6 @@ fn document_editor_dynamic_virtualised() -> Element {
 	let mut focus = use_focus();
 	let mut editable = CURRENT_EDITOR_BUFFER();
 	let mut is_cursor_blinking = use_signal(|| false);
-	let editor_length = editable.editor().read().len_lines();
 
 	let onclick = move |_: MouseEvent| {
 		focus.request_focus();
@@ -489,6 +490,21 @@ fn document_editor_dynamic_virtualised() -> Element {
 		deinitialise_app();
 	});
 
+	// Generate a unique and stable key for each line by hashing its content.
+	let editor = editable.editor().read();
+	let item_keys: Vec<u64> = (0..editor.len_lines())
+		.map(|i| {
+			// Use the standard library's default hasher.
+			let mut hasher = DefaultHasher::new();
+			// Get the line text as a &str, which implements Hash.
+			// If the line doesn't exist, hash an empty string.
+			if let Some(line) = editor.line(i) {
+				line.text.hash(&mut hasher);
+			}
+			hasher.finish()
+		})
+		.collect();
+
 	rsx!(rect{
 		width: "fill",
 		height: "fill",
@@ -509,15 +525,15 @@ fn document_editor_dynamic_virtualised() -> Element {
 				DynamicVirtualScrollView {
 					width: "100%",
 					height: "100%",
-					length: editor_length,
 					overscan: 3,
 					scroll_with_arrows: true,
+					item_keys: item_keys,
 					scrollbar_theme: theme_with!(
 						ScrollBarTheme {
 							background: cow_borrowed!("transparent")
 						}
 					),
-					builder: move |line_index, _: &Option<()>| {
+					builder: move |line_index| {
 							let theme = THEME_STORE().current_theme.colors;
 							let editor = editable.editor().read();
 
@@ -579,10 +595,10 @@ fn document_editor_dynamic_virtualised() -> Element {
 									}
 								}
 							}
-						}
+
 					}
 				}
 			}
-
+		}
 	})
 }
