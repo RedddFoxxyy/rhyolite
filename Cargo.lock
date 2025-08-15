@@ -1284,7 +1284,7 @@ dependencies = [
 [[package]]
 name = "freya"
 version = "0.4.0"
-source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#ddf3d830d76ee400081d6f3125aeefec4dfdd82c"
+source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#9893355ee058e2a20081336535bcc77107b393d0"
 dependencies = [
  "dioxus",
  "dioxus-core",
@@ -1304,7 +1304,7 @@ dependencies = [
 [[package]]
 name = "freya-components"
 version = "0.4.0"
-source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#ddf3d830d76ee400081d6f3125aeefec4dfdd82c"
+source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#9893355ee058e2a20081336535bcc77107b393d0"
 dependencies = [
  "dioxus",
  "freya-core",
@@ -1323,7 +1323,7 @@ dependencies = [
 [[package]]
 name = "freya-core"
 version = "0.4.0"
-source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#ddf3d830d76ee400081d6f3125aeefec4dfdd82c"
+source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#9893355ee058e2a20081336535bcc77107b393d0"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -1353,7 +1353,7 @@ dependencies = [
 [[package]]
 name = "freya-elements"
 version = "0.4.0"
-source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#ddf3d830d76ee400081d6f3125aeefec4dfdd82c"
+source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#9893355ee058e2a20081336535bcc77107b393d0"
 dependencies = [
  "dioxus-core",
  "dioxus-rsx",
@@ -1365,7 +1365,7 @@ dependencies = [
 [[package]]
 name = "freya-engine"
 version = "0.4.0"
-source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#ddf3d830d76ee400081d6f3125aeefec4dfdd82c"
+source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#9893355ee058e2a20081336535bcc77107b393d0"
 dependencies = [
  "bitflags 2.9.1",
  "glutin",
@@ -1375,7 +1375,7 @@ dependencies = [
 [[package]]
 name = "freya-hooks"
 version = "0.4.0"
-source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#ddf3d830d76ee400081d6f3125aeefec4dfdd82c"
+source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#9893355ee058e2a20081336535bcc77107b393d0"
 dependencies = [
  "bitflags 2.9.1",
  "bytes",
@@ -1398,7 +1398,7 @@ dependencies = [
 [[package]]
 name = "freya-native-core"
 version = "0.4.0"
-source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#ddf3d830d76ee400081d6f3125aeefec4dfdd82c"
+source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#9893355ee058e2a20081336535bcc77107b393d0"
 dependencies = [
  "dioxus-core",
  "parking_lot",
@@ -1411,7 +1411,7 @@ dependencies = [
 [[package]]
 name = "freya-native-core-macro"
 version = "0.4.0"
-source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#ddf3d830d76ee400081d6f3125aeefec4dfdd82c"
+source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#9893355ee058e2a20081336535bcc77107b393d0"
 dependencies = [
  "quote",
  "syn",
@@ -1420,7 +1420,7 @@ dependencies = [
 [[package]]
 name = "freya-router"
 version = "0.4.0"
-source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#ddf3d830d76ee400081d6f3125aeefec4dfdd82c"
+source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#9893355ee058e2a20081336535bcc77107b393d0"
 dependencies = [
  "dioxus-lib",
  "freya-elements",
@@ -1435,7 +1435,7 @@ dependencies = [
 [[package]]
 name = "freya-router-macro"
 version = "0.4.0"
-source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#ddf3d830d76ee400081d6f3125aeefec4dfdd82c"
+source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#9893355ee058e2a20081336535bcc77107b393d0"
 dependencies = [
  "base16",
  "digest",
@@ -1449,7 +1449,7 @@ dependencies = [
 [[package]]
 name = "freya-winit"
 version = "0.4.0"
-source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#ddf3d830d76ee400081d6f3125aeefec4dfdd82c"
+source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#9893355ee058e2a20081336535bcc77107b393d0"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -2801,7 +2801,7 @@ checksum = "69cdb34c158ceb288df11e18b4bd39de994f6657d83847bdffdbd7f346754b0f"
 [[package]]
 name = "ragnarok"
 version = "0.1.0"
-source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#ddf3d830d76ee400081d6f3125aeefec4dfdd82c"
+source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#9893355ee058e2a20081336535bcc77107b393d0"
 dependencies = [
  "euclid",
  "itertools",
@@ -3534,7 +3534,7 @@ checksum = "fcc842091f2def52017664b53082ecbbeb5c7731092bad69d2c63050401dfd64"
 [[package]]
 name = "torin"
 version = "0.4.0"
-source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#ddf3d830d76ee400081d6f3125aeefec4dfdd82c"
+source = "git+https://github.com/RedddFoxxyy/freya.git?branch=feat%2Fdynamic-scroll-view#9893355ee058e2a20081336535bcc77107b393d0"
 dependencies = [
  "euclid",
  "rustc-hash 2.1.1",

@@ -491,16 +491,19 @@ fn document_editor_dynamic_virtualised() -> Element {
 	});
 
 	// Generate a unique and stable key for each line by hashing its content.
-	let editor = editable.editor().read();
-	let item_keys: Vec<u64> = (0..editor.len_lines())
-		.map(|i| {
-			let mut hasher = DefaultHasher::new();
-			if let Some(line) = editor.line(i) {
-				line.text.hash(&mut hasher);
-			}
-			hasher.finish()
-		})
-		.collect();
+	let item_keys = use_memo(use_reactive(&editable, move |editable| {
+		let editor = editable.editor().read();
+		(0..editor.len_lines())
+			.map(|i| {
+				let mut hasher = DefaultHasher::new();
+				if let Some(line) = editor.line(i) {
+					line.text.hash(&mut hasher);
+				}
+				i.hash(&mut hasher);
+				hasher.finish()
+			})
+			.collect::<Vec<u64>>()
+	}));
 
 	rsx!(rect{
 		width: "fill",
@@ -524,7 +527,7 @@ fn document_editor_dynamic_virtualised() -> Element {
 					height: "100%",
 					overscan: 3,
 					scroll_with_arrows: true,
-					item_keys: item_keys,
+					item_keys: item_keys(),
 					scrollbar_theme: theme_with!(
 						ScrollBarTheme {
 							background: cow_borrowed!("transparent")
@@ -564,7 +567,7 @@ fn document_editor_dynamic_virtualised() -> Element {
 
 						rsx! {
 							rect {
-								key: "{line_index}",
+								// key: "{line_index}",
 								width: "100%",
 								height: "auto",
 								content: "fit",
