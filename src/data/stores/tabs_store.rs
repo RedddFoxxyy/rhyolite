@@ -51,7 +51,6 @@ pub async fn close_tab(index: usize) {
 				return;
 			}
 		}
-		// TODO: Trigger a file save before closing the tab.
 		save_file(FILES_ARENA().get(buffer_index).unwrap().clone()).await;
 		TABS.write().remove(index);
 		FILES_ARENA.write().remove(buffer_index);
@@ -67,19 +66,28 @@ pub async fn delete_tab(index: usize) {
 		let tab_title = tab.title.clone();
 		let buffer_index = tab.file_key;
 		let tab_count = TABS().len();
-		if CURRENT_TAB() == Some(index) {
-			if index != 0 {
-				switch_tab(index - 1).await;
-			} else if tab_count > 1 {
-				switch_tab(index + 1).await;
-			} else {
-				return;
-			}
+
+		if (tab_count - 1) == 0 {
+			new_tab().await;
 		}
-		// TODO: Trigger a file save before closing the tab.
+
 		TABS.write().remove(index);
 		delete_file(FILES_ARENA().get(buffer_index).unwrap().clone()).await;
 		FILES_ARENA.write().remove(buffer_index);
+
+		if CURRENT_TAB() == Some(index) {
+			if index == 0 {
+				switch_tab(0).await;
+			} else {
+				switch_tab(index - 1).await;
+			}
+		} else if let Some(current) = CURRENT_TAB()
+			&& current > index
+		{
+			*CURRENT_TAB.write() = Some(current - 1);
+			*ACTIVE_DOCUMENT_TITLE.write() = TABS().get(current - 1).unwrap().title.clone();
+		}
+
 		log::info!("Deleted file: {tab_title}");
 	} else {
 		log::error!("Failed to delete the tab: Invalid tab index! (out of bounds)")

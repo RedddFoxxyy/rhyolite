@@ -93,12 +93,9 @@ fn document_title_box() -> Element {
 	// A future that runs a timer to toggle the blink signal
 	use_future(move || async move {
 		loop {
-			sleep(Duration::from_millis(500)).await;
-
+			sleep(Duration::from_millis(550)).await;
 			if focus.is_focused() {
 				is_cursor_blinking.toggle();
-			} else {
-				*is_cursor_blinking.write() = false
 			}
 		}
 	});
@@ -188,13 +185,36 @@ fn document_editor() -> Element {
 		}
 	};
 
-	use_future(move || async move {
-		loop {
-			sleep(Duration::from_millis(500)).await;
+	let mut cursor_moved = use_signal(|| 0u32);
 
-			if focus.is_focused() {
-				is_cursor_blinking.toggle();
-			}
+	// Track cursor movement
+	use_effect(move || {
+		let editor = editable.editor().read();
+		let _cursor_pos = (editor.cursor_row(), editor.cursor_col());
+		drop(editor);
+		cursor_moved += 1;
+	});
+
+	// Single blinking task that resets on movement
+	use_effect(move || {
+		if focus.is_focused() {
+			*is_cursor_blinking.write() = true;
+			spawn(async move {
+				let mut last_cursor_state = *cursor_moved.read();
+				while focus.is_focused() {
+					sleep(Duration::from_millis(550)).await;
+					if !focus.is_focused() {
+						break;
+					}
+					if *cursor_moved.read() != last_cursor_state {
+						last_cursor_state = *cursor_moved.read();
+						*is_cursor_blinking.write() = true;
+					} else {
+						is_cursor_blinking.toggle();
+					}
+				}
+				*is_cursor_blinking.write() = false;
+			});
 		}
 	});
 
@@ -496,12 +516,20 @@ fn document_editor_dynamic_virtualised() -> Element {
 		active_thumb_background: Cow::from(theme.surface2.clone()),
 	});
 
-	use_future(move || async move {
-		loop {
-			sleep(Duration::from_millis(550)).await;
-			if focus.is_focused() {
-				is_cursor_blinking.toggle();
-			}
+	use_effect(move || {
+		if focus.is_focused() {
+			*is_cursor_blinking.write() = true;
+			spawn(async move {
+				while focus.is_focused() {
+					sleep(Duration::from_millis(500)).await;
+					if focus.is_focused() {
+						is_cursor_blinking.toggle();
+					}
+				}
+				*is_cursor_blinking.write() = false;
+			});
+		} else {
+			*is_cursor_blinking.write() = false;
 		}
 	});
 

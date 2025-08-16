@@ -2,14 +2,14 @@
     <img src="./src/static/svgs/icon.svg" width=256 alt="Rhyolite">
 </div>
 
-<h1 align="center">An Open Source Markdown Editor Inspired by Obsidian!</h1>
+<h1 align="center">An Open Source and performant Markdown Editor and knowledge base!</h1>
 
 ![Rhyolite Editor Preview](assets/Rhyolite_is_Cool!.png)
 ![Rhyolite Editor Preview Command Palette](assets/rhyolite_command_preview.png)
 
-#### [Rhyolite](https://rhyolite.xyz/) is a simple markdown editor build using tauri framework that allows user to edit and work on markdown files.
+#### [Rhyolite](https://rhyolite.xyz/) is a simple markdown editor build using Rust with Freya that allows user to edit and work on markdown files.
 
-> Rhyolite is inspired by volcanic rocks, much like Obsidian.
+> Rhyolite is inspired by volcanic rock rhyolite, which is a type of igneous rock formed from the rapid cooling of lava.
 >
 > Rhyolite was a fork of [fextify](https://github.com/face-hh/fextify), but was later rewritten from scratch,
 > using sveltekit for the frontend and tauri version was changed from v1 to v2. As of now this project does not share any similarities to the [fextify](https://github.com/face-hh/fextify) project.
