@@ -21,22 +21,22 @@ pub fn work_space() -> Element {
 		width: "fill",
 		height: "fill",
 		document_area{}
-		bottom_floating_bar {  }
+		bottom_floating_bar {}
 	})
 }
 
+#[component]
 fn document_area() -> Element {
 	rsx!(rect {
 		width: "fill",
 		height: "fill",
 		direction: "vertical",
 		document_title_box{}
-		// document_editor{}
-		// document_editor_virtualised{}
 		document_editor_dynamic_virtualised{}
 	})
 }
 
+#[component]
 fn document_title_box() -> Element {
 	let theme = THEME_STORE().current_theme.colors;
 
@@ -150,6 +150,7 @@ fn document_title_box() -> Element {
 }
 
 #[allow(dead_code)]
+#[component]
 fn document_editor() -> Element {
 	let mut focus = use_focus();
 	let mut editable = CURRENT_EDITOR_BUFFER();
@@ -299,6 +300,7 @@ fn document_editor() -> Element {
 }
 
 #[allow(dead_code)]
+#[component]
 fn document_editor_virtualised() -> Element {
 	let mut focus = use_focus();
 	let mut editable = CURRENT_EDITOR_BUFFER();
@@ -448,10 +450,12 @@ fn document_editor_virtualised() -> Element {
 }
 
 #[allow(dead_code)]
+#[component]
 fn document_editor_dynamic_virtualised() -> Element {
 	let mut focus = use_focus();
 	let mut editable = CURRENT_EDITOR_BUFFER();
 	let mut is_cursor_blinking = use_signal(|| false);
+	let theme = THEME_STORE().current_theme.colors;
 
 	let onclick = move |_: MouseEvent| {
 		focus.request_focus();
@@ -475,9 +479,16 @@ fn document_editor_dynamic_virtualised() -> Element {
 		}
 	};
 
+	let scrollbar_theme = theme_with!(ScrollBarTheme {
+		background: cow_borrowed!("transparent"), //
+		thumb_background: Cow::from(theme.surface0.clone()),
+		hover_thumb_background: Cow::from(theme.surface1.clone()),
+		active_thumb_background: Cow::from(theme.surface2.clone()),
+	});
+
 	use_future(move || async move {
 		loop {
-			sleep(Duration::from_millis(500)).await;
+			sleep(Duration::from_millis(550)).await;
 			if focus.is_focused() {
 				is_cursor_blinking.toggle();
 			}
@@ -491,6 +502,7 @@ fn document_editor_dynamic_virtualised() -> Element {
 	});
 
 	// Generate a unique and stable key for each line by hashing its content.
+	// Required by dynamic scroll view.
 	let item_keys = use_memo(use_reactive(&editable, move |editable| {
 		let editor = editable.editor().read();
 		(0..editor.len_lines())
@@ -527,12 +539,9 @@ fn document_editor_dynamic_virtualised() -> Element {
 					height: "100%",
 					overscan: 3,
 					scroll_with_arrows: true,
+					min_scrollthumb_height: Some(20.0),
 					item_keys: item_keys(),
-					scrollbar_theme: theme_with!(
-						ScrollBarTheme {
-							background: cow_borrowed!("transparent")
-						}
-					),
+					scrollbar_theme,
 					builder: move |line_index| {
 						let theme = THEME_STORE().current_theme.colors;
 						let editor = editable.editor().read();
@@ -567,7 +576,6 @@ fn document_editor_dynamic_virtualised() -> Element {
 
 						rsx! {
 							rect {
-								// key: "{line_index}",
 								width: "100%",
 								height: "auto",
 								content: "fit",
