@@ -10,11 +10,16 @@ use freya::prelude::*;
 pub fn side_bar() -> Element {
 	let theme = THEME_STORE().current_theme.colors;
 	let themes_list = THEME_STORE().store;
+	let platform = use_platform();
 
 	let settings_list: [buttons::DropDownButtonProps; 4] = [
 		buttons::DropDownButtonProps {
 			label: "General Settings".to_string(),
-			on_click: EventHandler::new(|_| {}),
+			on_click: EventHandler::new(move |_| {
+				platform.new_window(
+					WindowConfig::new_with_props(settings_window, settings_windowProps { value: 404 }).with_title("Rhyolite Settings"),
+				)
+			}),
 			icon: Some(include_str!("../static/svgs/sliders-horizontal.svg")),
 			..Default::default()
 		},
@@ -46,7 +51,7 @@ pub fn side_bar() -> Element {
 		background: "transparent",
 		border: "0 2 0 0 outer { theme.surface0 }",
 		side_bar_buttons{},
-		if *SHOW_SETTINGS_DROPUP.read() {
+		if SHOW_SETTINGS_DROPUP() {
 			dropdown::menu {
 				rect {
 					for setting in settings_list {
@@ -55,7 +60,7 @@ pub fn side_bar() -> Element {
 				}
 			}
 
-			if *SHOW_THEMES_DROPUP.read() {
+			if SHOW_THEMES_DROPUP() {
 				dropdown::submenu {
 					for (i,theme) in themes_list.iter().enumerate() {
 						buttons::DropDownButton {
@@ -183,5 +188,33 @@ fn sidebar_button(on_click: EventHandler<()>, children: Element) -> Element {
 			}
 		}
 
+	)
+}
+
+// TODO: Move this into its own component.
+#[component]
+fn settings_window(value: i32) -> Element {
+	let platform = use_platform();
+	let theme = THEME_STORE().current_theme.colors;
+
+	let onpress = move |_| platform.close_window();
+
+	rsx!(
+		rect {
+			height: "100%",
+			width: "100%",
+			main_align: "center",
+			cross_align: "center",
+			background: theme.crust,
+			font_size: "30",
+			label {
+				color: theme.text,
+				"{value}: Yet to be Implemented."
+			}
+			Button {
+				onpress,
+				label { "Close" }
+			}
+		}
 	)
 }

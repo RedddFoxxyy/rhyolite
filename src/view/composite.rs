@@ -57,7 +57,6 @@ pub fn app() -> Element {
 	rsx!(
 		rect {
 			background: "transparent",
-
 			width: "fill",
 			height: "fill",
 			direction: "vertical",
@@ -112,7 +111,8 @@ pub fn overlay_view() -> Element {
 		backdrop_blur: "{backdrop_blur_value}",
 		layer: "overlay",
 
-		onclick: move |_| {
+		onclick: move |e| {
+			e.stop_propagation();
 			if SHOW_RECENT_FILES() {
 				toggle_recent_files();
 			} else if SHOW_COMMAND_PALETTE() {

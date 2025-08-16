@@ -576,10 +576,11 @@ fn document_editor_dynamic_virtualised() -> Element {
 					width: "100%",
 					height: "100%",
 					padding: "0",
+					default_item_height: 5.0,
 					overscan: 3,
 					scroll_with_arrows: true,
 					scroll_beyond_last_item: 10,
-					min_scrollthumb_height: Some(20.0),
+					min_scrollthumb_height: Some(10.0),
 					item_keys: item_keys(),
 					scrollbar_theme,
 					builder: move |line_index| {
@@ -636,7 +637,7 @@ fn document_editor_dynamic_virtualised() -> Element {
 									highlights,
 									text {
 										color: "{theme.text}",
-										font_size: "16",
+										font_size: "18",
 										font_family: "JetBrains Mono",
 										"{line}"
 									}
