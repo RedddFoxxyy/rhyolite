@@ -20,20 +20,28 @@ pub static SHOW_RECENT_FILES: GlobalSignal<bool> = Signal::global(|| false);
 
 // Sidebar Store Methods:
 pub fn toggle_settings_dropup() {
-	let current = *SHOW_SETTINGS_DROPUP.read();
-	if current && SHOW_THEMES_DROPUP() {
-		*SHOW_THEMES_DROPUP.write() = !current;
+	let current_state = SHOW_SETTINGS_DROPUP();
+	if current_state && SHOW_THEMES_DROPUP() {
+		*SHOW_THEMES_DROPUP.write() = !current_state;
 	}
-	*SHOW_SETTINGS_DROPUP.write() = !current;
+	*SHOW_SETTINGS_DROPUP.write() = !current_state;
 }
+
 pub fn toggle_themes_dropup() {
 	let current = *SHOW_THEMES_DROPUP.read();
 	*SHOW_THEMES_DROPUP.write() = !current;
 }
+
+pub fn close_settings_dropup() {
+	*SHOW_SETTINGS_DROPUP.write() = false;
+	*SHOW_THEMES_DROPUP.write() = false;
+}
+
 pub fn toggle_command_palette() {
 	let current = *SHOW_COMMAND_PALETTE.read();
 	*SHOW_COMMAND_PALETTE.write() = !current;
 }
+
 pub fn toggle_recent_files() {
 	let current = *SHOW_RECENT_FILES.read();
 	*SHOW_RECENT_FILES.write() = !current;

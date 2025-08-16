@@ -106,3 +106,16 @@ pub async fn switch_tab(index: usize) {
 		log::error!("Failed to switch to the tab: Invalid tab index! (out of bounds)")
 	}
 }
+
+pub async fn cycle_tab() {
+	if let Some(index) = CURRENT_TAB() {
+		let total_tabs = TABS().len();
+		if total_tabs > (index + 1) {
+			switch_tab(index + 1).await;
+		} else if total_tabs == (index + 1) {
+			switch_tab(0).await;
+		}
+	} else {
+		log::error!("Failed to cycle through the tabs: Invalid Current Tab Value!")
+	}
+}

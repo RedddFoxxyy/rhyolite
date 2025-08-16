@@ -9,7 +9,11 @@ use crate::data::{
 use freya::prelude::*;
 use log::LevelFilter;
 use std::{fs, io::Write, path::PathBuf};
-use tokio::{fs::File, io::AsyncWriteExt, runtime::Runtime};
+use tokio::{
+	fs::{File, rename},
+	io::AsyncWriteExt,
+	runtime::Runtime,
+};
 
 #[allow(dead_code)]
 pub fn env_logger_init() {
@@ -323,6 +327,41 @@ pub async fn delete_file(markdownfile: MarkdownFile) {
 	} else {
 		log::error!("Failed to save the file!")
 	}
+}
+
+pub async fn update_document_title(new_title: String) {
+	let current_tab_index = CURRENT_TAB().unwrap();
+	let tabs = TABS.read();
+
+	let Some(tab) = tabs.get(current_tab_index) else {
+		// TODO: Handle This error
+		return;
+	};
+	let file_key = tab.file_key;
+
+	if let Some(markdown_file) = FILES_ARENA.write().get_mut(file_key) {
+		let old_path = markdown_file.path.clone();
+		let new_path = old_path.with_file_name(format!("{}.md", new_title));
+
+		if let Err(e) = rename(&old_path, &new_path).await {
+			log::error!("Failed to rename file: {}", e);
+			return;
+		}
+
+		markdown_file.title = new_title.clone();
+		markdown_file.path = new_path.clone();
+
+		drop(tabs);
+
+		let mut tabs_mut = TABS.write();
+		if let Some(tab_mut) = tabs_mut.get_mut(current_tab_index) {
+			tab_mut.title = new_title.clone();
+			tab_mut.file_path = new_path;
+		}
+
+		*ACTIVE_DOCUMENT_TITLE.write() = new_title;
+	}
+	save_userdata();
 }
 
 /// Loads last saved State of the App.

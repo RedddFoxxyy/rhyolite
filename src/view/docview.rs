@@ -3,7 +3,7 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 use crate::{
 	data::{
 		fn_utils::handle_editor_key_input,
-		io_utils::deinitialise_app,
+		io_utils::{deinitialise_app, update_document_title},
 		stores::{
 			doc_store::{ACTIVE_DOCUMENT_TITLE, CURRENT_EDITOR_BUFFER},
 			ui_store::THEME_STORE,
@@ -47,7 +47,10 @@ fn document_title_box() -> Element {
 		EditableMode::MultipleLinesSingleEditor,
 	);
 
-	use_effect(move || editable.editor_mut().write().set(ACTIVE_DOCUMENT_TITLE().as_str()));
+	use_effect(move || {
+		editable.editor_mut().write().set(ACTIVE_DOCUMENT_TITLE().as_str());
+		log::info!("Document title updated");
+	});
 
 	let cursor_reference = editable.cursor_attr();
 	let highlights = editable.highlights_attr(0);
@@ -69,6 +72,13 @@ fn document_title_box() -> Element {
 	};
 
 	let onkeydown = move |e: KeyboardEvent| {
+		if e.data.key == Key::Enter {
+			let new_title = editable.editor().read().to_string();
+			spawn(async move {
+				update_document_title(new_title).await;
+			});
+			focus.request_unfocus();
+		}
 		if handle_editor_key_input(&e) {
 			editable.process_event(&EditableEvent::KeyDown(e.data));
 		}
@@ -537,8 +547,10 @@ fn document_editor_dynamic_virtualised() -> Element {
 				DynamicVirtualScrollView {
 					width: "100%",
 					height: "100%",
+					padding: "0",
 					overscan: 3,
 					scroll_with_arrows: true,
+					scroll_beyond_last_item: 10,
 					min_scrollthumb_height: Some(20.0),
 					item_keys: item_keys(),
 					scrollbar_theme,

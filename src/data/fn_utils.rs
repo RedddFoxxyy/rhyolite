@@ -4,7 +4,7 @@ use crate::data::{
 	io_utils::save_file,
 	stores::{
 		doc_store::FILES_ARENA,
-		tabs_store::{CURRENT_TAB, TABS, delete_tab},
+		tabs_store::{CURRENT_TAB, TABS, cycle_tab, delete_tab},
 	},
 };
 
@@ -24,6 +24,7 @@ pub(crate) async fn handle_global_keyboard_input(e: KeyboardEvent) {
 	match key {
 		Key::Character(c) if c == "s" => {
 			e.stop_propagation();
+			log::info!("CTRL + S was Pressed.");
 			let current_tab_content = FILES_ARENA()
 				.get(TABS().get(CURRENT_TAB().unwrap()).unwrap().file_key)
 				.unwrap()
@@ -32,7 +33,13 @@ pub(crate) async fn handle_global_keyboard_input(e: KeyboardEvent) {
 		}
 		Key::Character(c) if (c == "D" && modifiers.contains(Modifiers::SHIFT)) => {
 			e.stop_propagation();
+			log::info!("CTRL + SHIFT + D was Pressed.");
 			delete_tab(CURRENT_TAB().unwrap()).await;
+		}
+		Key::Tab => {
+			e.stop_propagation();
+			log::info!("CTRL + Tab was Pressed.");
+			cycle_tab().await;
 		}
 		_ => (),
 	}
@@ -46,5 +53,7 @@ pub(crate) fn handle_editor_key_input(e: &KeyboardEvent) -> bool {
 		&& e.data.modifiers.contains(Modifiers::SHIFT)
 		&& e.data.key == Key::Character("D".into());
 
-	!is_save && !is_delete
+	let is_tab_switch = e.data.modifiers.contains(Modifiers::CONTROL) && matches!(e.data.code, Code::Tab);
+
+	!is_save && !is_delete && !is_tab_switch
 }

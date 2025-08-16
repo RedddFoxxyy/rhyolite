@@ -6,10 +6,13 @@ use crate::{
 		stores::{
 			doc_store::{CURRENT_EDITOR_BUFFER, FILES_ARENA, WORD_CHAR_COUNT},
 			tabs_store::{CURRENT_TAB, TABS},
-			ui_store::THEME_STORE,
+			ui_store::{
+				SHOW_COMMAND_PALETTE, SHOW_RECENT_FILES, SHOW_SETTINGS_DROPUP, THEME_STORE, close_settings_dropup, toggle_command_palette,
+				toggle_recent_files,
+			},
 		},
 	},
-	view::{docview::work_space, sidebar::side_bar, top_bar::top_nav_bar},
+	view::{docview::work_space, palette::palette_box, sidebar::side_bar, top_bar::top_nav_bar},
 };
 use freya::prelude::*;
 use winit::window::ResizeDirection;
@@ -62,7 +65,7 @@ pub fn app() -> Element {
 			rect {
 				width: "fill",
 				height: "fill",
-				margin: if is_maximised { "0" } else { "{BORDER_SIZE - 4}" },
+				margin: if is_maximised { "0" } else { "{BORDER_SIZE - 6}" },
 				background: theme.crust,
 				direction: "vertical",
 				onglobalkeydown: handle_global_keyboard_input,
@@ -78,9 +81,57 @@ pub fn app() -> Element {
 					side_bar{},
 					work_space{}
 				}
+
+				if SHOW_COMMAND_PALETTE() ^ SHOW_RECENT_FILES() ^ SHOW_SETTINGS_DROPUP() {
+					overlay_view{}
+				}
 			}
 		}
 	)
+}
+
+#[component]
+pub fn overlay_view() -> Element {
+	let mut _focus = use_focus();
+	let backdrop_blur_value: u8 = if SHOW_SETTINGS_DROPUP() { 0 } else { 1 };
+	let background_color = if SHOW_SETTINGS_DROPUP() {
+		"rgb(0, 0, 0, 0.0)"
+	} else {
+		"rgb(0, 0, 0, 0.2)"
+	};
+
+	rsx!(rect {
+		position: "global",
+		position_top: "0",
+		position_left: "0",
+		width: "100%",
+		height: "100%",
+		main_align: "center",
+		cross_align: "center",
+		background: background_color,
+		backdrop_blur: "{backdrop_blur_value}",
+		layer: "overlay",
+
+		onclick: move |_| {
+			if SHOW_RECENT_FILES() {
+				toggle_recent_files();
+			} else if SHOW_COMMAND_PALETTE() {
+				toggle_command_palette();
+			} else if SHOW_SETTINGS_DROPUP() {
+				close_settings_dropup();
+			}
+		},
+
+		if SHOW_COMMAND_PALETTE() ^ SHOW_RECENT_FILES() {
+			palette_box{
+				// if SHOW_RECENT_FILES() {
+				// 	recent_files_palette{}
+				// } else {
+				// 	command_palette{}
+				// }
+			}
+		}
+	})
 }
 
 #[component]
