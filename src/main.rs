@@ -3,7 +3,6 @@
 mod data;
 mod view;
 
-#[allow(unused_imports)]
 use data::{io_utils::env_logger_init, stores::ui_store::JET_BRAINS_MONO};
 use freya::prelude::*;
 use view::composite::app;
@@ -11,10 +10,9 @@ use view::composite::app;
 const APP_ICON: &[u8] = include_bytes!("./static/icon.png");
 
 fn main() {
-	#[cfg(debug_assertions)]
 	env_logger_init();
 
-	log::info!("Rhyolite App started, initialising GUI.");
+	log::debug!("Rhyolite App started, initialising GUI.");
 	launch_cfg(
 		LaunchConfig::new()
 			.with_font("JetBrains Mono", JET_BRAINS_MONO)

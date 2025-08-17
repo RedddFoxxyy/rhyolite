@@ -34,11 +34,15 @@ impl ThemesStore {
 		}
 	}
 
-	pub fn change_current_theme(&mut self, index: usize) {
-		self.current_theme = self.store.get(index).unwrap().clone();
+	pub async fn change_current_theme(&mut self, index: usize) {
+		if let Some(theme) = self.store.get(index) {
+			self.current_theme = theme.clone();
+		} else {
+			log::error!("The given theme does not exists or is corrupted. ( DEBUG: Out of Bounds access in the themes store.");
+		}
 	}
 
-	pub fn _preview_theme(&mut self, preview: bool, theme_index: usize, original_theme: &Option<Theme>) {
+	pub async fn _preview_theme(&mut self, preview: bool, theme_index: usize, original_theme: &Option<Theme>) {
 		if preview {
 			if original_theme.is_none() {
 				// This is the first preview, store current and switch to preview
@@ -65,9 +69,9 @@ pub struct Theme {
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct ThemeInfo {
 	pub name: String,
-	author: String,
-	themetype: ThemeType,
-	colorscheme: ColorScheme,
+	pub author: String,
+	pub themetype: ThemeType,
+	pub colorscheme: ColorScheme,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]

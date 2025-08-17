@@ -43,11 +43,11 @@ pub struct DropDownButtonProps {
 	#[props(default)]
 	pub label: String,
 	#[props(default = EventHandler::new(|_| {}))]
-	pub on_click: EventHandler<()>,
+	pub onclick: EventHandler<()>,
 	#[props(default = EventHandler::new(|_| {}))]
-	pub on_mouse_enter: EventHandler<()>,
+	pub onmouseenter: EventHandler<()>,
 	#[props(default = EventHandler::new(|_| {}))]
-	pub on_mouse_leave: EventHandler<()>,
+	pub onmouseleave: EventHandler<()>,
 	#[props(default)]
 	pub icon: Option<&'static str>,
 }
@@ -55,7 +55,7 @@ pub struct DropDownButtonProps {
 #[component]
 pub fn DropDownButton(props: DropDownButtonProps) -> Element {
 	let theme = THEME_STORE().current_theme.colors;
-	let mut hovered = use_signal(|| false); // required in future
+	let mut hovered = use_signal(|| false);
 
 	// &THEME_STORE().current_theme.colors.base,
 	// &THEME_STORE().current_theme.colors.surface1,
@@ -80,16 +80,16 @@ pub fn DropDownButton(props: DropDownButtonProps) -> Element {
 				padding: "5 6",
 				direction: "horizontal",
 				spacing: "5",
-				onclick: move |_| props.on_click.call(()),
+				onclick: move |_| props.onclick.call(()),
 				onmouseenter: move |_| {
 					hovered.set(true);
 					animation.start();
-					props.on_mouse_enter.call(());
+					props.onmouseenter.call(());
 				},
 				onmouseleave: move |_| {
 					hovered.set(false);
 					animation.reverse();
-					props.on_mouse_leave.call(());
+					props.onmouseleave.call(());
 				},
 
 				if let Some(icon) = props.icon {

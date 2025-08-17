@@ -20,24 +20,24 @@ pub fn work_space() -> Element {
 	rsx!(rect {
 		width: "fill",
 		height: "fill",
-		document_area{}
+		editor_area{}
 		bottom_floating_bar {}
 	})
 }
 
 #[component]
-fn document_area() -> Element {
+fn editor_area() -> Element {
 	rsx!(rect {
 		width: "fill",
 		height: "fill",
 		direction: "vertical",
-		document_title_box{}
-		document_editor_dynamic_virtualised{}
+		title_box{}
+		editor_box_dynamic{}
 	})
 }
 
 #[component]
-fn document_title_box() -> Element {
+fn title_box() -> Element {
 	let theme = THEME_STORE().current_theme.colors;
 
 	let mut focus = use_focus();
@@ -49,7 +49,7 @@ fn document_title_box() -> Element {
 
 	use_effect(move || {
 		editable.editor_mut().write().set(ACTIVE_DOCUMENT_TITLE().as_str());
-		log::info!("Document title updated");
+		log::debug!("Document title updated");
 	});
 
 	let cursor_reference = editable.cursor_attr();
@@ -158,180 +158,7 @@ fn document_title_box() -> Element {
 
 #[allow(dead_code)]
 #[component]
-fn document_editor() -> Element {
-	let mut focus = use_focus();
-	let mut editable = CURRENT_EDITOR_BUFFER();
-	let editor = editable.editor().read();
-	let mut is_cursor_blinking = use_signal(|| false);
-
-	let onmousedown = move |_e: MouseEvent| {
-		focus.request_focus();
-	};
-
-	let onclick = move |_: MouseEvent| {
-		*is_cursor_blinking.write() = true;
-		editable.process_event(&EditableEvent::Click);
-	};
-
-	let onkeydown = move |e: KeyboardEvent| {
-		if handle_editor_key_input(&e) {
-			editable.process_event(&EditableEvent::KeyDown(e.data));
-		}
-	};
-
-	let onkeyup = move |e: KeyboardEvent| {
-		if handle_editor_key_input(&e) {
-			editable.process_event(&EditableEvent::KeyUp(e.data));
-		}
-	};
-
-	let mut cursor_moved = use_signal(|| 0u32);
-
-	// Track cursor movement
-	use_effect(move || {
-		let editor = editable.editor().read();
-		let _cursor_pos = (editor.cursor_row(), editor.cursor_col());
-		drop(editor);
-		cursor_moved += 1;
-	});
-
-	// Single blinking task that resets on movement
-	use_effect(move || {
-		if focus.is_focused() {
-			*is_cursor_blinking.write() = true;
-			spawn(async move {
-				let mut last_cursor_state = *cursor_moved.read();
-				while focus.is_focused() {
-					sleep(Duration::from_millis(550)).await;
-					if !focus.is_focused() {
-						break;
-					}
-					if *cursor_moved.read() != last_cursor_state {
-						last_cursor_state = *cursor_moved.read();
-						*is_cursor_blinking.write() = true;
-					} else {
-						is_cursor_blinking.toggle();
-					}
-				}
-				*is_cursor_blinking.write() = false;
-			});
-		}
-	});
-
-	// NOTE: This probably is not the correct place to run this function, however it works
-	// correctly here, so for now the deinitialise function run here.
-	use_drop(move || {
-		deinitialise_app();
-	});
-
-	rsx!(rect{
-		width: "fill",
-		height: "fill",
-		cross_align: "center",
-		padding: "7",
-		margin: "16 0 10 0",
-		overflow: "none",
-		CursorArea {
-			icon: CursorIcon::Text,
-		rect {
-			width: "85%",
-			height: "fill",
-			background: "transparent",
-			padding: "4 0",
-			onmousedown,
-			onkeydown,
-			onkeyup,
-			a11y_id: focus.attribute(),
-			onclick,
-			overflow: "scroll",
-			// NOTE: I know VirtualScrollView is more efficient, but I need text wrapping.
-			ScrollView {
-				width: "100%",
-				height: "100%",
-				show_scrollbar: true,
-				scrollbar_theme: theme_with!(
-					ScrollBarTheme {
-						background: cow_borrowed!("transparent")
-					}
-				),
-
-				for line_index in 0..editor.len_lines() {
-					{
-						let theme = THEME_STORE().current_theme.colors;
-						let editor = editable.editor().read();
-						let line = editor.line(line_index).unwrap();
-						let is_line_selected = editor.cursor_row() == line_index;
-
-						let character_index = if is_line_selected {
-							editor.cursor_col().to_string()
-						} else {
-							"none".to_string()
-						};
-						let cursor_color = if focus.is_focused() && *is_cursor_blinking.read() {
-							theme.text.as_str()
-						} else {
-							"transparent"
-						};
-
-						let line_background = "none";
-
-						let onmousedown = move |e: MouseEvent| {
-							// focus.request_focus();
-							editable.process_event(&EditableEvent::MouseDown(e.data, line_index));
-						};
-
-						let onmousemove = move |e: MouseEvent| {
-							editable.process_event(&EditableEvent::MouseMove(e.data, line_index));
-						};
-
-						let highlights = editable.highlights_attr(line_index);
-
-						rsx! {
-
-								rect {
-									key: "{line_index}",
-									width: "100%",
-									height: "auto",
-									// min_height: "12",
-									// margin: "0",
-									overflow: "none",
-									content: "fit",
-									direction: "horizontal",
-									background: "{line_background}",
-									paragraph {
-										cursor_reference: editable.cursor_attr(),
-										main_align: "center",
-										height: "auto",
-										width: "100%",
-										cursor_index: "{character_index}",
-										cursor_color: "{cursor_color}",
-										highlight_color: "{theme.subtext1}",
-										cursor_mode: "editable",
-										cursor_id: "{line_index}",
-										onmousedown,
-										onmousemove,
-										highlights,
-										text {
-											color: "{theme.text}",
-											font_size: "16",
-											// line_height: "0.5",
-											font_family: "JetBrains Mono",
-											"{line}"
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	})
-}
-
-#[allow(dead_code)]
-#[component]
-fn document_editor_virtualised() -> Element {
+fn editor_box() -> Element {
 	let mut focus = use_focus();
 	let mut editable = CURRENT_EDITOR_BUFFER();
 	let editor = editable.editor().read();
@@ -365,7 +192,7 @@ fn document_editor_virtualised() -> Element {
 	});
 
 	// NOTE: This probably is not the correct place to run this function, however it works
-	// correctly here, so for now the deinitialise function run here.
+	// correctly here, so for now the deinitialisation of the app run here.
 	use_drop(move || {
 		deinitialise_app();
 	});
@@ -481,7 +308,7 @@ fn document_editor_virtualised() -> Element {
 
 #[allow(dead_code)]
 #[component]
-fn document_editor_dynamic_virtualised() -> Element {
+fn editor_box_dynamic() -> Element {
 	let mut focus = use_focus();
 	let mut editable = CURRENT_EDITOR_BUFFER();
 	let mut is_cursor_blinking = use_signal(|| false);
@@ -580,7 +407,7 @@ fn document_editor_dynamic_virtualised() -> Element {
 					overscan: 3,
 					scroll_with_arrows: true,
 					scroll_beyond_last_item: 10,
-					min_scrollthumb_height: Some(10.0),
+					min_scrollthumb_height: Some(25.0),
 					item_keys: item_keys(),
 					scrollbar_theme,
 					builder: move |line_index| {
@@ -637,7 +464,7 @@ fn document_editor_dynamic_virtualised() -> Element {
 									highlights,
 									text {
 										color: "{theme.text}",
-										font_size: "18",
+										font_size: "16",
 										font_family: "JetBrains Mono",
 										"{line}"
 									}

@@ -15,7 +15,7 @@ pub fn side_bar() -> Element {
 	let settings_list: [buttons::DropDownButtonProps; 4] = [
 		buttons::DropDownButtonProps {
 			label: "General Settings".to_string(),
-			on_click: EventHandler::new(move |_| {
+			onclick: EventHandler::new(move |_| {
 				platform.new_window(
 					WindowConfig::new_with_props(settings_window, settings_windowProps { value: 404 }).with_title("Rhyolite Settings"),
 				)
@@ -25,7 +25,7 @@ pub fn side_bar() -> Element {
 		},
 		buttons::DropDownButtonProps {
 			label: "Theme".to_string(),
-			on_click: EventHandler::new(|_| {
+			onclick: EventHandler::new(|_| {
 				toggle_themes_dropup();
 			}),
 			icon: Some(include_str!("../static/svgs/palette.svg")),
@@ -33,13 +33,13 @@ pub fn side_bar() -> Element {
 		},
 		buttons::DropDownButtonProps {
 			label: "Keyboard Shortcuts".to_string(),
-			on_click: EventHandler::new(|_| {}),
+			onclick: EventHandler::new(|_| {}),
 			icon: Some(include_str!("../static/svgs/keyboard.svg")),
 			..Default::default()
 		},
 		buttons::DropDownButtonProps {
 			label: "About".to_string(),
-			on_click: EventHandler::new(|_| {}),
+			onclick: EventHandler::new(|_| {}),
 			icon: Some(include_str!("../static/svgs/info.svg")),
 			..Default::default()
 		},
@@ -65,8 +65,10 @@ pub fn side_bar() -> Element {
 					for (i,theme) in themes_list.iter().enumerate() {
 						buttons::DropDownButton {
 							label: theme.info.name.clone(),
-							on_click: move |_| {
-								THEME_STORE.write().change_current_theme(i);
+							onclick: move || {
+								spawn(async move {
+									THEME_STORE.write().change_current_theme(i).await;
+								});
 							},
 						}
 					}
@@ -99,7 +101,7 @@ fn top_buttons() -> Element {
 		spacing: "1",
 		margin: "5 0 0 0",
 
-		// Command Pallete Toggle Button
+		// Command Palette Toggle Button
 		sidebar_button {
 			on_click: move |_| toggle_command_palette(),
 			svg {

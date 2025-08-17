@@ -9,15 +9,15 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
 /// Name of the Default Note Title used by the app!
-pub const APP_DATA_DIR: &str = "Rhyolite";
+pub const APP_DATA_DIR: &str = "rhyolite";
 
 /// Name of the Default Note Title used by the app!
-pub const USER_DATA_DIR: &str = "appdata";
+pub const _USER_DATA_DIR: &str = "appdata";
 
-pub const USER_DATA_FILE: &str = "userdata.toml";
+pub const USER_DATA_FILE: &str = ".userdata.toml";
 
 /// Name of the Default Trove used by the app!
-pub const DEFAULT_TROVE_DIR: &str = "Untitled_Trove";
+pub const DEFAULT_TROVE_DIR: &str = "Rhyolite Trove";
 
 /// Name of the Default Note Title used by the app!
 pub const DEFAULT_NOTE_TITLE: &str = "Untitled";

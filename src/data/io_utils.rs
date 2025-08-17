@@ -4,7 +4,7 @@ use crate::data::{
 		doc_store::{ACTIVE_DOCUMENT_TITLE, CLIPBOARD, FILES_ARENA, PLATFORM},
 		tabs_store::{CURRENT_TAB, TABS, new_tab, push_tab},
 	},
-	types::{APP_DATA_DIR, DEFAULT_TROVE_DIR, MarkdownFile, USER_DATA_DIR, USER_DATA_FILE, UserData},
+	types::{APP_DATA_DIR, DEFAULT_TROVE_DIR, MarkdownFile, USER_DATA_FILE, UserData},
 };
 use freya::prelude::*;
 use log::LevelFilter;
@@ -15,54 +15,52 @@ use tokio::{
 	runtime::Runtime,
 };
 
-#[allow(dead_code)]
 pub fn env_logger_init() {
 	let mut builder = env_logger::Builder::new();
-	builder.filter(None, LevelFilter::Warn);
-	builder.filter_module("Rhyolite", LevelFilter::Trace);
+
+	#[cfg(debug_assertions)]
+	{
+		builder.filter(None, LevelFilter::Warn);
+		builder.filter_module("Rhyolite", LevelFilter::Trace);
+	}
+
+	#[cfg(not(debug_assertions))]
+	{
+		builder.filter(None, LevelFilter::Error);
+		builder.filter_module("Rhyolite", LevelFilter::Warn);
+	}
+
 	builder.init();
 }
 
-/// This function returns the path to the documents' directory.
-pub fn get_rhyolite_dir() -> PathBuf {
-	#[cfg(target_os = "android")]
-	{
-		// On Android, use the app's private storage directory
-		let path = PathBuf::from("/data/user/0/com.rhyolite.dev/Rhyolite");
-		// Create the directory if it doesn't exist
-		fs::create_dir_all(&path).expect("Could not create Rhyolite directory");
-		path
-	}
-
-	#[cfg(not(target_os = "android"))]
-	{
-		let mut path = dirs::document_dir().expect("Could not find Documents directory");
-		// TODO: Use a const for this name.
-		path.push(APP_DATA_DIR);
-		fs::create_dir_all(&path).expect("Could not create Rhyolite directory");
-		path
-	}
+/// Returns the path to the default trove directory.
+pub fn get_default_trove_dir() -> PathBuf {
+	// TODO: Handle path resolution/creation without panicking
+	let Some(documents_path) = dirs::document_dir() else {
+		log::error!("No document directory could be found/accessed!");
+		panic!("Failed to find Documents directory.")
+	};
+	let default_trove_path = documents_path.join(DEFAULT_TROVE_DIR);
+	fs::create_dir_all(&default_trove_path).expect("Could not create default Trove.");
+	default_trove_path
 }
 
-/// This function returns the path to the default trove directory.
-pub fn get_trove_dir(trove_name: &str) -> PathBuf {
-	//Get the path to documents/Rhyolite.
-	let rhyolite_dir = get_rhyolite_dir();
-
-	//Append the default trove name to the 'documents/Rhyolite path'.
-	let trove_dir = rhyolite_dir.join(trove_name);
-
-	//Then create the path 'documents/Rhyolite/trove_name' if it does not
-	fs::create_dir_all(&trove_dir).expect("Could not create Trove directory");
-
-	//retrun the path of the default trove directory.
-	trove_dir
+/// Returns the path to the config directory for the app data.
+pub fn get_config_dir() -> PathBuf {
+	// TODO: Handle path resolution/creation without panicking
+	let Some(mut path) = dirs::config_dir() else {
+		log::error!("No Config directory could be found/accessed!");
+		panic!("Failed to find Config directory.")
+	};
+	path.push(APP_DATA_DIR);
+	fs::create_dir_all(&path).expect("Could not create Rhyolite directory");
+	path
 }
 
 pub fn get_userdata_path() -> PathBuf {
-	let userdata_dir = get_rhyolite_dir().join(USER_DATA_DIR);
-	fs::create_dir_all(&userdata_dir).expect("Could not create Rhyolite appdata directory");
-	get_rhyolite_dir().join(USER_DATA_DIR).join(USER_DATA_FILE)
+	let userdata_dir = get_config_dir();
+	fs::create_dir_all(&userdata_dir).expect("Could not create Rhyolite config directory");
+	userdata_dir.join(USER_DATA_FILE)
 }
 
 /// Generate a path that is not conflicting by incrementing a counter at file end
@@ -145,10 +143,12 @@ pub fn new_file_from_path(path: PathBuf) -> Option<MarkdownFile> {
 	})
 }
 
-pub fn save_userdata() {
+pub async fn save_userdata() {
+	let last_open_tab = CURRENT_TAB().unwrap_or_default();
+
 	let current_editor_state = UserData {
 		active_tabs: TABS(),
-		last_open_tab: CURRENT_TAB().unwrap(),
+		last_open_tab,
 		recent_files: RECENT_FILES(),
 		current_theme: THEME_STORE().current_theme.clone(),
 	};
@@ -159,7 +159,7 @@ pub fn save_userdata() {
 		// TODO: Handle Error for this operation and the parent operations.
 		let io_result = userdata_file.write(toml_serialised_state.as_bytes());
 		if io_result.is_err() {
-			log::info!("Unable to write userdata file: {}", io_result.unwrap_err());
+			log::error!("Unable to write userdata file: {}", io_result.unwrap_err());
 		}
 	}
 }
@@ -230,17 +230,17 @@ pub fn load_files_from_trove(trove_path: PathBuf) {
 }
 
 pub fn load_default_trove() {
-	load_files_from_trove(get_trove_dir(DEFAULT_TROVE_DIR))
+	load_files_from_trove(get_default_trove_dir())
 }
 
 pub fn load_from_userdata() {
 	let userdata_string = fs::read_to_string(get_userdata_path()).expect("Could not read user data file");
 
 	let Ok(userdata) = toml::from_str::<UserData>(userdata_string.as_str()) else {
-		log::warn!("Failed to load the userdata, corrupted userdata file.");
+		log::error!("Failed to load the userdata, corrupted userdata file.");
 		// TODO: Handle Error
 		let _ = fs::remove_file(get_userdata_path());
-		log::info!("Loading all files from the default trove.");
+		log::warn!("Loading all files from the default trove.");
 		return load_default_trove();
 	};
 
@@ -314,7 +314,7 @@ pub fn load_from_userdata() {
 pub async fn save_file(markdownfile: MarkdownFile) {
 	if let Ok(mut file) = File::create(markdownfile.path.clone()).await {
 		if let Ok(_result) = file.write_all(markdownfile.editable.editor().to_string().as_bytes()).await {
-			log::info!("Succesfully saved {} at {:#?}", markdownfile.title, markdownfile.path)
+			log::debug!("Successfully saved {} at {:#?}", markdownfile.title, markdownfile.path)
 		} else {
 			log::error!("Failed to save {} at {:#?}!", markdownfile.title, markdownfile.path)
 		}
@@ -323,7 +323,7 @@ pub async fn save_file(markdownfile: MarkdownFile) {
 
 pub async fn delete_file(markdownfile: MarkdownFile) {
 	if let Ok(_result) = tokio::fs::remove_file(markdownfile.path.clone()).await {
-		// log::info!("Successfully deleted {}.", markdownfile.title)
+		log::debug!("Successfully removed {}.", markdownfile.title)
 	} else {
 		log::error!("Failed to save the file!")
 	}
@@ -361,18 +361,18 @@ pub async fn update_document_title(new_title: String) {
 
 		*ACTIVE_DOCUMENT_TITLE.write() = new_title;
 	}
-	save_userdata();
+	save_userdata().await;
 }
 
 /// Loads last saved State of the App.
 pub fn initialise_app() {
-	let userdata_path = get_rhyolite_dir().join(USER_DATA_DIR).join(USER_DATA_FILE);
+	let userdata_path = get_userdata_path();
 
 	if !userdata_path.exists() {
-		log::warn!("No UserData file found!!! Proceeding to load files from default trove!");
+		log::error!("No UserData file found!!! Proceeding to load files from default trove!");
 		load_default_trove()
 	} else {
-		log::info!("Loading last app state.");
+		log::debug!("Loading last app state.");
 		load_from_userdata()
 	};
 
@@ -392,5 +392,5 @@ pub fn deinitialise_app() {
 			tokio.block_on(save_file(markdownfile.clone()));
 		}
 	}
-	save_userdata();
+	tokio.block_on(save_userdata());
 }

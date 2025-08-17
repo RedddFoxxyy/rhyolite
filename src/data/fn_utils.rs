@@ -25,7 +25,7 @@ pub(crate) async fn handle_global_keyboard_input(e: KeyboardEvent) {
 	match key {
 		Key::Character(c) if c == "s" => {
 			e.stop_propagation();
-			log::info!("CTRL + S was Pressed.");
+			log::debug!("CTRL + S was Pressed.");
 			let current_tab_content = FILES_ARENA()
 				.get(TABS().get(CURRENT_TAB().unwrap()).unwrap().file_key)
 				.unwrap()
@@ -34,31 +34,31 @@ pub(crate) async fn handle_global_keyboard_input(e: KeyboardEvent) {
 		}
 		Key::Character(c) if (c == "D" && modifiers.contains(Modifiers::SHIFT)) => {
 			e.stop_propagation();
-			log::info!("CTRL + SHIFT + D was Pressed.");
+			log::debug!("CTRL + SHIFT + D was Pressed.");
 			if let Some(tab_index) = CURRENT_TAB() {
 				delete_tab(tab_index).await
 			}
 		}
 		Key::Character(c) if c == "w" => {
 			e.stop_propagation();
-			log::info!("CTRL + W was Pressed.");
+			log::debug!("CTRL + W was Pressed.");
 			if let Some(tab_index) = CURRENT_TAB() {
 				close_tab(tab_index).await
 			}
 		}
 		Key::Character(c) if c == "t" => {
 			e.stop_propagation();
-			log::info!("CTRL + T was Pressed.");
+			log::debug!("CTRL + T was Pressed.");
 			new_tab().await
 		}
 		Key::Character(c) if c == "p" => {
 			e.stop_propagation();
-			log::info!("CTRL + P was Pressed.");
+			log::debug!("CTRL + P was Pressed.");
 			toggle_command_palette();
 		}
 		Key::Tab => {
 			e.stop_propagation();
-			log::info!("CTRL + Tab was Pressed.");
+			log::debug!("CTRL + Tab was Pressed.");
 			cycle_tab().await;
 		}
 		_ => (),
@@ -66,17 +66,20 @@ pub(crate) async fn handle_global_keyboard_input(e: KeyboardEvent) {
 }
 
 pub(crate) fn handle_editor_key_input(e: &KeyboardEvent) -> bool {
-	// TODO: Improve the logic and code here.
-	let is_save = e.data.modifiers.contains(Modifiers::CONTROL) && e.data.key == Key::Character("s".into());
-	let is_new_tab = e.data.modifiers.contains(Modifiers::CONTROL) && e.data.key == Key::Character("t".into());
-	let is_open_command_palette = e.data.modifiers.contains(Modifiers::CONTROL) && e.data.key == Key::Character("p".into());
-	let is_close_tab = e.data.modifiers.contains(Modifiers::CONTROL) && e.data.key == Key::Character("w".into());
+	let mods = &e.data.modifiers;
+	let key = &e.data.key;
 
-	let is_delete = e.data.modifiers.contains(Modifiers::CONTROL)
-		&& e.data.modifiers.contains(Modifiers::SHIFT)
-		&& e.data.key == Key::Character("D".into());
+	let is_ctrl_char = |ch: &str| mods.contains(Modifiers::CONTROL) && key == &Key::Character(ch.into());
 
-	let is_tab_cycle = e.data.modifiers.contains(Modifiers::CONTROL) && matches!(e.data.code, Code::Tab);
+	let skip = is_ctrl_char("s")    // Save
+		|| is_ctrl_char("t")        // New tab
+		|| is_ctrl_char("p")        // Open command palette
+		|| is_ctrl_char("w")        // Close tab
+		|| (mods.contains(Modifiers::CONTROL)
+		&& mods.contains(Modifiers::SHIFT)
+		&& key == &Key::Character("D".into()))  // Delete
+		|| (mods.contains(Modifiers::CONTROL)
+		&& matches!(e.data.code, Code::Tab)); // Tab cycle
 
-	!is_save && !is_delete && !is_tab_cycle && !is_close_tab && !is_open_command_palette && !is_new_tab
+	!skip
 }
