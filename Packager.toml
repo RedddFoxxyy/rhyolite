@@ -19,10 +19,9 @@ icons = [
 ]
 beforePackagingCommand = "cargo build --release"
 binaries = [
-    { main = true, path = "../../target/release/Rhyolite" }
+	{ main = true, path = "../../target/release/Rhyolite" }
 ]
 outDir = "packaging/cargoPackager"
-
 
 [deb]
 depends = [
