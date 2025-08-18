@@ -1,4 +1,5 @@
 #![allow(unused_imports)]
+use crate::data::io_utils::deinitialise_app;
 use crate::{
 	APP_ICON,
 	data::stores::{
@@ -259,7 +260,10 @@ fn NavigationButtons() -> Element {
 			}
 		},
 		nav_button {
-			on_click: move |_| platform.close_window(),
+			on_click: move |_| {
+				deinitialise_app();
+				platform.close_window();
+			},
 			hover_color: "#d20f39",
 			svg {
 				width: "90%",

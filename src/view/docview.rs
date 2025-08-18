@@ -362,9 +362,10 @@ fn editor_box_dynamic() -> Element {
 
 	// NOTE: This probably is not the correct place to run this function, however it works
 	// correctly here, so for now the deinitialise function run here.
-	use_drop(move || {
-		deinitialise_app();
-	});
+	// TODO: Run this use_drop only if window decorations are enabled.
+	// use_drop(move || {
+	// 	deinitialise_app();
+	// });
 
 	// Generate a unique and stable key for each line by hashing its content.
 	// Required by dynamic scroll view.

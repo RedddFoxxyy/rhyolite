@@ -3,10 +3,8 @@
 //! I made these global signals because it was the easy way to share a component state between
 //! different components. While this might not be the best way to do it, it works.
 
-// NOTE: file, doc, and document all are the same things, MarkdownFileData.
-
 use crate::data::io_utils::{delete_file, generate_available_path, get_default_trove_dir, save_file};
-use crate::data::stores::doc_store::ACTIVE_DOCUMENT_TITLE;
+use crate::data::stores::doc_store::{ACTIVE_DOCUMENT_TITLE, CURRENT_EDITOR_BUFFER};
 use crate::data::types::DEFAULT_NOTE_TITLE;
 use crate::data::{io_utils::new_file_from_path, stores::doc_store::FILES_ARENA, types::Tab};
 use freya::prelude::{GlobalSignal, Signal};
@@ -17,7 +15,7 @@ pub(crate) static CURRENT_TAB: GlobalSignal<Option<usize>> = Signal::global(|| N
 
 // Tab Methods:
 
-/// Creates a new tab with a new markdown file.
+/// Creates a new tab with a new Markdown file.
 pub(crate) async fn new_tab() {
 	let document_path = generate_available_path(get_default_trove_dir().join(String::from(DEFAULT_NOTE_TITLE) + ".md"));
 
@@ -28,15 +26,16 @@ pub(crate) async fn new_tab() {
 
 	let file_key = FILES_ARENA.write().insert(markdownfile.clone());
 	push_tab(markdownfile.title.clone(), file_key).await;
-	*ACTIVE_DOCUMENT_TITLE.write() = markdownfile.title.clone();
+	// *ACTIVE_DOCUMENT_TITLE.write() = markdownfile.title.clone();
 	let log_title = markdownfile.title.clone();
 
-	*CURRENT_TAB.write() = Some(TABS().len() - 1);
+	switch_tab(TABS().len() - 1).await;
+	// *CURRENT_TAB.write() = Some(TABS().len() - 1);
 	save_file(markdownfile).await;
 	log::debug!("Opened New Tab: {log_title}");
 }
 
-/// Closes the tab at given index also freeing its buffer from FILES_BUFFER.
+/// Closes the tab at the given index also freeing its buffer from FILES_BUFFER.
 pub async fn close_tab(index: usize) {
 	if let Some(tab) = TABS().get(index) {
 		let tab_title = tab.title.clone();
@@ -60,41 +59,41 @@ pub async fn close_tab(index: usize) {
 	}
 }
 
-/// Closes the tab at given index also freeing its buffer from FILES_BUFFER, and deletes the file associated with it.
+/// Closes the tab at the given index also freeing its buffer from FILES_BUFFER, and deletes the file associated with it.
 pub async fn delete_tab(index: usize) {
-	if let Some(tab) = TABS().get(index) {
-		let tab_title = tab.title.clone();
-		let buffer_index = tab.file_key;
-		let tab_count = TABS().len();
+	let Some(tab) = TABS().get(index).cloned() else {
+		log::error!("Failed to delete the tab: Invalid tab index! (out of bounds)");
+		return;
+	};
+	
+	let tab_count = TABS().len();
+	let current_tab_index = CURRENT_TAB();
 
-		if (tab_count - 1) == 0 {
-			new_tab().await;
-		}
-
-		TABS.write().remove(index);
-		delete_file(FILES_ARENA().get(buffer_index).unwrap().clone()).await;
-		FILES_ARENA.write().remove(buffer_index);
-
-		if CURRENT_TAB() == Some(index) {
-			if index == 0 {
-				switch_tab(0).await;
-			} else {
-				switch_tab(index - 1).await;
-			}
-		} else if let Some(current) = CURRENT_TAB()
-			&& current > index
-		{
-			*CURRENT_TAB.write() = Some(current - 1);
-			*ACTIVE_DOCUMENT_TITLE.write() = TABS().get(current - 1).unwrap().title.clone();
-		}
-
-		log::debug!("Closed tab: {tab_title}");
-	} else {
-		log::error!("Failed to delete the tab: Invalid tab index! (out of bounds)")
+	if (tab_count - 1) == 0 {
+		new_tab().await;
 	}
+
+	TABS.write().remove(index);
+	delete_file(FILES_ARENA().get(tab.file_key).unwrap().clone()).await;
+	FILES_ARENA.write().remove(tab.file_key);
+
+	match current_tab_index {
+		// Deleting the current tab; switch to the previous or stay at 0
+		Some(current) if current == index => {
+			let new_index = if index > 0 { index - 1 } else { 0 };
+			switch_tab(new_index).await;
+		}
+		// Deleting previous to the current tab; Current tab index needs adjustment due to removal
+		Some(current) if current > index => {
+			switch_tab(current - 1).await;
+		}
+		_ => {}
+	}
+	
+	log::debug!("Closed tab: {}", tab.title);
 }
 
-/// Appends a tab of given title and document index to the TABS vec.
+/// Appends a tab of the given title and document index to the TABS vec.
 pub async fn push_tab(title: String, file_key: usize) {
 	let file_path = FILES_ARENA().get(file_key).unwrap().path.clone();
 	let newtab = Tab {
@@ -109,7 +108,13 @@ pub async fn switch_tab(index: usize) {
 	if let Some(tab) = TABS().get(index) {
 		*CURRENT_TAB.write() = Some(index);
 		*ACTIVE_DOCUMENT_TITLE.write() = tab.title.clone();
-		log::debug!("Swiched to tab: {}", tab.title.clone());
+		let current_tab_content = FILES_ARENA()
+			.get(TABS().get(CURRENT_TAB().unwrap()).unwrap().file_key)
+			.unwrap()
+			.editable;
+
+		*CURRENT_EDITOR_BUFFER.write() = current_tab_content;
+		log::debug!("Switched to tab: {}", tab.title.clone());
 	} else {
 		log::error!("Failed to switch to the tab: Invalid tab index! (out of bounds)")
 	}

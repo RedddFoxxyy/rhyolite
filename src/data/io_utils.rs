@@ -1,4 +1,5 @@
 use super::stores::{doc_store::RECENT_FILES, ui_store::THEME_STORE};
+use crate::data::stores::tabs_store::switch_tab;
 use crate::data::{
 	stores::{
 		doc_store::{ACTIVE_DOCUMENT_TITLE, CLIPBOARD, FILES_ARENA, PLATFORM},
@@ -63,7 +64,7 @@ pub fn get_userdata_path() -> PathBuf {
 	userdata_dir.join(USER_DATA_FILE)
 }
 
-/// Generate a path that is not conflicting by incrementing a counter at file end
+/// Generate a path that is not conflicting by incrementing a counter at the file end
 pub fn generate_available_path(path: PathBuf) -> PathBuf {
 	if !path.exists() {
 		return path;
@@ -122,7 +123,7 @@ pub fn _open_file_from_path(path: PathBuf) -> Option<MarkdownFile> {
 	}
 }
 
-/// Generates a new markdown file from the given path (does not save it)
+/// Generates a new Markdown file from the given path (does not save it)
 pub fn new_file_from_path(path: PathBuf) -> Option<MarkdownFile> {
 	let cloned_path = path.clone();
 
@@ -178,7 +179,7 @@ pub fn load_files_from_trove(trove_path: PathBuf) {
 			}
 
 			let Some(extension) = path.extension() else {
-				log::error!("Failed to get the file extention, did not load {path:?}");
+				log::error!("Failed to get the file extension, did not load {path:?}");
 				continue;
 			};
 
@@ -226,6 +227,7 @@ pub fn load_files_from_trove(trove_path: PathBuf) {
 			tokio.block_on(push_tab(title, file_key));
 		}
 		*CURRENT_TAB.write() = Some(0);
+		tokio.block_on(switch_tab(CURRENT_TAB().unwrap_or_default()));
 	}
 }
 
@@ -266,7 +268,7 @@ pub fn load_from_userdata() {
 		}
 
 		let Some(extension) = path.extension() else {
-			log::error!("Failed to get the file extention, did not load {path:?}");
+			log::error!("Failed to get the file extension, did not load {path:?}");
 			continue;
 		};
 
@@ -308,6 +310,7 @@ pub fn load_from_userdata() {
 		*CURRENT_TAB.write() = Some(userdata.last_open_tab);
 		THEME_STORE.write().current_theme = userdata.current_theme;
 		*RECENT_FILES.write() = userdata.recent_files;
+		tokio.block_on(switch_tab(CURRENT_TAB().unwrap_or_default()));
 	}
 }
 
@@ -375,16 +378,9 @@ pub fn initialise_app() {
 		log::debug!("Loading last app state.");
 		load_from_userdata()
 	};
-
-	// TODO: yeah um handle the unwraps lol
-	let Some(title) = TABS().get(CURRENT_TAB().unwrap()).map(|tab| tab.title.clone()) else {
-		log::error!("Failed to set the document title of the current file.");
-		return;
-	};
-
-	*ACTIVE_DOCUMENT_TITLE.write() = title;
 }
 
+// TODO: Mark saved files and only save the unsaved files.
 pub fn deinitialise_app() {
 	let tokio = Runtime::new().unwrap();
 	for tab in TABS().iter() {

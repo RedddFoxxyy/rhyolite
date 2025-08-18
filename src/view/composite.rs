@@ -17,7 +17,7 @@ use crate::{
 use freya::prelude::*;
 use winit::window::ResizeDirection;
 
-// The initial View for the app, all the app components are a part of this.
+/// The main view of the app, this is where the first parent components are layed out.
 pub fn app() -> Element {
 	let theme = THEME_STORE().current_theme.colors;
 	let platform_information = use_platform_information();
@@ -26,17 +26,6 @@ pub fn app() -> Element {
 
 	use_hook(move || {
 		initialise_app();
-	});
-
-	// Change the current editor on Tab change.
-	// NOTE: We can hardcode this logic in the switch tab function itself instead of using a use effect!
-	use_effect(move || {
-		let current_tab_content = FILES_ARENA()
-			.get(TABS().get(CURRENT_TAB().unwrap()).unwrap().file_key)
-			.unwrap()
-			.editable;
-
-		*CURRENT_EDITOR_BUFFER.write() = current_tab_content
 	});
 
 	// Update the word and char counts on tab change/keyboard input.
@@ -49,18 +38,24 @@ pub fn app() -> Element {
 	});
 
 	// NOTE: Do not run this here, I am still figuring out how to deinitialise the app correctly,
-	// for now I am running this funciton in docview/document_editor.
+	// for now I am running this function in docview/document_editor.
 	// use_drop(move || {
 	// 	deinitialise_app();
 	// });
 
 	rsx!(
+		// 1
 		rect {
+			// NOTE: I know that this can be simplified and the rect is not needed, the reason I am doing it like this is that
+			// I wanted to add a transparent border around the window for window shadow and window dragging and resizing handles.
+			// However, once I implement perfect decoration less window handling, these two rects can be collapsed into one (talking about
+			// the rects marked as 1 and 2.)
 			background: "transparent",
 			width: "fill",
 			height: "fill",
 			direction: "vertical",
 			drag_resize_area {border_size: BORDER_SIZE}
+			// 2
 			rect {
 				width: "fill",
 				height: "fill",
@@ -89,9 +84,13 @@ pub fn app() -> Element {
 	)
 }
 
+/// Handles the overlay view; this is where onclick handlers for closing the floating components (like palettes and settings dropup are handled).
+/// This is a hacky way to implement this; once a stable API for such stuff is implemented in Freya lib, then this will be replaced by those.
+///
+/// Other ways of doing this are by using `use_focus()` to close the floating windows when unfocussed or by using the `onglobalclick` handler.
 #[component]
 pub fn overlay_view() -> Element {
-	let mut _focus = use_focus();
+	let _focus = use_focus();
 	let backdrop_blur_value: u8 = if SHOW_SETTINGS_DROPUP() { 0 } else { 1 };
 	let background_color = if SHOW_SETTINGS_DROPUP() {
 		"rgb(0, 0, 0, 0.0)"
@@ -123,6 +122,7 @@ pub fn overlay_view() -> Element {
 		},
 
 		if SHOW_COMMAND_PALETTE() ^ SHOW_RECENT_FILES() {
+			// TODO: Implement the floating palettes.
 			palette_box{
 				// if SHOW_RECENT_FILES() {
 				// 	recent_files_palette{}
@@ -134,6 +134,7 @@ pub fn overlay_view() -> Element {
 	})
 }
 
+/// A thin 6-8 pixels border over the app window running around the edges to handle window resizing.
 #[component]
 fn drag_resize_area(border_size: u8) -> Element {
 	let platform = use_platform();
