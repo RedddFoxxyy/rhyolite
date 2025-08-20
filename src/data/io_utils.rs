@@ -9,6 +9,8 @@ use crate::data::{
 };
 use freya::prelude::*;
 use log::LevelFilter;
+use log4rs::append::console::ConsoleAppender;
+use log4rs::config::{Appender, Logger, Root};
 use std::{fs, io::Write, path::PathBuf};
 use tokio::{
 	fs::{File, rename},
@@ -16,22 +18,46 @@ use tokio::{
 	runtime::Runtime,
 };
 
-pub fn env_logger_init() {
-	let mut builder = env_logger::Builder::new();
+pub fn logger_init() {
+	// let stdout = log4rs::append::console::ConsoleAppender::builder().build();
 
-	#[cfg(debug_assertions)]
-	{
-		builder.filter(None, LevelFilter::Warn);
-		builder.filter_module("Rhyolite", LevelFilter::Trace);
-	}
+	// NOTE: I want to use the whole path here cause FUN! Muhahaha
+	let logfile = log4rs::append::file::FileAppender::builder()
+		.encoder(Box::new(log4rs::encode::pattern::PatternEncoder::new(
+			"{h({d(%Y-%m-%d %H:%M:%S)(utc)} - {l}: {m}{n})}",
+		)))
+		.build("log/rhyolite.log")
+		.unwrap();
 
-	#[cfg(not(debug_assertions))]
-	{
-		builder.filter(None, LevelFilter::Error);
-		builder.filter_module("Rhyolite", LevelFilter::Warn);
-	}
+	let console = log4rs::append::console::ConsoleAppender::builder()
+		.encoder(Box::new(log4rs::encode::pattern::PatternEncoder::new(
+			"{h({d(%Y-%m-%d %H:%M:%S)(utc)} - {l}: {m}{n})}",
+		)))
+		.build();
 
-	builder.init();
+	let config = log4rs::Config::builder()
+		.appender(Appender::builder().build("console", Box::new(console)))
+		.appender(Appender::builder().build("logfile", Box::new(logfile)))
+		.build(Root::builder().appenders(vec!["logfile", "console"]).build(LevelFilter::Debug))
+		.unwrap();
+
+	let handle = log4rs::init_config(config).unwrap();
+
+	// let mut builder = env_logger::Builder::new();
+	//
+	// #[cfg(debug_assertions)]
+	// {
+	// 	builder.filter(None, LevelFilter::Warn);
+	// 	builder.filter_module("Rhyolite", LevelFilter::Trace);
+	// }
+	//
+	// #[cfg(not(debug_assertions))]
+	// {
+	// 	builder.filter(None, LevelFilter::Error);
+	// 	builder.filter_module("Rhyolite", LevelFilter::Warn);
+	// }
+	//
+	// builder.init();
 }
 
 /// Returns the path to the default trove directory.
