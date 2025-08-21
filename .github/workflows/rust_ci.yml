@@ -7,6 +7,7 @@ on:
       - release
     paths:
       - "src/**"
+
   pull_request:
     paths:
       - "src/**"
@@ -17,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -42,18 +43,14 @@ jobs:
 
       - name: Build project
         run: cargo build --verbose
-        working-directory: .
 
       # TODO: Enable this after tests are added to the source code.
       # - name: Run tests
       #   run: cargo test
-      #   working-directory: .
 
       - name: Run linter
         run: cargo clippy -- -D warnings
-        working-directory: .
 
       # NOTE: Not required as of now.
       # - name: Generate documentation
       #   run: cargo doc --no-deps --document-private-items
-      #   working-directory: .
