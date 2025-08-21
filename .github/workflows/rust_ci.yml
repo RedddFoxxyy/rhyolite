@@ -1,60 +1,59 @@
 name: Rust CI Pipeline
 
 on:
-    push:
-        # branches:
-        #     - master
-        paths:
-            - "src/**"
-    pull_request:
-        # branches:
-        #     - master
-        # paths:
-        #     - "src-tauri/src/**"
+  push:
+    branches:
+      - master
+      - release
+    paths:
+      - "src/**"
+  pull_request:
+    paths:
+      - "src/**"
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-            - name: Install Rust
-              uses: actions-rs/toolchain@v1
-              with:
-                  toolchain: stable
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
 
-            - name: install dependencies (ubuntu only)
-              run: |
-                  sudo apt-get update
-                  sudo apt-get install -y \
-                    libegl1 libgl1 libx11-6 libxcb1 libxau6 libxdmcp6 \
-                    libfontconfig1 libfreetype6 libpng16-16 libexpat1 \
-                    zlib1g libbrotli1 libstdc++6 libgcc-s1 \
-                    libfreetype6-dev \
-                    libfontconfig1-dev \
-                    libegl1-mesa-dev \
-                    libgl1-mesa-dev \
-                    libwayland-egl1-mesa \
-                    libgles2-mesa-dev \
-                    libwayland-egl-backend-dev \
-                    libwayland-dev
+      - name: install dependencies (ubuntu only)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libegl1 libgl1 libx11-6 libxcb1 libxau6 libxdmcp6 \
+            libfontconfig1 libfreetype6 libpng16-16 libexpat1 \
+            zlib1g libbrotli1 libstdc++6 libgcc-s1 \
+            libfreetype6-dev \
+            libfontconfig1-dev \
+            libegl1-mesa-dev \
+            libgl1-mesa-dev \
+            libwayland-egl1-mesa \
+            libgles2-mesa-dev \
+            libwayland-egl-backend-dev \
+            libwayland-dev
 
-            - name: Build project
-              run: cargo build --verbose
-              working-directory: .
+      - name: Build project
+        run: cargo build --verbose
+        working-directory: .
 
-            # TODO: Enable this after tests are added to the source code.
-            # - name: Run tests
-            #   run: cargo test
-            #   working-directory: .
+      # TODO: Enable this after tests are added to the source code.
+      # - name: Run tests
+      #   run: cargo test
+      #   working-directory: .
 
-            - name: Run linter
-              run: cargo clippy -- -D warnings
-              working-directory: .
+      - name: Run linter
+        run: cargo clippy -- -D warnings
+        working-directory: .
 
-            # NOTE: Not required as of now.
-            # - name: Generate documentation
-            #   run: cargo doc --no-deps --document-private-items
-            #   working-directory: .
+      # NOTE: Not required as of now.
+      # - name: Generate documentation
+      #   run: cargo doc --no-deps --document-private-items
+      #   working-directory: .
