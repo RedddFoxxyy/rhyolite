@@ -12,7 +12,8 @@ const APP_ICON: &[u8] = include_bytes!("./static/icon.png");
 fn main() {
 	logger_init();
 
-	log::debug!("Rhyolite App started, initialising GUI.");
+	log::info!("Rhyolite App started, initialising GUI.");
+
 	launch_cfg(
 		LaunchConfig::new()
 			.with_font("JetBrains Mono", JET_BRAINS_MONO)
