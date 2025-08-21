@@ -59,17 +59,20 @@ pub fn side_bar() -> Element {
 					}
 				}
 			}
-
 			if SHOW_THEMES_DROPUP() {
 				dropdown::submenu {
 					for theme in themes_list {
 						buttons::DropDownButton {
 							label: &theme,
-							onclick: move || {
-								spawn(async move {
-									THEME_STORE.write().change_current_theme(&theme).await;
-								});
-							},
+							onclick: EventHandler::new({
+								let theme = theme.clone();
+								move |_| {
+									let theme_clone = theme.clone();
+									spawn(async move {
+										THEME_STORE.write().change_current_theme(theme_clone).await;
+									});
+								}
+							}),
 						}
 					}
 				}

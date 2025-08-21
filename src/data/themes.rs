@@ -3,8 +3,6 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 
-include!("../build/themes_build.rs");
-
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct ThemesStore {
 	pub themes_dir: PathBuf,
@@ -50,7 +48,7 @@ impl ThemesStore {
 		}
 	}
 
-	pub async fn change_current_theme(&mut self, theme_name: &String) {
+	pub async fn change_current_theme(&mut self, theme_name: String) {
 		if let Some(theme) = self.load_theme_from_file(theme_name) {
 			self.current_theme = theme.clone();
 		} else {
@@ -76,11 +74,14 @@ impl ThemesStore {
 	// }
 
 	// TODO: Handle errors.
-	fn load_theme_from_file(&self, name: &String) -> Option<Theme> {
-		let path = self.themes_dir.join(name);
+	fn load_theme_from_file(&self, name: String) -> Option<Theme> {
+		let mut filename = name.clone();
+		if !filename.ends_with(".toml") {
+			filename.push_str(".toml");
+		}
+		let path = self.themes_dir.join(filename);
 		let theme_content = fs::read_to_string(path).unwrap_or_default();
-		let theme = toml::from_str(&theme_content).ok();
-		theme
+		toml::from_str(&theme_content).ok()
 	}
 }
 
@@ -172,15 +173,15 @@ impl Theme {
 fn list_toml_names(dir: &PathBuf) -> std::io::Result<Vec<String>> {
 	let mut names = Vec::new();
 
-	for entry in fs::read_dir(&dir)? {
+	for entry in fs::read_dir(dir)? {
 		let entry = entry?;
 		let path = entry.path();
 
-		if path.extension().and_then(|e| e.to_str()) == Some("toml") {
-			if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
+		if path.extension().and_then(|e| e.to_str()) == Some("toml")
+			&& let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
 				names.push(stem.to_string());
+				names.sort_by_key(|a| a.to_lowercase());
 			}
-		}
 	}
 
 	Ok(names)
