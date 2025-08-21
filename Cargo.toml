@@ -21,6 +21,9 @@ tokio = { version = "1.47.1", features = ["fs", "sync", "io-util", "io-std"] }
 slab = "0.4.11"
 #syntect = "5.2.0"
 
+[build-dependencies]
+dirs = "6.0.0"
+
 [profile.dev]
 incremental = true
 lto = false
