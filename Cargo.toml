@@ -7,26 +7,19 @@ license = "GPL-3.0"
 edition = "2024"
 
 [dependencies]
-freya = { git = "https://github.com/RedddFoxxyy/freya.git", branch = "feat/dynamic-scroll-view", features = [
-] }
+freya = { git = "https://github.com/RedddFoxxyy/freya.git", branch = "feat/dynamic-scroll-view", features = [] }
 # freya = { path = "../freya/crates/freya", features = [] }
-#dioxus = { version = "0.6.3", default-features = false, features = [
-#	"macro",
-#	"signals",
-#	"hooks",
-#] }
 dioxus-clipboard = "0.2.0"
 winit = "0.30.12"
 serde = { version = "1.0.219", features = ["derive"] }
 toml = "0.9.5"
-#serde_json = "1.0.142"
 dirs = "6.0.0"
 #sanitize-filename = "0.6.0"
-env_logger = "0.11.8"
 log = { version = "0.4.27" }
+log4rs = "1.3.0"
 tokio = { version = "1.47.1", features = ["fs", "sync", "io-util", "io-std"] }
 slab = "0.4.11"
-syntect = "5.2.0"
+#syntect = "5.2.0"
 
 [profile.dev]
 incremental = true
@@ -36,8 +29,8 @@ codegen-units = 256
 
 [profile.release]
 codegen-units = 1 # Allows LLVM to perform better optimization.
-lto = true        # Enables link-time-optimizations however is not stable.
-opt-level = 3     # Prioritizes speed. Use `z` if you prefer small binary size.
+lto = true        # Enables link-time-optimizations, however, is not stable.
+opt-level = 3     # Prioritizes speed. Use `z` if you prefer a small binary size.
 panic = "abort"   # Higher performance by disabling panic handlers.
 strip = true      # Ensures debug symbols are removed.
 

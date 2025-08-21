@@ -1,14 +1,24 @@
-use super::stores::{doc_store::RECENT_FILES, ui_store::THEME_STORE};
-use crate::data::stores::tabs_store::switch_tab;
 use crate::data::{
 	stores::{
-		doc_store::{ACTIVE_DOCUMENT_TITLE, CLIPBOARD, FILES_ARENA, PLATFORM},
-		tabs_store::{CURRENT_TAB, TABS, new_tab, push_tab},
+		doc_store::{ACTIVE_DOCUMENT_TITLE, CLIPBOARD, FILES_ARENA, PLATFORM, RECENT_FILES},
+		tabs_store::{CURRENT_TAB, TABS, new_tab, push_tab, switch_tab},
+		ui_store::THEME_STORE,
 	},
 	types::{APP_DATA_DIR, DEFAULT_TROVE_DIR, MarkdownFile, USER_DATA_FILE, UserData},
 };
 use freya::prelude::*;
 use log::LevelFilter;
+use log4rs::{
+	append::{
+		console::{ConsoleAppender, Target},
+		rolling_file::{
+			RollingFileAppender,
+			policy::compound::{CompoundPolicy, roll::delete::DeleteRoller, trigger::size::SizeTrigger},
+		},
+	},
+	config::{Appender, Logger, Root},
+	encode::pattern::PatternEncoder,
+};
 use std::{fs, io::Write, path::PathBuf};
 use tokio::{
 	fs::{File, rename},
@@ -16,22 +26,50 @@ use tokio::{
 	runtime::Runtime,
 };
 
-pub fn env_logger_init() {
-	let mut builder = env_logger::Builder::new();
+/// Initializes log4rs with custom configuration for stdout and file logging.
+pub fn logger_init() {
+	let log_file_path = {
+		let Some(state) = dirs::state_dir() else {
+			log::error!("No App State directory could be found/accessed!");
+			panic!("Failed to find App State directory.")
+		};
+		let log_dir = state.join(APP_DATA_DIR);
 
-	#[cfg(debug_assertions)]
-	{
-		builder.filter(None, LevelFilter::Warn);
-		builder.filter_module("Rhyolite", LevelFilter::Trace);
-	}
+		if let Err(e) = fs::create_dir_all(&log_dir) {
+			log::error!("Failed to create log directory!: {e}");
+		};
 
-	#[cfg(not(debug_assertions))]
-	{
-		builder.filter(None, LevelFilter::Error);
-		builder.filter_module("Rhyolite", LevelFilter::Warn);
-	}
+		log_dir.join("rhyolite.log")
+	};
 
-	builder.init();
+	// TODO: Add session based log files or rolling log files with archiving of old files, to prevent a single log file from growing too large.
+	let size_trigger = SizeTrigger::new(10 * 1024 * 1024); // 10 MB
+	let roller = DeleteRoller::new();
+	let policy = CompoundPolicy::new(Box::new(size_trigger), Box::new(roller));
+
+	let logfile = RollingFileAppender::builder()
+		.encoder(Box::new(PatternEncoder::new("[{d(%Y-%m-%d %H:%M:%S %Z)} {l} {t}] {m}{n}")))
+		.build(log_file_path, Box::new(policy))
+		.unwrap();
+
+	let stdout = ConsoleAppender::builder()
+		.target(Target::Stdout)
+		.encoder(Box::new(PatternEncoder::new("[{d(%Y-%m-%d %H:%M:%S %Z)} {h({l})} {t}] {m}{n}")))
+		.build();
+
+	let (app_level, root_level) = if cfg!(debug_assertions) {
+		(LevelFilter::Trace, LevelFilter::Debug)
+	} else {
+		(LevelFilter::Info, LevelFilter::Error)
+	};
+	let config = log4rs::Config::builder()
+		.appender(Appender::builder().build("stdout", Box::new(stdout)))
+		.appender(Appender::builder().build("logfile", Box::new(logfile)))
+		.logger(Logger::builder().build("Rhyolite", app_level))
+		.build(Root::builder().appenders(vec!["logfile", "stdout"]).build(root_level))
+		.unwrap();
+
+	log4rs::init_config(config).unwrap();
 }
 
 /// Returns the path to the default trove directory.
