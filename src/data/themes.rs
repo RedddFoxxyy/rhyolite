@@ -178,10 +178,11 @@ fn list_toml_names(dir: &PathBuf) -> std::io::Result<Vec<String>> {
 		let path = entry.path();
 
 		if path.extension().and_then(|e| e.to_str()) == Some("toml")
-			&& let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
-				names.push(stem.to_string());
-				names.sort_by_key(|a| a.to_lowercase());
-			}
+			&& let Some(stem) = path.file_stem().and_then(|s| s.to_str())
+		{
+			names.push(stem.to_string());
+			names.sort_by_key(|a| a.to_lowercase());
+		}
 	}
 
 	Ok(names)
