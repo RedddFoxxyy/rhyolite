@@ -7,10 +7,14 @@ on:
       - release
     paths:
       - "src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
 
   pull_request:
     paths:
       - "src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
 
 jobs:
   build:
@@ -20,12 +24,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
+      - name: Setup Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          toolchain: stable
+          components: clippy, rustfmt
 
-      - name: install dependencies (ubuntu only)
+      - name: Install dependencies (ubuntu only)
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -41,16 +45,11 @@ jobs:
             libwayland-egl-backend-dev \
             libwayland-dev
 
-      - name: Build project
-        run: cargo build --verbose
-
-      # TODO: Enable this after tests are added to the source code.
-      # - name: Run tests
-      #   run: cargo test
+      - name: Check formatting
+        run: cargo fmt --all -- --check
 
       - name: Run linter
-        run: cargo clippy -- -D warnings
+        run: cargo clippy --all-targets --all-features -- -D warnings
 
-      # NOTE: Not required as of now.
-      # - name: Generate documentation
-      #   run: cargo doc --no-deps --document-private-items
+      - name: Build project
+        run: cargo build --verbose --all-features
