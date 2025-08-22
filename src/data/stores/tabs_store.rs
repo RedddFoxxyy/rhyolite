@@ -65,7 +65,7 @@ pub async fn delete_tab(index: usize) {
 		log::error!("Failed to delete the tab: Invalid tab index! (out of bounds)");
 		return;
 	};
-	
+
 	let tab_count = TABS().len();
 	let current_tab_index = CURRENT_TAB();
 
@@ -89,7 +89,7 @@ pub async fn delete_tab(index: usize) {
 		}
 		_ => {}
 	}
-	
+
 	log::debug!("Closed tab: {}", tab.title);
 }
 

@@ -9,7 +9,7 @@ use freya::prelude::*;
 #[component]
 pub fn side_bar() -> Element {
 	let theme = THEME_STORE().current_theme.colors;
-	let themes_list = THEME_STORE().store;
+	let themes_list = THEME_STORE().themes_list;
 	let platform = use_platform();
 
 	let settings_list: [buttons::DropDownButtonProps; 4] = [
@@ -59,17 +59,20 @@ pub fn side_bar() -> Element {
 					}
 				}
 			}
-
 			if SHOW_THEMES_DROPUP() {
 				dropdown::submenu {
-					for (i,theme) in themes_list.iter().enumerate() {
+					for theme in themes_list {
 						buttons::DropDownButton {
-							label: theme.info.name.clone(),
-							onclick: move || {
-								spawn(async move {
-									THEME_STORE.write().change_current_theme(i).await;
-								});
-							},
+							label: &theme,
+							onclick: EventHandler::new({
+								let theme = theme.clone();
+								move |_| {
+									let theme_clone = theme.clone();
+									spawn(async move {
+										THEME_STORE.write().change_current_theme(theme_clone).await;
+									});
+								}
+							}),
 						}
 					}
 				}

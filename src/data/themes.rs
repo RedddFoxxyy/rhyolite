@@ -1,62 +1,87 @@
+use crate::data::types::APP_DATA_DIR;
 use serde::{Deserialize, Serialize};
-// use std::{
-// 	fs::{self, read_dir},
-// 	path::PathBuf,
-// };
-// use tokio::fs::read_to_string;
-// use toml::Value;
+use std::fs;
+use std::path::PathBuf;
 
-include!("../build/themes_build.rs");
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct ThemesStore {
-	pub store: Vec<Theme>,
+	pub themes_dir: PathBuf,
+	pub themes_list: Vec<String>,
 	pub current_theme: Theme,
 }
 impl ThemesStore {
-	pub fn default() -> ThemesStore {
-		let mut theme_vec: Vec<Theme> = Vec::new();
+	// TODO: Make this as new function and make a new default function.
+	pub fn init() -> ThemesStore {
+		let themes_dir = {
+			let Some(data) = dirs::state_dir() else {
+				eprintln!("No Data directory could be found/accessed!");
+				panic!("Failed to find Data directory.")
+			};
+			let app_data_dir = data.join(APP_DATA_DIR);
 
-		let mut sorted_themes_vec: Vec<_> = THEMES.iter().collect();
+			let themes_dir = app_data_dir.join("Themes");
 
-		// Sort the themes alphabetically by filename
-		sorted_themes_vec.sort_by(|a, b| a.0.cmp(b.0));
+			if let Err(e) = fs::create_dir_all(&themes_dir) {
+				eprintln!("Failed to create App Themes directory: {}", e);
+			};
 
-		for (file_name, toml_str) in sorted_themes_vec {
-			let theme: Theme = toml::from_str(toml_str).unwrap_or_else(|e| panic!("Error parsing {file_name}: {e}"));
+			themes_dir
+		};
 
-			theme_vec.push(theme);
+		let themes_list_result = list_toml_names(&themes_dir);
+
+		if let Err(e) = themes_list_result {
+			log::error!("Failed to list themes in directory: {}", e);
+			log::warn!("Using default theme.");
+			log::warn!("No themes to select from..");
+			return ThemesStore {
+				themes_dir,
+				themes_list: vec![],
+				current_theme: Theme::default(),
+			};
 		}
 
 		ThemesStore {
-			store: theme_vec,
+			themes_dir,
+			themes_list: themes_list_result.unwrap(),
 			current_theme: Theme::default(),
 		}
 	}
 
-	pub async fn change_current_theme(&mut self, index: usize) {
-		if let Some(theme) = self.store.get(index) {
+	pub async fn change_current_theme(&mut self, theme_name: String) {
+		if let Some(theme) = self.load_theme_from_file(theme_name) {
 			self.current_theme = theme.clone();
 		} else {
-			log::error!("The given theme does not exists or is corrupted. ( DEBUG: Out of Bounds access in the themes store.");
+			log::error!("The given theme does not exists or is corrupted.");
 		}
 	}
 
-	pub async fn _preview_theme(&mut self, preview: bool, theme_index: usize, original_theme: &Option<Theme>) {
-		if preview {
-			if original_theme.is_none() {
-				// This is the first preview, store current and switch to preview
-				self.current_theme = self.store.get(theme_index).unwrap().clone();
-			} else {
-				// Already previewing, just switch to new preview theme
-				self.current_theme = self.store.get(theme_index).unwrap().clone();
-			}
-		} else {
-			// Restore original theme
-			if let Some(original) = original_theme {
-				self.current_theme = original.clone();
-			}
+	// pub async fn _preview_theme(&mut self, preview: bool, theme_index: usize, original_theme: &Option<Theme>) {
+	// 	if preview {
+	// 		if original_theme.is_none() {
+	// 			// This is the first preview, store current and switch to preview
+	// 			self.current_theme = self.themes_path.get(theme_index).unwrap().clone();
+	// 		} else {
+	// 			// Already previewing, just switch to new preview theme
+	// 			self.current_theme = self.themes_path.get(theme_index).unwrap().clone();
+	// 		}
+	// 	} else {
+	// 		// Restore original theme
+	// 		if let Some(original) = original_theme {
+	// 			self.current_theme = original.clone();
+	// 		}
+	// 	}
+	// }
+
+	// TODO: Handle errors.
+	fn load_theme_from_file(&self, name: String) -> Option<Theme> {
+		let mut filename = name.clone();
+		if !filename.ends_with(".toml") {
+			filename.push_str(".toml");
 		}
+		let path = self.themes_dir.join(filename);
+		let theme_content = fs::read_to_string(path).unwrap_or_default();
+		toml::from_str(&theme_content).ok()
 	}
 }
 
@@ -143,6 +168,24 @@ impl Theme {
 			},
 		}
 	}
+}
+
+fn list_toml_names(dir: &PathBuf) -> std::io::Result<Vec<String>> {
+	let mut names = Vec::new();
+
+	for entry in fs::read_dir(dir)? {
+		let entry = entry?;
+		let path = entry.path();
+
+		if path.extension().and_then(|e| e.to_str()) == Some("toml")
+			&& let Some(stem) = path.file_stem().and_then(|s| s.to_str())
+		{
+			names.push(stem.to_string());
+			names.sort_by_key(|a| a.to_lowercase());
+		}
+	}
+
+	Ok(names)
 }
 
 // pub fn new_theme_store() -> (Vec<Theme>, Vec<String>) {

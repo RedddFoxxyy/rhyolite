@@ -10,7 +10,7 @@ use freya::prelude::{GlobalSignal, Readable, Signal};
 pub static JET_BRAINS_MONO: &[u8] = include_bytes!("../../static/fonts/JetBrainsMono[wght].ttf");
 
 // Stores the current App Theme
-pub static THEME_STORE: GlobalSignal<ThemesStore> = Signal::global(ThemesStore::default);
+pub static THEME_STORE: GlobalSignal<ThemesStore> = Signal::global(ThemesStore::init);
 
 // Sidebar Store:
 pub static SHOW_SETTINGS_DROPUP: GlobalSignal<bool> = Signal::global(|| false);
