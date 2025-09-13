@@ -1,4 +1,4 @@
 src-webpage/* linguist-vendored
 * linguist-vendored
 *.rs linguist-vendored=false
-*.svelte linguist-vendored=false
+*.nix linguist-vendored=false

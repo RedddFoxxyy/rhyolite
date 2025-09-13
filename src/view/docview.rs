@@ -32,7 +32,7 @@ fn editor_area() -> Element {
 		height: "fill",
 		direction: "vertical",
 		title_box{}
-		editor_box_dynamic{}
+		editor_box{}
 	})
 }
 
@@ -163,6 +163,7 @@ fn editor_box() -> Element {
 	let mut editable = CURRENT_EDITOR_BUFFER();
 	let editor = editable.editor().read();
 	let mut is_cursor_blinking = use_signal(|| false);
+	let theme = THEME_STORE().current_theme.colors;
 
 	let onclick = move |_: MouseEvent| {
 		*is_cursor_blinking.write() = true;
@@ -180,6 +181,13 @@ fn editor_box() -> Element {
 			editable.process_event(&EditableEvent::KeyUp(e.data));
 		}
 	};
+
+	let scrollbar_theme = theme_with!(ScrollBarTheme {
+		background: cow_borrowed!("transparent"), //
+		thumb_background: Cow::from(theme.surface0.clone()),
+		hover_thumb_background: Cow::from(theme.surface1.clone()),
+		active_thumb_background: Cow::from(theme.surface2.clone()),
+	});
 
 	use_future(move || async move {
 		loop {
@@ -219,8 +227,10 @@ fn editor_box() -> Element {
 					height: "100%",
 					length: editor.len_lines(),
 					item_size: 25.0,
-					scroll_with_arrows: false,
-					cache_elements: false,
+					show_scrollbar: true,
+					scroll_with_arrows: true,
+					scrollbar_theme,
+					cache_elements: true,
 					builder: move |line_index, _: &Option<()>| {
 						let theme = THEME_STORE().current_theme.colors;
 						let editor = editable.editor().read();
@@ -280,7 +290,7 @@ fn editor_box() -> Element {
 									cursor_reference: editable.cursor_attr(),
 									main_align: "center",
 									height: "100%",
-									width: "100%",
+									width: "98.5%",
 									cursor_index: "{character_index}",
 									cursor_color: "{cursor_color}",
 									highlight_color: "{theme.subtext1}",

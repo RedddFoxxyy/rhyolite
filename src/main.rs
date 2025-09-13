@@ -5,7 +5,7 @@ mod view;
 
 use data::{io_utils::logger_init, stores::ui_store::JET_BRAINS_MONO};
 use freya::prelude::*;
-use view::composite::app;
+use view::index::app;
 
 const APP_ICON: &[u8] = include_bytes!("./static/icon.png");
 

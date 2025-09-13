@@ -20,8 +20,6 @@ use winit::window::ResizeDirection;
 /// The main view of the app, this is where the first parent components are layed out.
 pub fn app() -> Element {
 	let theme = THEME_STORE().current_theme.colors;
-	let platform_information = use_platform_information();
-	let is_maximised = platform_information().is_maximized;
 	const BORDER_SIZE: u8 = 6;
 
 	use_hook(move || {
@@ -46,39 +44,29 @@ pub fn app() -> Element {
 	rsx!(
 		// 1
 		rect {
-			// NOTE: I know that this can be simplified and the rect is not needed, the reason I am doing it like this is that
-			// I wanted to add a transparent border around the window for window shadow and window dragging and resizing handles.
-			// However, once I implement perfect decoration less window handling, these two rects can be collapsed into one (talking about
-			// the rects marked as 1 and 2.)
-			background: "transparent",
 			width: "fill",
 			height: "fill",
 			direction: "vertical",
+
+			background: theme.crust,
+			direction: "vertical",
+			onglobalkeydown: handle_global_keyboard_input,
 			drag_resize_area {border_size: BORDER_SIZE}
-			// 2
+
+			// Tabs Navigation Bar
+			top_nav_bar {}
+
+			// Main Workspace
 			rect {
-				width: "fill",
+				width: "100%",
 				height: "fill",
-				margin: if is_maximised { "0" } else { "{BORDER_SIZE - 6}" },
-				background: theme.crust,
-				direction: "vertical",
-				onglobalkeydown: handle_global_keyboard_input,
+				direction: "horizontal",
+				side_bar{},
+				work_space{}
+			}
 
-				// Tabs Navigation Bar
-				top_nav_bar {}
-
-				// Main Workspace
-				rect {
-					width: "100%",
-					height: "fill",
-					direction: "horizontal",
-					side_bar{},
-					work_space{}
-				}
-
-				if SHOW_COMMAND_PALETTE() ^ SHOW_RECENT_FILES() ^ SHOW_SETTINGS_DROPUP() {
-					overlay_view{}
-				}
+			if SHOW_COMMAND_PALETTE() ^ SHOW_RECENT_FILES() ^ SHOW_SETTINGS_DROPUP() {
+				overlay_view{}
 			}
 		}
 	)
