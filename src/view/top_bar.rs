@@ -1,5 +1,20 @@
+// Copyright (C) 2025  Suyog Tandel(RedddFoxxyy)
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 #![allow(unused_imports)]
-use crate::data::io_utils::deinitialise_app;
+use crate::data::io::deinitialise_app;
 use crate::{
 	APP_ICON,
 	data::stores::{CURRENT_TAB, TABS, THEME_STORE, close_tab, new_tab, switch_tab},

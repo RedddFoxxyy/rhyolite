@@ -38,7 +38,7 @@ TODO: Use Dioxus Radio for complex global states instead of global signals.
 // - Imports
 //-------------------------------------------------------------------------
 use crate::data::{
-	io_utils::{delete_file, generate_available_path, get_default_trove_dir, new_file_from_path, save_file},
+	io::{delete_file, generate_available_path, get_default_trove_dir, new_file_from_path, save_file},
 	themes::ThemesStore,
 	types::{DEFAULT_NOTE_TITLE, MarkdownFile, RecentFileInfo, Tab},
 };

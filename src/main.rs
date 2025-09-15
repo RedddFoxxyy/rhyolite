@@ -35,7 +35,7 @@ mod view;
 //-------------------------------------------------------------------------
 // - Imports
 //-------------------------------------------------------------------------
-use data::{io_utils::logger_init, stores::JET_BRAINS_MONO};
+use data::{io::logger_init, stores::JET_BRAINS_MONO};
 use freya::prelude::*;
 use view::app_view::app;
 
