@@ -14,7 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #![allow(unused_imports)]
-use crate::data::io_utils::deinitialise_app;
+use crate::data::io::deinitialise_app;
 use crate::{
 	APP_ICON,
 	data::stores::{CURRENT_TAB, TABS, THEME_STORE, close_tab, new_tab, switch_tab},

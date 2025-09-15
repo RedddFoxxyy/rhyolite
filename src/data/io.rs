@@ -13,10 +13,26 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/*
+-------------------------------------------------------------------------
+File Index
+-------------------------------------------------------------------------
+- Imports
+- Logging
+- Document/Path IO
+- Keyboard/Mouse IO
+-------------------------------------------------------------------------
+*/
+
+//! All IO related helper functions and utilities.
+
+//-------------------------------------------------------------------------
+// - Imports
+//-------------------------------------------------------------------------
 use crate::data::{
 	stores::{
-		ACTIVE_DOCUMENT_TITLE, CLIPBOARD, CURRENT_TAB, FILES_ARENA, PLATFORM, RECENT_FILES, TABS, THEME_STORE, new_tab, push_tab,
-		switch_tab,
+		ACTIVE_DOCUMENT_TITLE, CLIPBOARD, CURRENT_TAB, FILES_ARENA, PLATFORM, RECENT_FILES, TABS, THEME_STORE, close_tab, cycle_tab,
+		delete_tab, new_tab, push_tab, switch_tab, toggle_command_palette,
 	},
 	types::{APP_DATA_DIR, DEFAULT_TROVE_DIR, MarkdownFile, USER_DATA_FILE, UserData},
 };
@@ -39,6 +55,10 @@ use tokio::{
 	io::AsyncWriteExt,
 	runtime::Runtime,
 };
+
+//-------------------------------------------------------------------------
+// - Logging
+//-------------------------------------------------------------------------
 
 /// Initializes log4rs with custom configuration for stdout and file logging.
 pub fn logger_init() {
@@ -85,6 +105,10 @@ pub fn logger_init() {
 
 	log4rs::init_config(config).unwrap();
 }
+
+//-------------------------------------------------------------------------
+// - Document/Path IO
+//-------------------------------------------------------------------------
 
 /// Returns the path to the default trove directory.
 pub fn get_default_trove_dir() -> PathBuf {
@@ -441,4 +465,83 @@ pub fn deinitialise_app() {
 		}
 	}
 	tokio.block_on(save_userdata());
+}
+
+//-------------------------------------------------------------------------
+// - Keyboard/Mouse IO
+//-------------------------------------------------------------------------
+
+// #[derive(PartialEq)]
+// pub(crate) enum KeyboardInputComponent {
+// 	Global,
+// 	Editor(UseEditable),
+// }
+
+pub(crate) async fn handle_global_keyboard_input(e: KeyboardEvent) {
+	let key = &e.data.key;
+	let modifiers = e.data.modifiers;
+
+	if !modifiers.contains(Modifiers::CONTROL) {
+		return;
+	}
+	match key {
+		Key::Character(c) if c == "s" => {
+			e.stop_propagation();
+			log::debug!("CTRL + S was Pressed.");
+			let current_tab_content = FILES_ARENA()
+				.get(TABS().get(CURRENT_TAB().unwrap()).unwrap().file_key)
+				.unwrap()
+				.clone();
+			save_file(current_tab_content).await;
+		}
+		Key::Character(c) if (c == "D" && modifiers.contains(Modifiers::SHIFT)) => {
+			e.stop_propagation();
+			log::debug!("CTRL + SHIFT + D was Pressed.");
+			if let Some(tab_index) = CURRENT_TAB() {
+				delete_tab(tab_index).await
+			}
+		}
+		Key::Character(c) if c == "w" => {
+			e.stop_propagation();
+			log::debug!("CTRL + W was Pressed.");
+			if let Some(tab_index) = CURRENT_TAB() {
+				close_tab(tab_index).await
+			}
+		}
+		Key::Character(c) if c == "t" => {
+			e.stop_propagation();
+			log::debug!("CTRL + T was Pressed.");
+			new_tab().await
+		}
+		Key::Character(c) if c == "p" => {
+			e.stop_propagation();
+			log::debug!("CTRL + P was Pressed.");
+			toggle_command_palette();
+		}
+		Key::Tab => {
+			e.stop_propagation();
+			log::debug!("CTRL + Tab was Pressed.");
+			cycle_tab().await;
+		}
+		_ => (),
+	}
+}
+
+pub(crate) fn handle_editor_key_input(e: &KeyboardEvent) -> bool {
+	let mods = &e.data.modifiers;
+	let key = &e.data.key;
+
+	let is_ctrl_char = |ch: &str| mods.contains(Modifiers::CONTROL) && key == &Key::Character(ch.into());
+
+	let skip = is_ctrl_char("s")    // Save
+		|| is_ctrl_char("t")        // New tab
+		|| is_ctrl_char("p")        // Open command palette
+		|| is_ctrl_char("w")        // Close tab
+		|| (mods.contains(Modifiers::CONTROL)
+		&& mods.contains(Modifiers::SHIFT)
+		&& key == &Key::Character("D".into()))  // Delete
+		|| (mods.contains(Modifiers::CONTROL)
+		&& matches!(e.data.code, Code::Tab)); // Tab cycle
+
+	!skip
 }

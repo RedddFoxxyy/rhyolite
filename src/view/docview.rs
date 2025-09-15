@@ -13,19 +13,44 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::hash::{DefaultHasher, Hash, Hasher};
+/*
+-------------------------------------------------------------------------
+File Index
+-------------------------------------------------------------------------
+- Imports
+- Workspace Elements
+- Text Editor Virtualised(No wrapping)
+- Text Editor Virtualised(No wrapping)
+-------------------------------------------------------------------------
 
+
+-------------------------------------------------------------------------
+Devloper Notes:
+-------------------------------------------------------------------------
+NOTE: Work on a custom editor element for rhyolite is WIP.
+TODO: Add markdown and katex syntax highlighting.
+-------------------------------------------------------------------------
+*/
+
+//-------------------------------------------------------------------------
+// - Imports
+//-------------------------------------------------------------------------
 use crate::{
 	data::{
-		fn_utils::handle_editor_key_input,
-		io_utils::{deinitialise_app, update_document_title},
+		io::handle_editor_key_input,
+		io::{deinitialise_app, update_document_title},
 		stores::{ACTIVE_DOCUMENT_TITLE, CURRENT_EDITOR_BUFFER, THEME_STORE},
 	},
 	view::bottom_bar::bottom_floating_bar,
 };
 use freya::prelude::*;
+use std::hash::{DefaultHasher, Hash, Hasher};
 use tokio::time::Duration;
 use tokio::time::sleep;
+
+//-------------------------------------------------------------------------
+// - Workspace Elements
+//-------------------------------------------------------------------------
 
 #[component]
 pub fn work_space() -> Element {
@@ -168,6 +193,10 @@ fn title_box() -> Element {
 	})
 }
 
+//-------------------------------------------------------------------------
+// - Text Editor Virtualised(No wrapping)
+//-------------------------------------------------------------------------
+
 #[allow(dead_code)]
 #[component]
 fn editor_box() -> Element {
@@ -223,86 +252,78 @@ fn editor_box() -> Element {
 		cross_align: "center",
 		padding: "7",
 		margin: "16 0 0 0",
-		CursorArea {
-			icon: CursorIcon::Text,
-			rect {
-				width: "80%",
-				height: "fill",
-				background: "transparent",
-				padding: "4 0",
-				onkeydown,
-				onkeyup,
-				a11y_id: focus.attribute(),
-				onclick,
-				VirtualScrollView {
-					width: "100%",
-					height: "100%",
-					length: editor.len_lines(),
-					item_size: 25.0,
-					show_scrollbar: true,
-					scroll_with_arrows: true,
-					scrollbar_theme,
-					cache_elements: true,
-					builder: move |line_index, _: &Option<()>| {
-						let theme = THEME_STORE().current_theme.colors;
-						let editor = editable.editor().read();
-						let line = editor.line(line_index).unwrap();
-						let is_line_selected = editor.cursor_row() == line_index;
-						// Only show the cursor in the active line
-						let character_index = if is_line_selected {
-							editor.cursor_col().to_string()
-						} else {
-							"none".to_string()
-						};
-						let cursor_color = if focus.is_focused() && *is_cursor_blinking.read() {
-							theme.text.as_str()
-						} else {
-							"transparent"
-						};
+		rect {
+			width: "100%",
+			height: "fill",
+			background: "transparent",
+			padding: "4 0",
+			onkeydown,
+			onkeyup,
+			a11y_id: focus.attribute(),
+			onclick,
+			VirtualScrollView {
+				width: "100%",
+				height: "100%",
+				padding: "0 10",
+				length: editor.len_lines(),
+				item_size: 25.0,
+				show_scrollbar: true,
+				scroll_with_arrows: true,
+				scrollbar_theme,
+				cache_elements: true,
+				builder: move |line_index, _: &Option<()>| {
+					let theme = THEME_STORE().current_theme.colors;
+					let editor = editable.editor().read();
+					let line = editor.line(line_index).unwrap();
+					let is_line_selected = editor.cursor_row() == line_index;
+					// Only show the cursor in the active line
+					let character_index = if is_line_selected {
+						editor.cursor_col().to_string()
+					} else {
+						"none".to_string()
+					};
+					let cursor_color = if focus.is_focused() && *is_cursor_blinking.read() {
+						theme.text.as_str()
+					} else {
+						"transparent"
+					};
 
-						// Only highlight the active line
-						// let line_background = if is_line_selected {
-						// 	theme.subtext1.as_str()
-						// } else {
-						// 	"none"
-						// };
+					// Only highlight the active line
+					// let line_background = if is_line_selected {
+					// 	theme.subtext1.as_str()
+					// } else {
+					// 	"none"
+					// };
 
-						let line_background = "none";
+					let line_background = "none";
 
-						let onmousedown = move |e: MouseEvent| {
-							focus.request_focus();
-							editable.process_event(&EditableEvent::MouseDown(e.data, line_index));
-						};
+					let onmousedown = move |e: MouseEvent| {
+						focus.request_focus();
+						editable.process_event(&EditableEvent::MouseDown(e.data, line_index));
+					};
 
-						let onmousemove = move |e: MouseEvent| {
-							editable.process_event(&EditableEvent::MouseMove(e.data, line_index));
-						};
+					let onmousemove = move |e: MouseEvent| {
+						editable.process_event(&EditableEvent::MouseMove(e.data, line_index));
+					};
 
-						let highlights = editable.highlights_attr(line_index);
+					let highlights = editable.highlights_attr(line_index);
 
-						rsx! {
-							rect {
-								key: "{line_index}",
-								width: "100%",
-								height: "23",
-								// content: "fit",
-								direction: "horizontal",
-								background: "{line_background}",
-								// Uncomment this for line numbers like that in codemirror.
-								// label {
-								// 	main_align: "center",
-								// 	width: "30",
-								// 	height: "100%",
-								// 	text_align: "center",
-								// 	font_size: "15",
-								// 	color: "rgb(200, 200, 200)",
-								// 	"{line_index + 1} "
-								// }
+					rsx! {
+						rect {
+							key: "{line_index}",
+							width: "100%",
+							height: "23",
+							padding: "0 100",
+							// content: "fit",
+							direction: "horizontal",
+							background: "{line_background}",
+							CursorArea {
+								icon: CursorIcon::Text,
 								paragraph {
 									cursor_reference: editable.cursor_attr(),
 									main_align: "center",
 									height: "100%",
-									width: "98.5%",
+									width: "97%",
 									cursor_index: "{character_index}",
 									cursor_color: "{cursor_color}",
 									highlight_color: "{theme.subtext1}",
@@ -327,6 +348,10 @@ fn editor_box() -> Element {
 		}
 	})
 }
+
+//-------------------------------------------------------------------------
+// - Text Editor Virtualised(wrapping)
+//-------------------------------------------------------------------------
 
 #[allow(dead_code)]
 #[component]
@@ -411,72 +436,73 @@ fn editor_box_dynamic() -> Element {
 		cross_align: "center",
 		padding: "7",
 		margin: "16 0 40 0",
-		CursorArea {
-			icon: CursorIcon::Text,
-			rect {
-				width: "80%",
-				height: "fill",
-				background: "transparent",
-				padding: "4 0",
-				onkeydown,
-				onkeyup,
-				a11y_id: focus.attribute(),
-				onclick,
-				DynamicVirtualScrollView {
-					width: "100%",
-					height: "100%",
-					padding: "0",
-					default_item_height: 5.0,
-					overscan: 3,
-					scroll_with_arrows: true,
-					scroll_beyond_last_item: 10,
-					min_scrollthumb_height: Some(25.0),
-					item_keys: item_keys(),
-					scrollbar_theme,
-					builder: move |line_index| {
-						let theme = THEME_STORE().current_theme.colors;
-						let editor = editable.editor().read();
+		rect {
+			width: "100%",
+			height: "fill",
+			background: "transparent",
+			padding: "4 0",
+			onkeydown,
+			onkeyup,
+			a11y_id: focus.attribute(),
+			onclick,
+			DynamicVirtualScrollView {
+				width: "100%",
+				height: "100%",
+				padding: "0 10",
+				default_item_height: 5.0,
+				overscan: 1,
+				scroll_with_arrows: true,
+				scroll_beyond_last_item: 10,
+				min_scrollthumb_height: Some(30.0),
+				item_keys: item_keys(),
+				scrollbar_theme,
+				builder: move |line_index| {
+					let theme = THEME_STORE().current_theme.colors;
+					let editor = editable.editor().read();
 
-						let line = match editor.line(line_index) {
-							Some(line) => line,
-							None => return rsx! { rect {} }
-						};
+					let line = match editor.line(line_index) {
+						Some(line) => line,
+						None => return rsx! { rect {} }
+					};
 
-						let is_line_selected = editor.cursor_row() == line_index;
-						let character_index = if is_line_selected {
-							editor.cursor_col().to_string()
-						} else {
-							"none".to_string()
-						};
-						let cursor_color = if focus.is_focused() && *is_cursor_blinking.read() {
-							theme.text.as_str()
-						} else {
-							"transparent"
-						};
-						let line_background = "none";
+					let is_line_selected = editor.cursor_row() == line_index;
+					let character_index = if is_line_selected {
+						editor.cursor_col().to_string()
+					} else {
+						"none".to_string()
+					};
+					let cursor_color = if focus.is_focused() && *is_cursor_blinking.read() {
+						theme.text.as_str()
+					} else {
+						"transparent"
+					};
+					let line_background = "none";
 
-						let onmousedown = move |e: MouseEvent| {
-							editable.process_event(&EditableEvent::MouseDown(e.data, line_index));
-						};
+					let onmousedown = move |e: MouseEvent| {
+						editable.process_event(&EditableEvent::MouseDown(e.data, line_index));
+					};
 
-						let onmousemove = move |e: MouseEvent| {
-							editable.process_event(&EditableEvent::MouseMove(e.data, line_index));
-						};
+					let onmousemove = move |e: MouseEvent| {
+						editable.process_event(&EditableEvent::MouseMove(e.data, line_index));
+					};
 
-						let highlights = editable.highlights_attr(line_index);
+					let highlights = editable.highlights_attr(line_index);
 
-						rsx! {
-							rect {
-								width: "100%",
-								height: "auto",
-								content: "fit",
-								direction: "horizontal",
-								background: "{line_background}",
+					rsx! {
+						rect {
+							width: "100%",
+							height: "auto",
+							content: "fit",
+							direction: "horizontal",
+							background: "{line_background}",
+							padding: "0 100",
+							CursorArea {
+								icon: CursorIcon::Text,
 								paragraph {
 									cursor_reference: editable.cursor_attr(),
 									main_align: "center",
 									height: "auto",
-									width: "98.5%",
+									width: "97%",
 									cursor_index: "{character_index}",
 									cursor_color: "{cursor_color}",
 									highlight_color: "{theme.subtext1}",

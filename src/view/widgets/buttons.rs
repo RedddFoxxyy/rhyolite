@@ -92,7 +92,7 @@ pub fn DropDownButton(props: DropDownButtonProps) -> Element {
 				height: "auto",
 				background: "{bg_color.read()}",
 				corner_radius: "10",
-				padding: "5 6",
+				padding: "5 6 5 6",
 				direction: "horizontal",
 				spacing: "5",
 				onclick: move |_| props.onclick.call(()),
