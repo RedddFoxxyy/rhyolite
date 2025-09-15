@@ -1,9 +1,24 @@
+// Copyright (C) 2025  Suyog Tandel(RedddFoxxyy)
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 use crate::data::stores::{
 	SHOW_SETTINGS_DROPUP, SHOW_THEMES_DROPUP, THEME_STORE, toggle_command_palette, toggle_recent_files, toggle_settings_dropup,
 	toggle_themes_dropup,
 };
-use crate::view::widgets::buttons;
 use crate::view::dropdown;
+use crate::view::widgets::buttons;
 use freya::prelude::*;
 
 #[component]
