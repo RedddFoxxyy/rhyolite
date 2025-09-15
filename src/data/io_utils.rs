@@ -1,8 +1,7 @@
 use crate::data::{
 	stores::{
-		doc_store::{ACTIVE_DOCUMENT_TITLE, CLIPBOARD, FILES_ARENA, PLATFORM, RECENT_FILES},
-		tabs_store::{CURRENT_TAB, TABS, new_tab, push_tab, switch_tab},
-		ui_store::THEME_STORE,
+		ACTIVE_DOCUMENT_TITLE, CLIPBOARD, CURRENT_TAB, FILES_ARENA, PLATFORM, RECENT_FILES, TABS, THEME_STORE, new_tab, push_tab,
+		switch_tab,
 	},
 	types::{APP_DATA_DIR, DEFAULT_TROVE_DIR, MarkdownFile, USER_DATA_FILE, UserData},
 };

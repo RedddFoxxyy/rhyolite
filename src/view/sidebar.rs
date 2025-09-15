@@ -1,8 +1,8 @@
-use crate::data::stores::ui_store::{
+use crate::data::stores::{
 	SHOW_SETTINGS_DROPUP, SHOW_THEMES_DROPUP, THEME_STORE, toggle_command_palette, toggle_recent_files, toggle_settings_dropup,
 	toggle_themes_dropup,
 };
-use crate::view::components::buttons;
+use crate::view::widgets::buttons;
 use crate::view::dropdown;
 use freya::prelude::*;
 
@@ -63,13 +63,13 @@ pub fn side_bar() -> Element {
 				dropdown::submenu {
 					for theme in themes_list {
 						buttons::DropDownButton {
-							label: &theme,
+							label: &theme.0,
 							onclick: EventHandler::new({
 								let theme = theme.clone();
 								move |_| {
-									let theme_clone = theme.clone();
+									let theme_path = theme.1.clone();
 									spawn(async move {
-										THEME_STORE.write().change_current_theme(theme_clone).await;
+										THEME_STORE.write().change_current_theme(theme_path).await;
 									});
 								}
 							}),

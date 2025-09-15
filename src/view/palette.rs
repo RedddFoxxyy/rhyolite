@@ -1,6 +1,6 @@
 use freya::prelude::*;
 
-use crate::data::stores::ui_store::THEME_STORE;
+use crate::data::stores::THEME_STORE;
 
 #[component]
 pub fn palette_box(children: Element) -> Element {

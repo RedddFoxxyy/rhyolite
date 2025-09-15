@@ -1,15 +1,41 @@
+// Copyright (C) 2025  Suyog Tandel(RedddFoxxyy)
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+/*
+-------------------------------------------------------------------------
+File Index
+-------------------------------------------------------------------------
+- Imports
+- App Element
+- Other Functions
+-------------------------------------------------------------------------
+*/
+
+//! Main view of the app(Parent View).
+
+//-------------------------------------------------------------------------
+// - Imports
+//-------------------------------------------------------------------------
 #[allow(unused_imports)]
 use crate::{
 	data::{
 		fn_utils::handle_global_keyboard_input,
 		io_utils::{deinitialise_app, initialise_app},
 		stores::{
-			doc_store::{CURRENT_EDITOR_BUFFER, FILES_ARENA, WORD_CHAR_COUNT},
-			tabs_store::{CURRENT_TAB, TABS},
-			ui_store::{
-				SHOW_COMMAND_PALETTE, SHOW_RECENT_FILES, SHOW_SETTINGS_DROPUP, THEME_STORE, close_settings_dropup, toggle_command_palette,
-				toggle_recent_files,
-			},
+			CURRENT_EDITOR_BUFFER, CURRENT_TAB, FILES_ARENA, SHOW_COMMAND_PALETTE, SHOW_RECENT_FILES, SHOW_SETTINGS_DROPUP, TABS,
+			THEME_STORE, WORD_CHAR_COUNT, close_settings_dropup, toggle_command_palette, toggle_recent_files,
 		},
 	},
 	view::{docview::work_space, palette::palette_box, sidebar::side_bar, top_bar::top_nav_bar},
@@ -17,7 +43,10 @@ use crate::{
 use freya::prelude::*;
 use winit::window::ResizeDirection;
 
-/// The main view of the app, this is where the first parent components are layed out.
+//-------------------------------------------------------------------------
+// - App Element
+//-------------------------------------------------------------------------
+/// The main view of the app, this is where the first component gets rendered.
 pub fn app() -> Element {
 	let theme = THEME_STORE().current_theme.colors;
 	const BORDER_SIZE: u8 = 6;
@@ -71,6 +100,10 @@ pub fn app() -> Element {
 		}
 	)
 }
+
+//-------------------------------------------------------------------------
+// - Other Functions
+//-------------------------------------------------------------------------
 
 /// Handles the overlay view; this is where onclick handlers for closing the floating components (like palettes and settings dropup are handled).
 /// This is a hacky way to implement this; once a stable API for such stuff is implemented in Freya lib, then this will be replaced by those.

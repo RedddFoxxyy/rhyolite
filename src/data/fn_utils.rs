@@ -2,11 +2,7 @@ use freya::prelude::*;
 
 use crate::data::{
 	io_utils::save_file,
-	stores::{
-		doc_store::FILES_ARENA,
-		tabs_store::{CURRENT_TAB, TABS, close_tab, cycle_tab, delete_tab, new_tab},
-		ui_store::toggle_command_palette,
-	},
+	stores::{CURRENT_TAB, FILES_ARENA, TABS, close_tab, cycle_tab, delete_tab, new_tab, toggle_command_palette},
 };
 
 // #[derive(PartialEq)]

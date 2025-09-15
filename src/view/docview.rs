@@ -4,10 +4,7 @@ use crate::{
 	data::{
 		fn_utils::handle_editor_key_input,
 		io_utils::{deinitialise_app, update_document_title},
-		stores::{
-			doc_store::{ACTIVE_DOCUMENT_TITLE, CURRENT_EDITOR_BUFFER},
-			ui_store::THEME_STORE,
-		},
+		stores::{ACTIVE_DOCUMENT_TITLE, CURRENT_EDITOR_BUFFER, THEME_STORE},
 	},
 	view::bottom_bar::bottom_floating_bar,
 };
@@ -32,7 +29,7 @@ fn editor_area() -> Element {
 		height: "fill",
 		direction: "vertical",
 		title_box{}
-		editor_box{}
+		editor_box_dynamic{}
 	})
 }
 

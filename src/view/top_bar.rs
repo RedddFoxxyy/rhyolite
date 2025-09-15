@@ -2,10 +2,7 @@
 use crate::data::io_utils::deinitialise_app;
 use crate::{
 	APP_ICON,
-	data::stores::{
-		tabs_store::{CURRENT_TAB, TABS, close_tab, new_tab, switch_tab},
-		ui_store::THEME_STORE,
-	},
+	data::stores::{CURRENT_TAB, TABS, THEME_STORE, close_tab, new_tab, switch_tab},
 };
 use freya::hooks::Window;
 use freya::prelude::*;

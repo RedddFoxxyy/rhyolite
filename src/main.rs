@@ -1,14 +1,52 @@
+// Copyright (C) 2025  Suyog Tandel(RedddFoxxyy)
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+/*
+-------------------------------------------------------------------------
+File Index
+-------------------------------------------------------------------------
+- Module Declarations
+- Imports
+- Constants and Static Variables
+- Main Function
+-------------------------------------------------------------------------
+*/
+
 #![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 
+//-------------------------------------------------------------------------
+// - Module Declarations
+//-------------------------------------------------------------------------
 mod data;
 mod view;
 
-use data::{io_utils::logger_init, stores::ui_store::JET_BRAINS_MONO};
+//-------------------------------------------------------------------------
+// - Imports
+//-------------------------------------------------------------------------
+use data::{io_utils::logger_init, stores::JET_BRAINS_MONO};
 use freya::prelude::*;
-use view::index::app;
+use view::app_view::app;
 
+//-------------------------------------------------------------------------
+// - Constants and Static Variables
+//-------------------------------------------------------------------------
 const APP_ICON: &[u8] = include_bytes!("./static/icon.png");
 
+//-------------------------------------------------------------------------
+// - Main Function
+//-------------------------------------------------------------------------
 fn main() {
 	logger_init();
 
