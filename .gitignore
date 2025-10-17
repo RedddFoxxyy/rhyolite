@@ -342,3 +342,5 @@ web_modules/
 /packaging/linux/flatpak/*.flatpak
 /packaging/cargoPackager
 .cargo-packager
+/.profile
+/.zprofile

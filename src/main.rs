@@ -13,40 +13,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-/*
--------------------------------------------------------------------------
-File Index
--------------------------------------------------------------------------
-- Module Declarations
-- Imports
-- Constants and Static Variables
-- Main Function
--------------------------------------------------------------------------
-*/
-
 #![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 
-//-------------------------------------------------------------------------
-// - Module Declarations
-//-------------------------------------------------------------------------
 mod data;
 mod view;
 
-//-------------------------------------------------------------------------
-// - Imports
-//-------------------------------------------------------------------------
 use data::{io::logger_init, stores::JET_BRAINS_MONO};
 use freya::prelude::*;
 use view::app_view::app;
 
-//-------------------------------------------------------------------------
-// - Constants and Static Variables
-//-------------------------------------------------------------------------
 const APP_ICON: &[u8] = include_bytes!("./static/icon.png");
 
-//-------------------------------------------------------------------------
-// - Main Function
-//-------------------------------------------------------------------------
 fn main() {
 	logger_init();
 

@@ -20,7 +20,7 @@ File Index
 - Imports
 - Workspace Elements
 - Text Editor Virtualised(No wrapping)
-- Text Editor Virtualised(No wrapping)
+- Text Editor Virtualised(wrapping)
 -------------------------------------------------------------------------
 
 
@@ -69,7 +69,7 @@ fn editor_area() -> Element {
 		height: "fill",
 		direction: "vertical",
 		title_box{}
-		editor_box_dynamic{}
+		editor_box{}
 	})
 }
 
