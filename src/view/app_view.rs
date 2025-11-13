@@ -31,8 +31,8 @@ File Index
 #[allow(unused_imports)]
 use crate::{
 	data::{
-		fn_utils::handle_global_keyboard_input,
-		io_utils::{deinitialise_app, initialise_app},
+		io::handle_global_keyboard_input,
+		io::{deinitialise_app, initialise_app},
 		stores::{
 			CURRENT_EDITOR_BUFFER, CURRENT_TAB, FILES_ARENA, SHOW_COMMAND_PALETTE, SHOW_RECENT_FILES, SHOW_SETTINGS_DROPUP, TABS,
 			THEME_STORE, WORD_CHAR_COUNT, close_settings_dropup, toggle_command_palette, toggle_recent_files,

@@ -81,6 +81,12 @@ Install `Rhyolite_[version]_.AppImage` using [Gear Lever](https://github.com/mij
 - Linux/macOS users make sure you have rustc, ld/lld/mold, and gcc/clang installed.
 - Windows users make sure you have msvc and rustc installed.
 
+- Fedora/Nobara Linux users, install the following dependencies:
+
+```bash
+sudo dnf install freetype-devel fontconfig-devel mesa-libGL-devel mesa-libEGL-devel mesa-libGLES-devel wayland-devel
+```
+
 - Clone the repo and checkout release branch.
 
 - To build the app manually, run:
@@ -89,11 +95,6 @@ Install `Rhyolite_[version]_.AppImage` using [Gear Lever](https://github.com/mij
 cargo build --release
 ```
 
-
-## First Startup
-
-1. Open the Command Palette using CTRL + P.
-2. Explore the features or refer to our Discord community for guidance.
 
 ## Known Bugs
 
