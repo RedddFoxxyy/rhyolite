@@ -143,6 +143,7 @@ pub struct Colors {
 	pub border: String,
 }
 
+#[allow(dead_code)]
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ThemeListItem {
 	pub filename: String,
