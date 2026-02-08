@@ -9,10 +9,14 @@ fn main() {
 	println!("cargo:rerun-if-changed={SRC_THEMES_DIR}");
 
 	let themes_dir = {
-		let Some(data) = dirs::state_dir() else {
-			eprintln!("No Data directory could be found/accessed!");
-			panic!("Failed to find Data directory.")
-		};
+		let data = dirs::state_dir().unwrap_or({
+			let home = dirs::home_dir().unwrap();
+			let state = home.join(".local").join("state");
+			if !state.exists() {
+				fs::create_dir_all(&state).expect("Failed to create a Data/State directory.");
+			}
+			state
+		});
 		let app_data_dir = data.join(APP_DATA_DIR);
 
 		let themes_dir = app_data_dir.join("Themes");

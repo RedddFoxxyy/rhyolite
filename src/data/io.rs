@@ -63,10 +63,7 @@ use tokio::{
 /// Initializes log4rs with custom configuration for stdout and file logging.
 pub fn logger_init() {
 	let log_file_path = {
-		let Some(state) = dirs::state_dir() else {
-			log::error!("No App State directory could be found/accessed!");
-			panic!("Failed to find App State directory.")
-		};
+		let state = get_state_directory();
 		let log_dir = state.join(APP_DATA_DIR);
 
 		if let Err(e) = fs::create_dir_all(&log_dir) {
@@ -138,6 +135,19 @@ pub fn get_userdata_path() -> PathBuf {
 	let userdata_dir = get_config_dir();
 	fs::create_dir_all(&userdata_dir).expect("Could not create Rhyolite config directory");
 	userdata_dir.join(USER_DATA_FILE)
+}
+
+/// This function is used to get or generate a state directory.
+pub fn get_state_directory() -> PathBuf {
+	dirs::state_dir().unwrap_or({
+		let home = dirs::home_dir().unwrap();
+		let state = home.join(".local").join("state");
+		if !state.exists() {
+		    // Panics only when it failed to create one
+			fs::create_dir_all(&state).expect("Failed to create a Data/State directory.");
+		}
+		state
+	})
 }
 
 /// Generate a path that is not conflicting by incrementing a counter at the file end
