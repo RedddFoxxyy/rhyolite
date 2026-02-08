@@ -14,6 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use crate::data::types::APP_DATA_DIR;
+use crate::data::io::get_state_directory;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
@@ -28,10 +29,7 @@ impl ThemesStore {
 	// TODO: Make this as new function and make a new default function.
 	pub fn init() -> ThemesStore {
 		let themes_dir = {
-			let Some(data) = dirs::state_dir() else {
-				eprintln!("No Data directory could be found/accessed!");
-				panic!("Failed to find Data directory.")
-			};
+			let data = get_state_directory();
 			let app_data_dir = data.join(APP_DATA_DIR);
 
 			let themes_dir = app_data_dir.join("Themes");
